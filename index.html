@@ -133,6 +133,51 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 .result{
   box-shadow:inset 0 0 0 1px rgba(18,53,36,.03);
 }
+
+/* ===== Interactive Mathematical Learning Layer ===== */
+.interactive-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:16px}
+.interactive-card{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px}
+.interactive-card h4{margin:0 0 8px}
+.interactive-card small{opacity:.72}
+.math-progress{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 18px}
+.math-progress span{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);font-size:.82rem;border:1px solid rgba(255,255,255,.08)}
+.math-progress span.active{background:rgba(93,142,111,.34);border-color:rgba(133,188,150,.55)}
+.math-progress span.done{background:rgba(93,142,111,.18)}
+.step-box{border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:18px;margin-top:14px}
+.step-box .prompt{font-size:1.08rem;line-height:1.5;margin-bottom:12px}
+.step-box input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.16);color:inherit;font:inherit}
+.step-box input:focus{outline:none;border-color:rgba(133,188,150,.8);box-shadow:0 0 0 3px rgba(93,142,111,.16)}
+.step-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.step-feedback{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);line-height:1.5}
+.step-feedback.good{border:1px solid rgba(102,190,129,.4)}
+.step-feedback.bad{border:1px solid rgba(211,108,108,.45)}
+.code-reveal{margin-top:12px;padding:12px;border-left:3px solid rgba(133,188,150,.7);background:rgba(255,255,255,.04);border-radius:8px}
+.why-btn{margin-left:8px;font-size:.8rem}
+.why-panel{display:none;margin-top:10px;padding:12px;border-radius:10px;background:rgba(255,255,255,.04);line-height:1.55}
+.why-panel.show{display:block}
+.stress-test-table{width:100%;border-collapse:collapse;margin-top:12px}
+.stress-test-table th,.stress-test-table td{padding:10px;border-bottom:1px solid rgba(255,255,255,.1);text-align:left}
+.stress-test-table th{opacity:.8;font-weight:600}
+.result-pill{display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(93,142,111,.22);border:1px solid rgba(133,188,150,.35)}
+@media (max-width:700px){.interactive-grid{grid-template-columns:1fr}}
+
+
+.offline-status{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.82rem}
+.offline-dot{width:8px;height:8px;border-radius:50%;background:#79b48b;display:inline-block}
+.offline-status.offline{background:rgba(183,120,89,.12);border-color:rgba(183,120,89,.3)}
+.offline-status.offline .offline-dot{background:#c68a6f}
+.builder-date{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.builder-date .date-chip{padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);font-weight:600}
+.builder-note{font-size:.88rem;opacity:.78;margin-top:4px}
+.step-box select#builderLeapAnswer{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.16);color:inherit;border:1px solid rgba(255,255,255,.16);font:inherit}
+
+
+.build-callout{margin-top:14px;padding:13px 15px;border-radius:14px;border:1px solid rgba(133,188,150,.28);background:rgba(93,142,111,.10);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.build-callout strong{display:block;margin-bottom:3px}
+.build-callout span{font-size:.86rem;opacity:.78}
+.builder-panel-wrap{display:none}
+.builder-panel-wrap.open{display:block}
+
 </style>
 </head>
 <body>
@@ -140,7 +185,13 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   <header class="header">
     <h1>Gregorian Congruence Formula</h1>
     <p>A calculator and learning tool for determining the day of the week from a valid Gregorian date. Follow the calculation step by step instead of treating the formula as a black box.</p>
-  </header>
+  
+<div id="offlineStatus" class="offline-status" role="status" aria-live="polite">
+  <span class="offline-dot"></span>
+  <span id="offlineText">Ready for offline use after the first visit.</span>
+</div>
+
+</header>
 
   <nav class="tabs" aria-label="Main sections">
     <button class="tab active" data-tab="calc">Calculator</button>
@@ -155,7 +206,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
         <h2>Enter a Date</h2>
         <p class="small">Enter a positive Common Era year from 1–9999. The app checks whether the date is valid before calculating.</p>
         <div class="row">
-          <div><label for="year">Year</label><input id="year" type="number" min="1" max="9999" value="2008"></div>
+          <div><label for="year">Year</label><input id="year" type="number" min="1" max="9999" value="1"></div>
           <div><label for="month">Month</label><select id="month"></select></div>
           <div><label for="day">Day</label><input id="day" type="number" min="1" max="31" value="1"></div>
         </div>
@@ -178,7 +229,15 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
           </div>
         </div>
       </div>
+    
+    <div class="build-callout">
+      <div>
+        <strong>Want to learn how the date was calculated?</strong>
+        <span>Build the GCF step by step using this exact date.</span>
+      </div>
+      <button type="button" class="btn btn-secondary" id="openBuilderBtn">Build the GCF →</button>
     </div>
+</div>
 
     <div class="card" style="margin-top:16px">
       <h2>Step-by-Step GCF Calculation</h2>
@@ -376,7 +435,62 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     </div>
   </section>
 
-  <section id="practice" class="panel">
+  
+
+<div id="builderPanel" class="builder-panel-wrap"><section id="build-gcf" class="section">
+  <div class="section-head">
+    <div>
+      <h2>Build the GCF</h2>
+      <p>Interactive mode for the date currently selected in the Calculator.</p>
+    </div>
+    <button type="button" class="btn btn-secondary" id="closeBuilderBtn" style="margin-bottom:12px">Close Build Mode</button>
+
+  </div>
+
+  <div class="interactive-grid">
+    <div class="interactive-card">
+      <h4>Build from your date</h4>
+      <div class="builder-note">Change the date in the Calculator first. The activity updates automatically.</div>
+      <div class="builder-date" id="builderDate"></div>
+    </div>
+    <div class="interactive-card">
+      <h4>Your goal</h4>
+      <div><span class="result-pill">C</span> + <span class="result-pill">Y</span> + <span class="result-pill">M</span> + <span class="result-pill">D</span></div>
+      <div class="builder-note">Eventually, you will construct W ≡ C + Y + M + D (mod 7).</div>
+    </div>
+  </div>
+
+  <div id="gcf-builder">
+    <div class="step-box">
+      <div class="math-progress" id="gcfProgress"></div>
+      <div class="prompt" id="gcfPrompt"></div>
+      <div id="gcfInputWrap"></div>
+      <div class="step-actions">
+        <button type="button" id="gcfCheckBtn" class="btn primary">Check answer</button>
+        <button type="button" id="gcfHintBtn" class="btn secondary">Why this step?</button>
+        <button type="button" id="gcfNextBtn" class="btn secondary" style="display:none">Next step</button>
+        <button type="button" id="gcfSyncBtn" class="btn secondary">Sync with Calculator</button>
+      </div>
+      <div id="gcfFeedback" class="step-feedback" style="display:none"></div>
+      <div id="gcfWhy" class="why-panel"></div>
+    </div>
+  </div>
+</section>
+
+
+<section id="stress-tests" class="section">
+  <div class="section-head">
+    <div>
+      <h2>Challenge the Formula</h2>
+      <p>These are not random dates. Each test targets a specific part of GCF.</p>
+    </div>
+  </div>
+  <table class="stress-test-table">
+    <thead><tr><th>Condition</th><th>Example</th><th>What it tests</th><th>Result</th></tr></thead>
+    <tbody id="stressRows"></tbody>
+  </table>
+</section></div>
+<section id="practice" class="panel">
     <div class="card">
       <h2>Practice with Worked Dates</h2>
       <p class="small">Choose a case to load it into the calculator. Each case demonstrates a different part of the GCF procedure.</p>
@@ -451,7 +565,7 @@ const els={
   steps:document.getElementById("steps")
 };
 MONTHS.forEach((m,i)=>{const o=document.createElement("option");o.value=i+1;o.textContent=m;els.month.appendChild(o);});
-els.month.value=2;
+els.month.value=1;
 
 function step(n,title,body){
   return `<div class="step"><div class="stepnum">${n}</div><div><b>${title}</b><br>${body}</div></div>`;
@@ -489,9 +603,9 @@ function calculate(){
     step(9,"Check with Zeller",`Raw Zeller h = ${rawH}; normalized Z<sub>GCF</sub> = ( ${rawH} + 6 ) mod 7 = <b>${z.zg}</b> → ${z.weekday}. <b>${g.weekday===z.weekday?"MATCH":"CHECK"}</b>.`)
   ].join("");
 }
-els.calcBtn.addEventListener("click",calculate);
-els.resetBtn.addEventListener("click",()=>{els.year.value=2008;els.month.value=2;els.day.value=1;calculate();});
-[els.year,els.month,els.day].forEach(x=>x.addEventListener("change",calculate));
+els.calcBtn.addEventListener("click",()=>{calculate();window.dispatchEvent(new Event("gcf-date-updated"));});
+els.resetBtn.addEventListener("click",()=>{els.year.value=1;els.month.value=1;els.day.value=1;calculate();window.dispatchEvent(new Event("gcf-date-updated"));});
+// Date fields do not auto-calculate. The Calculate button controls when the result updates.
 
 document.querySelectorAll(".tab").forEach(btn=>{
   btn.addEventListener("click",()=>{
@@ -515,5 +629,281 @@ document.getElementById("weekdayTable").innerHTML=WEEKDAYS.map((w,i)=>`<tr><td>$
 if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
 calculate();
 </script>
+
+
+<script>
+(function(){
+  const COMMON_MONTH_CODES = [6,2,2,5,0,3,5,1,4,6,2,4];
+  const LEAP_MONTH_CODES   = [5,1,2,5,0,3,5,1,4,6,2,4];
+  const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  function isLeapYear(y){
+    return (y % 400 === 0) || (y % 4 === 0 && y % 100 !== 0);
+  }
+  function floorDiv(a,b){ return Math.floor(a/b); }
+  function getCenturyCode(c){
+    return [7,5,3,1][((c % 4)+4)%4];
+  }
+  function getYearCode(y){
+    return (y + floorDiv(y,4)) % 7;
+  }
+  function getMonthCode(y,m){
+    return (isLeapYear(y) ? LEAP_MONTH_CODES : COMMON_MONTH_CODES)[m-1];
+  }
+
+  let builder = {year:1, month:1, day:1, step:0, passed:false};
+  const steps = ["c","y","leap","C","Y","M","D","W"];
+
+  function readCalculatorDate(){
+    const yEl=document.getElementById("year");
+    const mEl=document.getElementById("month");
+    const dEl=document.getElementById("day");
+    const y=Math.max(1, Math.min(9999, Number(yEl.value)||1));
+    const m=Math.max(1, Math.min(12, Number(mEl.value)||1));
+    const maxd = m===2 ? (isLeapYear(y)?29:28) : ([4,6,9,11].includes(m)?30:31);
+    const d=Math.max(1, Math.min(maxd, Number(dEl.value)||1));
+    return {year:y, month:m, day:d};
+  }
+
+  function syncBuilder(resetStep=true){
+    const date=readCalculatorDate();
+    const changed=date.year!==builder.year || date.month!==builder.month || date.day!==builder.day;
+    builder.year=date.year; builder.month=date.month; builder.day=date.day;
+    if(resetStep || changed){ builder.step=0; builder.passed=false; }
+    renderBuilder();
+  }
+
+  function calcData(){
+    const y=builder.year, m=builder.month, d=builder.day;
+    const c=floorDiv(y,100), yy=y%100;
+    const C=getCenturyCode(c);
+    const Y=getYearCode(yy);
+    const leap=isLeapYear(y);
+    const M=getMonthCode(y,m);
+    const W=(C+Y+M+d)%7;
+    return {year:y,month:m,day:d,c,y:yy,C,Y,leap,M,D:d,W,weekday:WEEKDAYS[W]};
+  }
+
+  function stepLabel(s){
+    return {
+      c:"Century index c",
+      y:"Year position y",
+      leap:"Leap-year check",
+      C:"Century code C",
+      Y:"Year code Y",
+      M:"Month code M",
+      D:"Day contribution D",
+      W:"Final weekday code W"
+    }[s];
+  }
+
+  function expectedFor(step,data){
+    switch(step){
+      case "c": return String(data.c);
+      case "y": return String(data.y);
+      case "leap": return data.leap ? "yes" : "no";
+      case "C": return String(data.C);
+      case "Y": return String(data.Y);
+      case "M": return String(data.M);
+      case "D": return String(data.D);
+      case "W": return String(data.W);
+    }
+  }
+
+  function questionFor(step,data){
+    switch(step){
+      case "c": return `For <b>N = ${data.year}</b>, what is <b>c = ⌊N/100⌋</b>?`;
+      case "y": return `For <b>N = ${data.year}</b>, what is <b>y = N mod 100</b>?`;
+      case "leap": return `Is <b>${data.year}</b> a Gregorian leap year?`;
+      case "C": return `Using c = ${data.c}, what is the century code <b>C</b>?`;
+      case "Y": return `Using y = ${data.y}, what is <b>Y ≡ y + ⌊y/4⌋ (mod 7)</b>?`;
+      case "M": return `For <b>${data.year}-${String(data.month).padStart(2,'0')}</b>, what is the month code <b>M</b>?`;
+      case "D": return `The selected date is <b>${WEEKDAYS[getReferenceWeekday(data.year,data.month,data.day)]}, ${data.month}/${data.day}/${data.year}</b>. What is the day contribution <b>D</b>?`;
+      case "W": return `What is <b>W ≡ C + Y + M + D (mod 7)</b>?`;
+    }
+  }
+
+  // Only used to display the correct weekday name in the prompt;
+  // it does not replace the GCF calculation.
+  function getReferenceWeekday(y,m,d){
+    const dt=new Date(Date.UTC(y,m-1,d));
+    return dt.getUTCDay();
+  }
+
+  function whyText(step,data){
+    const map={
+      c:`c separates the completed centuries from the rest of the year. For ${data.year}, c = ⌊${data.year}/100⌋ = ${data.c}.`,
+      y:`y is the year position within the current century: ${data.year} mod 100 = ${data.y}.`,
+      leap:`The Gregorian rule is divisible by 4, except century years not divisible by 400. So ${data.year} is ${data.leap?"a":"not a"} leap year.`,
+      C:`Use c mod 4. Here, ${data.c} mod 4 = ${data.c%4}, which selects C = ${data.C}.`,
+      Y:`Y ≡ y + ⌊y/4⌋ (mod 7). Here, Y ≡ ${data.y} + ⌊${data.y}/4⌋ ≡ ${data.Y} (mod 7).`,
+      M:`M is selected from the common-year or leap-year month-code table. The choice depends on ${data.year}'s leap-year status.`,
+      D:`D is simply the day number from the user's selected date. It is inserted directly into the final GCF sum.`,
+      W:`Add the four contributions and reduce modulo 7: W ≡ ${data.C} + ${data.Y} + ${data.M} + ${data.D} ≡ ${data.W} (mod 7).`
+    };
+    return map[step];
+  }
+
+  function renderProgress(){
+    const el=document.getElementById("gcfProgress");
+    el.innerHTML=steps.map((s,i)=>`<span class="${i<builder.step?'done ':''}${i===builder.step?'active':''}">${i+1}. ${stepLabel(s)}</span>`).join("");
+  }
+
+  function renderBuilder(){
+    const data=calcData();
+    const s=steps[builder.step];
+    document.getElementById("builderDate").innerHTML=
+      `<span class="date-chip">${String(data.month).padStart(2,"0")}/${String(data.day).padStart(2,"0")}/${data.year}</span>
+       <span class="builder-note">${data.leap?"Leap year":"Common year"}</span>`;
+    renderProgress();
+    document.getElementById("gcfPrompt").innerHTML=questionFor(s,data);
+    const wrap=document.getElementById("gcfInputWrap");
+    if(s==="leap"){
+      wrap.innerHTML=`<select id="builderLeapAnswer" aria-label="Leap year answer">
+        <option value="">Choose…</option><option value="yes">Yes</option><option value="no">No</option>
+      </select>`;
+    } else {
+      wrap.innerHTML=`<input id="gcfAnswer" type="number" step="1" min="-999999" inputmode="numeric" aria-label="Your answer" autocomplete="off" />`;
+    }
+    document.getElementById("gcfFeedback").style.display="none";
+    document.getElementById("gcfNextBtn").style.display="none";
+    document.getElementById("gcfWhy").classList.remove("show");
+    document.getElementById("gcfWhy").innerHTML=whyText(s,data);
+    if (builderHasOpened) {
+      const input=document.getElementById(s==="leap"?"builderLeapAnswer":"gcfAnswer");
+      if (input) input.focus();
+    }
+  }
+
+  function currentAnswerValue(){
+    const s=steps[builder.step];
+    const input=document.getElementById(s==="leap"?"builderLeapAnswer":"gcfAnswer");
+    return input ? String(input.value).trim().toLowerCase() : "";
+  }
+
+  function checkAnswer(){
+    const data=calcData();
+    const s=steps[builder.step];
+    const val=currentAnswerValue();
+    const expected=expectedFor(s,data);
+    const ok=val===String(expected).toLowerCase();
+    const fb=document.getElementById("gcfFeedback");
+    fb.style.display="block";
+    fb.className="step-feedback "+(ok?"good":"bad");
+    if(ok){
+      builder.passed=true;
+      fb.innerHTML=`<b>Correct.</b> ${stepLabel(s)} = <b>${expected}</b>.`;
+      document.getElementById("gcfNextBtn").style.display=builder.step<steps.length-1?"inline-block":"none";
+      if(builder.step===steps.length-1){
+        fb.innerHTML+=`<div class="code-reveal">You constructed <b>W = ${data.W}</b> → <b>${data.weekday}</b>.</div>`;
+      }
+    }else{
+      builder.passed=false;
+      fb.innerHTML=`<b>Not quite.</b> Recheck the selected date and this step. Use <b>Why this step?</b> for the mathematical reason.`;
+    }
+  }
+
+  document.getElementById("gcfCheckBtn").addEventListener("click",checkAnswer);
+  document.getElementById("gcfNextBtn").addEventListener("click",()=>{
+    if(builder.passed && builder.step<steps.length-1){builder.step++;renderBuilder();}
+  });
+  document.getElementById("gcfHintBtn").addEventListener("click",()=>{
+    document.getElementById("gcfWhy").classList.toggle("show");
+  });
+  document.getElementById("gcfSyncBtn").addEventListener("click",()=>syncBuilder(true));
+
+  document.getElementById("gcf-builder").addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();checkAnswer();}
+  });
+
+  // Calculator changes may update the builder only if Build mode is already open.
+  // The event is handled above; the builder never opens or scrolls automatically.
+  // (No direct builder sync listener is attached here.)
+
+  const stressTests=[
+    {condition:"Ordinary year",example:"1983-05-01",y:1983,m:5,d:1,what:"Basic GCF flow"},
+    {condition:"Leap year",example:"2008-02-01",y:2008,m:2,d:1,what:"Leap-year handling"},
+    {condition:"Leap day",example:"2000-02-29",y:2000,m:2,d:29,what:"February 29 handling"},
+    {condition:"Non-leap century",example:"1900-02-28",y:1900,m:2,d:28,what:"Century exception"},
+    {condition:"Leap century",example:"2000-02-29",y:2000,m:2,d:29,what:"Divisible-by-400 exception"},
+    {condition:"Century transition",example:"1999-12-31",y:1999,m:12,d:31,what:"c/y boundary behavior"},
+    {condition:"400-year cycle",example:"2000-01-01 vs 2400-01-01",y:2000,m:1,d:1,what:"Periodic structure"}
+  ];
+
+  function appWeek(y,m,d){
+    const c=Math.floor(y/100),yy=y%100,C=getCenturyCode(c),Y=getYearCode(yy),M=getMonthCode(y,m);
+    return (C+Y+M+d)%7;
+  }
+  function renderStress(){
+    const rows=document.getElementById("stressRows");
+    rows.innerHTML=stressTests.map(t=>{
+      if(t.condition==="400-year cycle"){
+        const a=appWeek(2000,1,1),b=appWeek(2400,1,1);
+        return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${a===b?"Pass":"Review"}</td></tr>`;
+      }
+      const got=appWeek(t.y,t.m,t.d),ground=getReferenceWeekday(t.y,t.m,t.d);
+      return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${got===ground?"Pass":"Review"}</td></tr>`;
+    }).join("");
+  }
+
+  // Offline status
+  function updateOfflineStatus(){
+    const box=document.getElementById("offlineStatus");
+    const text=document.getElementById("offlineText");
+    if(!box||!text)return;
+    if(navigator.onLine){
+      box.classList.remove("offline");
+      text.textContent="Online — this app is also cached for offline use.";
+    }else{
+      box.classList.add("offline");
+      text.textContent="Offline — the calculator and learning tools remain available.";
+    }
+  }
+  window.addEventListener("online",updateOfflineStatus);
+  window.addEventListener("offline",updateOfflineStatus);
+  updateOfflineStatus();
+
+  // Register the service worker and report update errors silently.
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>{
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    });
+  }
+
+  const builderPanel=document.getElementById("builderPanel");
+  const openBuilderBtn=document.getElementById("openBuilderBtn");
+  let builderHasOpened=false;
+
+  function openBuilder(){
+    builderHasOpened=true;
+    syncBuilder(true);
+    builderPanel.classList.add("open");
+    builderPanel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  openBuilderBtn.addEventListener("click", openBuilder);
+  document.getElementById("closeBuilderBtn").addEventListener("click",()=>{
+    builderPanel.classList.remove("open");
+    openBuilderBtn.focus();
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+
+
+  // Keep the builder's stored date synchronized while it is open,
+  // but never open or scroll to it automatically.
+  window.addEventListener("gcf-date-updated", ()=>{
+    if(builderHasOpened){
+      syncBuilder(true);
+    }
+  });
+
+  // Build mode is intentionally opt-in. Do not render/focus it until the user opens it.
+  builderPanel.classList.remove("open");
+  builderHasOpened=false;
+  renderStress();
+})();
+</script>
+
+
 </body>
 </html>
