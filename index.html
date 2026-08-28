@@ -718,17 +718,13 @@ calculate();
       case "C": return `Using c = ${data.c}, what is the century code <b>C</b>?`;
       case "Y": return `Using y = ${data.y}, what is <b>Y ≡ y + ⌊y/4⌋ (mod 7)</b>?`;
       case "M": return `For <b>${data.year}-${String(data.month).padStart(2,'0')}</b>, what is the month code <b>M</b>?`;
-      case "D": return `The selected date is <b>${WEEKDAYS[getReferenceWeekday(data.year,data.month,data.day)]}, ${data.month}/${data.day}/${data.year}</b>. What is the day contribution <b>D</b>?`;
+      case "D": return `The selected date is <b>${data.weekday}, ${data.month}/${data.day}/${data.year}</b>. What is the day contribution <b>D</b>?`;
       case "W": return `What is <b>W ≡ C + Y + M + D (mod 7)</b>?`;
     }
   }
 
-  // Only used to display the correct weekday name in the prompt;
-  // it does not replace the GCF calculation.
-  function getReferenceWeekday(y,m,d){
-    const dt=new Date(Date.UTC(y,m-1,d));
-    return dt.getUTCDay();
-  }
+  // The builder uses the same GCF result already calculated for the selected date.
+  // No independent calendar calculation is used to supply the weekday label.
 
   function whyText(step,data){
     const map={
@@ -841,7 +837,7 @@ calculate();
         const a=appWeek(2000,1,1),b=appWeek(2400,1,1);
         return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${a===b?"Pass":"Review"}</td></tr>`;
       }
-      const got=appWeek(t.y,t.m,t.d),ground=getReferenceWeekday(t.y,t.m,t.d);
+      const got=appWeek(t.y,t.m,t.d),ground=zeller(t.y,t.m,t.d).zg;
       return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${got===ground?"Pass":"Review"}</td></tr>`;
     }).join("");
   }
