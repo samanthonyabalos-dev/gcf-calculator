@@ -178,6 +178,29 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 .builder-panel-wrap{display:none}
 .builder-panel-wrap.open{display:block}
 
+
+/* ===== Batch Validator ===== */
+.batch-help{line-height:1.55;color:var(--muted);max-width:900px}
+.batch-tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.batch-drop{border:1.5px dashed #9BB7A4;border-radius:14px;padding:18px;background:#F5F8F4}
+.batch-drop input{display:block;margin-top:10px;max-width:100%}
+.batch-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.batch-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.batch-stat b{display:block;font-size:19px;margin-top:3px}
+.batch-stat.mismatch b{color:#B42318}
+.batch-stat.invalid b{color:#B54708}
+.batch-table-wrap{overflow:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px}
+.batch-table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}
+.batch-table th,.batch-table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.batch-table th{background:#EAF0EA;color:var(--forest)}
+.batch-table tr.batch-mismatch{background:#FDE8E7}
+.batch-table tr.batch-invalid{background:#FFF3E0}
+.batch-pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
+.batch-pill.match{background:#E4F2E7;color:#21613A}
+.batch-pill.mismatch{background:#F7D5D2;color:#A61B12}
+.batch-pill.invalid{background:#FBE3C0;color:#8A4B08}
+@media(max-width:900px){.batch-summary{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body>
@@ -198,6 +221,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     <button class="tab" data-tab="learn">Learn GCF</button>
     <button class="tab" data-tab="compare">GCF vs Zeller</button>
     <button class="tab" data-tab="practice">Practice</button>
+    <button class="tab" data-tab="batch">Batch Validator</button>
   </nav>
 
   <section id="calc" class="panel active">
@@ -436,6 +460,39 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   </section>
 
   
+
+
+<section id="batch" class="panel">
+  <div class="card">
+    <span class="badge">COMPUTATIONAL VALIDATION</span>
+    <h2 style="margin-top:8px">Batch Date Validator</h2>
+    <p class="batch-help">
+      Upload a spreadsheet exported as <b>CSV</b>, or paste spreadsheet rows below.
+      The required columns are <b>Date</b> and <b>Recorded Weekday</b>. GCF recalculates
+      the weekday for every valid Gregorian date, flags mismatches, and prepares downloadable reports.
+      The tool is designed for general Gregorian date records and uses the supported range of years 1–9999.
+    </p>
+    <div class="batch-drop">
+      <b>Input format</b>
+      <div class="small">CSV or tab-separated spreadsheet data. Example header: <code>Date,Recorded Weekday</code></div>
+      <input id="batchFile" type="file" accept=".csv,.tsv,.txt">
+    </div>
+    <div style="margin-top:14px">
+      <label for="batchPaste"><b>Or paste spreadsheet data</b></label>
+      <textarea id="batchPaste" rows="7" style="width:100%;box-sizing:border-box;margin-top:7px;padding:11px;border:1px solid var(--line);border-radius:12px;font:inherit" placeholder="Date\tRecorded Weekday\n2026-01-01\tThursday\n2026-01-02\tFriday"></textarea>
+    </div>
+    <div class="batch-tools">
+      <button type="button" class="btn btn-primary" id="runBatchBtn">Validate Batch</button>
+      <button type="button" class="btn btn-secondary" id="clearBatchBtn">Clear</button>
+      <button type="button" class="btn btn-secondary" id="downloadBatchCsvBtn" disabled>Download CSV</button>
+      <button type="button" class="btn btn-secondary" id="downloadBatchXlsBtn" disabled>Download Excel-Compatible Report</button>
+      <button type="button" class="btn btn-secondary" id="downloadMismatchBtn" disabled>Download Mismatches Only</button>
+    </div>
+    <div id="batchSummary" style="display:none"></div>
+    <div id="batchResults" class="batch-table-wrap" style="display:none"></div>
+    <div id="batchNote" class="small" style="margin-top:10px"></div>
+  </div>
+</section>
 
 <div id="builderPanel" class="builder-panel-wrap"><section id="build-gcf" class="section">
   <div class="section-head">
