@@ -1,4 +1,4 @@
-const CACHE_NAME = "gcf-auditor-v4-20261024";
+const CACHE_NAME = "gcf-auditor-v5-prc20261024";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./sw.js",
   "./jszip.min.js",
   "./gcf-engine.js",
+  "./pdf-enhanced.js",
   "./document-audit.js",
   "./annotation-export.js"
 ];

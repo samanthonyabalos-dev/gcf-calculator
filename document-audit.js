@@ -84,6 +84,8 @@ function scanText(segment,options={}){
  }
  for(let i=0;i<dates.length;i++){
   const d=dates[i],candidates=assigned[i];
+  // Numbered legal cases can look like a year-first date, e.g. No. RTJ-13-2361, 02 February.
+  if(/^\d{4}\s*,\s*\d{1,2}\s+[A-Z]/i.test(d.text) && /(?:\b(?:No\.|Case|A\.?M\.?|RTJ|P-?\d+)[^|]{0,75}[-–]\s*)$/i.test(input.slice(Math.max(0,d.index-85),d.index))) continue;
   const association=candidates.length===1?candidates[0]:candidates[0]||null;
   const ambiguity=candidates.length>1 || Boolean(association&&association.unresolved);
   out.push(makeRecord({...segment,text:input},d,association,options.dateOrder||'auto',ambiguity));
@@ -148,6 +150,8 @@ async function maybeInflate(bytes){
  throw Error('This browser does not support PDF FlateDecode decompression.');
 }
 async function readPdf(bytes,file='document.pdf'){
+ if(typeof globalThis!=='undefined' && globalThis.GCFAdvancedPDF && globalThis.pdfjsLib) return globalThis.GCFAdvancedPDF.readPdf(bytes,file);
+
  // Small browser-native fallback for simple searchable PDFs (PDF 1.x, unencrypted, standard text streams).
  // Does not implement PDF.js, custom font CMaps, object streams, scanned images or multi-column layout.
  const data=bytes instanceof Uint8Array?bytes:new Uint8Array(await bytes.arrayBuffer());const ascii=(x)=>{if(typeof Buffer!=='undefined'&&typeof module==='object'&&module.exports)return Buffer.from(x).toString('latin1');let out='';for(let j=0;j<x.length;j+=8192)out+=String.fromCharCode(...x.subarray(j,j+8192));return out;};
@@ -171,7 +175,7 @@ async function readPdf(bytes,file='document.pdf'){
  if(!lines.length)throw Error('No extractable text detected. Scanned, custom-font, or complex PDFs need an OCR/PDF.js processing route.');
  const unseen=[];
  for(let p=1;p<=pages.length;p++)if(!lines.some(line=>line.page===p))unseen.push(p);
- if(unseen.length)throw Error('Incomplete PDF extraction: no accessible text on '+unseen.length+' of '+pages.length+' pages (first: page '+unseen[0]+'). The audit was rejected rather than silently omitting scanned pages.');
+ if(unseen.length)throw Error('Incomplete PDF extraction (requires advanced PDF.js engine): no accessible text on '+unseen.length+' of '+pages.length+' pages (first: page '+unseen[0]+'). The audit was rejected rather than silently omitting scanned pages.');
  // Merge same-baseline, separate-cell PDF text into one row, including event details.
  const grouped=[];
  for(let pg=1;pg<=pages.length;pg++){

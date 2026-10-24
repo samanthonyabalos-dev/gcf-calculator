@@ -471,11 +471,13 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     <p class="batch-help">Check dates and their written weekdays inside paragraphs and tables. The report keeps the original text and the document location for each finding.</p>
     <div class="doc-layout">
       <div>
-        <label for="docFiles">Upload text-based PDFs or Word documents</label>
+        <label for="docFiles">Upload searchable PDFs or Word documents</label>
         <input type="file" id="docFiles" accept=".pdf,.docx" multiple>
         <div class="small" style="margin-top:6px">Up to 10 documents · 15 MB each · PDF limit 180 pages. Documents are processed locally in your browser; no server upload.</div>
       </div>
       <div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.5;margin:10px 0"><input type="checkbox" id="docPairedOnly" checked> Focus on date–weekday pairs (omit unrelated standalone dates in document annexes)</label>
+        <p class="small">Complex searchable PDFs use PDF.js and PDF-lib loaded from an online library. No document is uploaded to a server. Scanned pages require OCR, which is not included.</p>
         <label for="docOrder">Numeric date interpretation</label>
         <select id="docOrder">
           <option value="auto">Automatic (flag ambiguous dates)</option>
@@ -494,7 +496,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
       <button class="btn btn-secondary" id="docExportFlagged" type="button" disabled>Download review list CSV</button>
       <button class="btn btn-primary" id="docExportAnnotated" type="button" disabled>Download annotated documents (.zip)</button>
     </div>
-    <label class="small" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input id="annotateMatches" type="checkbox" style="width:17px;height:17px"> Also highlight correct matches (off by default; best for lengthy documents)</label>
+    <label class="small" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input id="annotateMatches" type="checkbox" checked style="width:17px;height:17px"> Also highlight correct matches (off by default; best for lengthy documents)</label>
     <div id="docAnnotationStatus" class="small" role="status" aria-live="polite" style="margin:9px 0 0"></div>
     <div id="docDownloadLinks" class="card" style="display:none;margin-top:10px;padding:12px;background:#F3F7F3">
       <b>Export ready</b>
@@ -617,8 +619,13 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   <footer>GCF Weekday Calculator • Offline-capable mathematics learning app • Code-based Gregorian weekday model</footer>
 </div>
 
+<!-- Complex searchable PDFs need industry-standard PDF.js and PDF-lib. 
+     These libraries load online; no uploaded documents leave the browser. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="./jszip.min.js"></script>
 <script src="./gcf-engine.js"></script>
+<script src="./pdf-enhanced.js"></script>
 <script src="./document-audit.js"></script>
 <script src="./annotation-export.js"></script>
 <script>
@@ -1368,12 +1375,12 @@ calculate();
   for(const id of ['docExportAll','docExportFlagged','docExportAnnotated'])$(id).disabled=false;
  }
  $('runDocAudit').addEventListener('click',async()=>{const files=Array.from($('docFiles').files||[]),progress=$('docProgress');if(!files.length){progress.textContent='Select at least one PDF or DOCX.';return;}if(files.length>10){progress.textContent='Select at most 10 files per batch.';return;}if(new Set(files.map(f=>f.name.toLowerCase())).size!==files.length){progress.textContent='Some files have identical names. Rename them before combining, so annotations cannot be assigned to the wrong document.';return;}
- resetDownloads();$('runDocAudit').disabled=true;result=null;scannedFiles=[]; $('docExportAnnotated').disabled=true;for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';let segs=[],errs=[],processed=0;const began=performance.now();
+ resetDownloads();$('runDocAudit').disabled=true;result=null;scannedFiles=[]; $('docExportAnnotated').disabled=true;for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';let segs=[],errs=[],readWarnings=[],processed=0;const began=performance.now();
  try{for(const file of files){progress.textContent='Reading '+file.name+' ('+(processed+1)+' / '+files.length+')…';await new Promise(resolve=>setTimeout(resolve,0));if(file.size>15*1024*1024){errs.push(file.name+': exceeds 15 MB');continue;}
- try{let parts;if(/\.docx$/i.test(file.name))parts=await auditor.readDocx(file,window.JSZip,file.name);else if(/\.pdf$/i.test(file.name))parts=await auditor.readPdf(file,file.name);else throw Error('Supported formats are PDF and DOCX');segs.push(...parts);scannedFiles.push(file);processed++;}catch(e){errs.push(file.name+': '+(e?.message||String(e)));}}
+ try{let parts;if(/\.docx$/i.test(file.name))parts=await auditor.readDocx(file,window.JSZip,file.name);else if(/\.pdf$/i.test(file.name))parts=await auditor.readPdf(file,file.name);else throw Error('Supported formats are PDF and DOCX');if(parts.auditWarnings?.length)readWarnings.push(...parts.auditWarnings.map(w=>file.name+': '+w));segs.push(...parts);scannedFiles.push(file);processed++;}catch(e){errs.push(file.name+': '+(e?.message||String(e)));}}
  if(!processed){result=null;progress.textContent='No files could be scanned. '+errs.join(' | ');return;}
- result=auditor.scanSegments(segs,{dateOrder:$('docOrder').value,maxRecords:120000});result.elapsedMs=performance.now()-began;
- render(result);progress.textContent=processed+' document(s) scanned · '+result.total.toLocaleString()+' date findings · '+result.elapsedMs.toFixed(1)+' ms in this browser'+(errs.length?' · Not scanned: '+errs.join(' | '):'')+'.';
+ result=auditor.scanSegments(segs,{dateOrder:$('docOrder').value,maxRecords:120000});if($('docPairedOnly').checked){result=auditor.summarize(result.records.filter(r=>r.status!=='NO_WEEKDAY'),processed,performance.now()-began);}result.elapsedMs=performance.now()-began;
+ render(result);const warnings=readWarnings;progress.textContent=processed+' document(s) scanned · '+result.total.toLocaleString()+' date findings · '+result.elapsedMs.toFixed(1)+' ms in this browser'+(errs.length?' · Not scanned: '+errs.join(' | '):'')+'.'+(warnings.length?' WARNING: '+warnings.join('; '):'');
  }catch(e){result=null;progress.textContent='Audit stopped: '+(e?.message||String(e));}
  finally{$('runDocAudit').disabled=false;}
  });

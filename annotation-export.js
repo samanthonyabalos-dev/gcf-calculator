@@ -191,6 +191,6 @@ async function annotateDocx(file,rows,JSZipCtor,includeMatches=false){
  const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:5}});
  return {blob,summary:summary(file,rows,result.placed,result.issues,'docx')};
 }
-async function annotatePdf(file,rows,includeMatches=false){const buf=new Uint8Array(await file.arrayBuffer());return appendPDF(buf,rows,includeMatches);}
+async function annotatePdf(file,rows,includeMatches=false){if(typeof globalThis!=='undefined'&&globalThis.GCFAdvancedPDF&&globalThis.PDFLib)return globalThis.GCFAdvancedPDF.annotatePdf(file,rows,includeMatches);const buf=new Uint8Array(await file.arrayBuffer());return appendPDF(buf,rows,includeMatches);}
 return {annotatePdf,annotateDocx,annotateDOCXXml,appendPDF,getPosition,LEGEND};
 });
