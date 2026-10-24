@@ -1,47 +1,1278 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#163f30"><meta name="description" content="GCF batch date–weekday consistency auditor. Offline-friendly, transparent Gregorian computation."><link rel="manifest" href="manifest.webmanifest"><title>GCF | Date–Weekday Consistency Auditor</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#24463A">
+<meta name="description" content="Gregorian Congruence Formula — an offline-friendly mathematics learning and weekday calculation app.">
+<title>GCF Weekday Calculator</title>
+<link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{--green:#143d2c;--mid:#296649;--pale:#eaf1eb;--cream:#f4f5f1;--ink:#1b2821;--muted:#597065;--line:#cfded2;--red:#8e3434;--amber:#8a581d}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--cream);font:15px/1.55 Arial,Helvetica,sans-serif}.shell{max-width:1040px;margin:auto;padding:18px 18px 45px}.hero{padding:28px 30px;background:var(--green);color:white;border-radius:18px}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.76;font-weight:700}.hero h1{font-size:clamp(27px,4vw,42px);line-height:1.18;letter-spacing:-.8px;margin:9px 0}.hero p{opacity:.86;max-width:720px;margin:0}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{background:white;border:1px solid var(--line);border-radius:8px;padding:11px 15px;color:var(--green);font-weight:700;cursor:pointer}.tab.active{color:white;background:var(--green)}.panel{display:none}.panel.active{display:block}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:23px;margin-bottom:15px}.card h2,.card h3{margin:0 0 8px;color:var(--green)}.subtle{color:var(--muted)}.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{display:block;font-weight:700;margin:14px 0 5px}input,textarea,select{font:inherit;padding:11px 12px;border-radius:8px;border:1px solid #b9cec0;background:white;color:var(--ink);width:100%}textarea{resize:vertical}.button-row{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.btn{padding:11px 16px;border:1px solid var(--line);font-weight:700;font:inherit;border-radius:8px;cursor:pointer;color:var(--green);background:#eaf1eb}.btn.primary{background:var(--green);color:white;border-color:var(--green)}.btn:disabled{cursor:not-allowed;opacity:.45}.hint{font-size:13px;color:var(--muted)}.formula{background:var(--pale);padding:18px;border-radius:12px;text-align:center;font:22px Cambria,'Times New Roman',serif;color:var(--green);margin:15px 0}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat{background:#f6f9f6;border:1px solid var(--line);padding:14px;border-radius:10px}.stat b{display:block;font-size:24px}.stat span{font-size:12px;color:var(--muted)}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:15px}.table-container{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin-top:14px}table{width:100%;border-collapse:collapse;min-width:630px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:9px 11px;font-size:13px;vertical-align:top}th{background:var(--pale);color:var(--green)}tr:last-child td{border-bottom:0}tr.review{background:#fff6ea}tr.bad{background:#fff1f1}.pill{display:inline-block;font-size:11px;font-weight:800;padding:3px 7px;border-radius:5px;color:var(--green);background:#dcece0}.pill.mismatch{background:#f6dbd9;color:var(--red)}.pill.invalid{background:#f7e6cc;color:var(--amber)}.notice{background:#f1f6f1;padding:13px 15px;border-left:3px solid var(--mid);border-radius:4px;margin-top:16px}.error{border-left-color:var(--red);color:var(--red);background:#fff4f2}.math-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}.math-box{border:1px solid var(--line);border-radius:9px;padding:15px;text-align:center}.math-box b{display:block;font:25px Cambria,serif;color:var(--green)}.math-box span{font-size:12px;color:var(--muted)}.month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.offset-row{display:grid;grid-template-columns:100px 1fr 50px;align-items:center;gap:12px;margin:9px 0}.bar{height:14px;background:var(--pale);border-radius:5px;overflow:hidden}.fill{height:100%;background:var(--mid)}.empty{padding:30px;text-align:center;color:var(--muted)}footer{text-align:center;color:var(--muted);font-size:12px;margin:22px 0}code{background:var(--pale);border-radius:4px;padding:2px 5px}.visually-hidden{position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden}@media(max-width:700px){.shell{padding:8px}.hero{padding:25px 18px}.card{padding:17px}.input-grid,.two-col,.month-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.math-grid{grid-template-columns:repeat(2,1fr)}.tab{padding:9px 12px}}
-</style></head>
-<body><div class="shell"><header class="hero"><div class="eyebrow">Gregorian Congruence Formula · GCF-400</div><h1>Date–Weekday Consistency Auditor</h1><p>Check schedules in batches, identify inconsistent or invalid entries, and export a transparent report for human review. Gregorian dates, years 1–9999.</p></header>
-<nav class="tabs" aria-label="Main sections"><button class="tab active" data-target="audit">Batch validator</button><button class="tab" data-target="calculator">Single-date GCF</button><button class="tab" data-target="method">The mathematics</button></nav>
-<main>
-<section id="audit" class="panel active"><div class="card"><h2>Validate date–weekday records</h2><p class="subtle">Upload CSV, TSV or XLSX, or paste two-column data. Keep optional columns such as event title and location. Your records are processed locally in the browser; this site does not upload them to a server.</p><div class="input-grid"><div><label for="upload">Upload a file</label><input id="upload" type="file" accept=".csv,.tsv,.txt,.xlsx"></div><div><label for="sampleBtn">Try a controlled demonstration</label><button id="sampleBtn" type="button" class="btn" style="width:100%">Load sample records</button></div></div><label for="paste">Or paste CSV / tab-separated records</label><textarea id="paste" rows="6" placeholder="Date,Recorded Weekday,Event&#10;2026-09-26,Saturday,Examination day 1&#10;2026-09-27,Monday,Examination day 2"></textarea><p class="hint">Required columns: <code>Date</code> and <code>Recorded Weekday</code>. Single dates: <code>YYYY-MM-DD</code>. Supported ranges: <code>2026-09-26..2026-09-27</code> paired with <code>Saturday-Sunday</code> (max 62 days). Lists of complete dates may be separated by semicolons, with corresponding weekday labels separated by semicolons. Ambiguous formats are flagged, not silently interpreted.</p><div class="button-row"><button id="checkBtn" class="btn primary">Run batch audit</button><button id="resetBtn" class="btn">Clear</button><button id="downloadCsv" class="btn" disabled>Full CSV report</button><button id="downloadFlagged" class="btn" disabled>Flagged records CSV</button><button id="downloadXlsx" class="btn" disabled>XLSX report</button></div><p id="status" class="hint" role="status" aria-live="polite">Ready. Dates and recorded weekdays are compared using cached GCF-400.</p></div>
-<div id="results" style="display:none"><div class="card"><h2>Audit summary</h2><div id="stats" class="stats"></div><div class="two-col"><div><h3>Weekday offset distribution</h3><p class="hint">Signed offsets describe how recorded weekdays differ from the GCF result. Repeated offsets may deserve further investigation but do not establish a cause.</p><div id="offsets"></div></div><div><h3>Interpretation</h3><p><b>MATCH</b> means the two fields agree. <b>MISMATCH</b> means the weekday differs. <b>INVALID</b> means a date or weekday cannot be safely interpreted.</p><p class="hint">A matching weekday does not prove the intended event date is correct. The same weekday repeats every seven days.</p></div></div></div><div class="card"><h2>Records for review</h2><div class="input-grid"><div><label for="filter">Show</label><select id="filter"><option value="flagged">Flagged records first</option><option value="all">All records (preview)</option><option value="mismatch">Mismatches only</option><option value="invalid">Invalid only</option></select></div><div><label for="limit">Preview limit</label><select id="limit"><option value="100">100 rows</option><option value="500">500 rows</option><option value="2000">2,000 rows</option></select></div></div><div id="records"></div></div></div></section>
-<section id="calculator" class="panel"><div class="card"><h2>One-date GCF calculator</h2><p class="subtle">Explore the original four contributions independently of the optimized batch implementation.</p><div class="input-grid"><div><label for="dateOne">Gregorian date</label><input id="dateOne" type="text" value="2026-09-26" placeholder="YYYY-MM-DD"></div><div><label for="singleGo">Calculate</label><button id="singleGo" class="btn primary" style="width:100%">Show GCF components</button></div></div><div id="singleResult"></div></div></section>
-<section id="method" class="panel"><div class="card"><h2>The modular structure</h2><p>The inherited ALBADORA weekday-code approach is formalized here as GCF. It separates century, year, month, and day components. The study's main application is a batch date–weekday consistency-checking workflow, not a claim to a historically unprecedented weekday equation.</p><div class="formula">W ≡ C + Y + M + D (mod 7)</div><div class="math-grid"><div class="math-box"><b>C</b><span>Century residue</span></div><div class="math-box"><b>Y</b><span>Within-century year residue</span></div><div class="math-box"><b>M</b><span>Month contribution</span></div><div class="math-box"><b>D</b><span>Day of month</span></div></div><p>With <i>c</i> = ⌊year/100⌋ and <i>y</i> = year mod 100: <b>C = [7,5,3,1][c mod 4]</b> and <b>Y = (y + ⌊y/4⌋) mod 7</b>. The Gregorian leap-year rule selects the month codes below.</p><div class="month-grid"><div><h3>Month codes</h3><div id="monthCodes" class="table-container"></div></div><div><h3>Cached calculation</h3><div class="formula">B(r,m) ≡ C + Y + M (mod 7)</div><div class="formula">W ≡ B(r,m) + D (mod 7)</div><p class="hint">GCF-400 stores 4,800 reusable combined contributions (400 year positions × 12 months) in a <code>Uint8Array</code>. They are prepared once per page load; C, Y and M are not recomputed for every imported date.</p></div></div><h3 style="margin-top:24px">Explaining a discrepancy</h3><div class="formula">R ≡ W<sub>recorded</sub> − W<sub>GCF</sub> (mod 7)</div><p>Zero means agreement; a nonzero residue means disagreement. A signed value from −3 to +3 is displayed for reviewers. A residue cannot identify which source field is wrong.</p><div class="notice">The Gregorian 400-year calendar comprises 146,097 days, exactly 20,871 weeks. Precomputing that repeating pattern is an implementation optimization, not a new weekday theorem. Established algorithms and their formal comparison belong in the research manuscript, not this user-facing validator.</div></div></section>
-</main><footer>GCF · Preliminary Gregorian date–weekday consistency checking · Offline-friendly and locally processed · Human review required</footer></div>
-<script src="jszip.min.js"></script><script src="gcf-engine.js"></script><script>
-'use strict';
-const E=GCFEngine; let current=null,sourceName='GCF_Audit';
-const $=id=>document.getElementById(id);
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function reportNote(text,error=false){$('status').textContent=text;$('status').style.color=error?'#8e3434':'#597065';}
-for(const tab of document.querySelectorAll('.tab'))tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===tab));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===tab.dataset.target));});
-$('sampleBtn').addEventListener('click',()=>{$('paste').value='Date,Recorded Weekday,Event,Location\n2026-09-26,Saturday,Examination Day 1,Venue A\n2026-09-27,Monday,Incorrect weekday example,Venue B\n2026-02-30,Monday,Invalid date example,Venue C\n2026-09-26..2026-09-27,Saturday-Sunday,Two-day schedule,Venue D';$('upload').value='';reportNote('Controlled illustrative dataset loaded. Choose Run batch audit.');});
-$('resetBtn').addEventListener('click',()=>{current=null;$('paste').value='';$('upload').value='';$('results').style.display='none';for(const id of ['downloadCsv','downloadFlagged','downloadXlsx'])$(id).disabled=true;reportNote('Ready.');});
-function csvCell(v){let s=String(v??''); if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
-function blobDownload(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);}
-function reportHeader(){return ['Source Row',...current.header,'Expanded Date','Recorded Weekday (normalized)','GCF Expected Weekday','Status','Residue mod 7','Signed Shift','Review Note'];}
-function reportLine(r){return [r.sourceRow,...r.original,r.date,r.recorded,r.expected,r.status,r.residue,r.shift,r.note];}
-function exportCSV(flagged=false){const values=flagged?current.results.filter(r=>r.status!=='MATCH'):current.results;const lines=[reportHeader(),...values.map(reportLine)];const text='\uFEFF'+lines.map(row=>row.map(csvCell).join(',')).join('\r\n');blobDownload(new Blob([text],{type:'text/csv;charset=utf-8'}),sourceName+(flagged?'_Flagged.csv':'_Validated.csv'));}
-$('downloadCsv').onclick=()=>exportCSV(false);$('downloadFlagged').onclick=()=>exportCSV(true);
-function colsToRef(i){let s='';for(i++;i;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s;}
-function sheetXML(rows){return '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.map((row,i)=>'<row r="'+(i+1)+'">'+row.map((v,j)=>{let str=String(v??'');if(/^[\s]*[=+@\-]/.test(str))str="'"+str;return '<c r="'+colsToRef(j)+(i+1)+'" t="inlineStr"><is><t xml:space="preserve">'+esc(str)+'</t></is></c>';}).join('')+'</row>').join('')+'</sheetData></worksheet>';}
-async function exportXlsx(){if(!current)return;if(current.results.length>100000){reportNote('For more than 100,000 expanded rows, use CSV to reduce XLSX memory usage.',true);return;}const zip=new JSZip();const pairs=[['Validated Records',[reportHeader(),...current.results.map(reportLine)]],['Flagged Records',[reportHeader(),...current.results.filter(r=>r.status!=='MATCH').map(reportLine)]],['Summary', [['Measure','Value'],['Input records',current.sourceRecords],['Expanded rows',current.expandedRecords],['Matches',current.counts.MATCH],['Mismatches',current.counts.MISMATCH],['Invalid',current.counts.INVALID],['Calendar','Proleptic Gregorian 1–9999'],['Engine','GCF-400 cached']]]];
- const ct='<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+pairs.map((p,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+'</Types>';
- zip.file('[Content_Types].xml',ct);zip.file('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');zip.file('xl/workbook.xml','<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+pairs.map((p,i)=>'<sheet name="'+p[0]+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>');zip.file('xl/_rels/workbook.xml.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+pairs.map((p,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'</Relationships>');pairs.forEach((p,i)=>zip.file('xl/worksheets/sheet'+(i+1)+'.xml',sheetXML(p[1])));reportNote('Preparing XLSX report…');const file=await zip.generateAsync({type:'blob',compression:'DEFLATE'});blobDownload(file,sourceName+'_Validated.xlsx');reportNote('XLSX report exported.');}
-$('downloadXlsx').onclick=()=>exportXlsx().catch(e=>reportNote('XLSX export failed: '+e.message,true));
-function showPreview(){if(!current)return;const filter=$('filter').value,limit=+$('limit').value;let rows=current.results;if(filter==='flagged')rows=rows.filter(r=>r.status!=='MATCH');if(filter==='mismatch')rows=rows.filter(r=>r.status==='MISMATCH');if(filter==='invalid')rows=rows.filter(r=>r.status==='INVALID');const shown=rows.slice(0,limit),tail=rows.length>shown.length?`<p class="hint">Preview limited to ${shown.length.toLocaleString()} of ${rows.length.toLocaleString()} selected rows. Exports include all records.</p>`:'';$('records').innerHTML=shown.length?'<div class="table-container"><table><thead><tr><th>Source row</th><th>Expanded date</th><th>Recorded weekday</th><th>GCF expected</th><th>Status</th><th>Shift</th><th>Explanation</th></tr></thead><tbody>'+shown.map(r=>'<tr class="'+(r.status==='MISMATCH'?'bad':r.status==='INVALID'?'review':'')+'"><td>'+r.sourceRow+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.recorded)+'</td><td>'+esc(r.expected)+'</td><td><span class="pill '+r.status.toLowerCase()+'">'+esc(r.status)+'</span></td><td>'+(r.status==='MISMATCH'?(r.shift>0?'+':'')+r.shift:'—')+'</td><td>'+esc(r.note)+'</td></tr>').join('')+'</tbody></table></div>'+tail:'<div class="empty">No rows in this category.</div>';}
-$('filter').onchange=showPreview;$('limit').onchange=showPreview;
-function showSummary(){const x=current;x&&($('results').style.display='block');const items=[['Original records',x.sourceRecords],['Checked date entries',x.expandedRecords],['Matches',x.counts.MATCH],['Mismatches',x.counts.MISMATCH],['Invalid',x.counts.INVALID],['Match rate (valid pairs)',x.agreement.toFixed(2)+'%']];$('stats').innerHTML=items.map(([k,v])=>'<div class="stat"><span>'+esc(k)+'</span><b>'+String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',')+'</b></div>').join('');const max=Math.max(1,...Object.values(x.shifts));$('offsets').innerHTML=Object.entries(x.shifts).map(([shift,count])=>'<div class="offset-row"><span>Shift '+shift+'</span><div class="bar"><div class="fill" style="width:'+(count/max*100)+'%"></div></div><b>'+count+'</b></div>').join('');for(const id of ['downloadCsv','downloadFlagged'])$(id).disabled=false;$('downloadXlsx').disabled=x.expandedRecords>100000;showPreview();}
-function xmlDoc(s){const d=new DOMParser().parseFromString(s,'application/xml');if(d.getElementsByTagName('parsererror').length)throw Error('Invalid XML in Excel file');return d;}
-function nodeText(n){return n?n.textContent||'':'';}
-async function readExcel(file){const zip=await JSZip.loadAsync(file);if(!zip.file('xl/workbook.xml')||!zip.file('xl/_rels/workbook.xml.rels'))throw Error('Missing Excel workbook metadata');const wb=xmlDoc(await zip.file('xl/workbook.xml').async('string'));const props=wb.getElementsByTagNameNS('*','workbookPr')[0];if(props&&['1','true'].includes(props.getAttribute('date1904')))throw Error('1904-based Excel dates are not supported; convert to ISO date text before uploading.');const sh=wb.getElementsByTagNameNS('*','sheet')[0];if(!sh)throw Error('Workbook has no worksheet');const id=sh.getAttribute('r:id')||sh.getAttribute('id');const rel=xmlDoc(await zip.file('xl/_rels/workbook.xml.rels').async('string'));const r=Array.from(rel.getElementsByTagNameNS('*','Relationship')).find(a=>a.getAttribute('Id')===id);if(!r)throw Error('Worksheet relationship missing');let target=r.getAttribute('Target');if(target.startsWith('/'))target=target.slice(1);else target='xl/'+target.replace(/^\.\//,'');const s=zip.file(target);if(!s)throw Error('Worksheet not found');const shared=zip.file('xl/sharedStrings.xml')?Array.from(xmlDoc(await zip.file('xl/sharedStrings.xml').async('string')).getElementsByTagNameNS('*','si')).map(n=>Array.from(n.getElementsByTagNameNS('*','t')).map(nodeText).join('')):[];
- const doc=xmlDoc(await s.async('string')),matrix=[];for(const row of doc.getElementsByTagNameNS('*','row')){const vals=[];for(const c of row.getElementsByTagNameNS('*','c')){const ref=(c.getAttribute('r')||'').match(/^[A-Z]+/i);if(!ref)continue;let col=0;for(const letter of ref[0].toUpperCase())col=col*26+letter.charCodeAt(0)-64;col--;const type=c.getAttribute('t');const v=c.getElementsByTagNameNS('*','v')[0];vals[col]=type==='inlineStr'?Array.from(c.getElementsByTagNameNS('*','t')).map(nodeText).join(''):type==='s'?shared[Number(nodeText(v))]||'':nodeText(v);}matrix.push(vals.map(v=>v??''));}return matrix;}
-async function runMatrix(matrix,name){const started=performance.now();const result=E.validateMatrix(matrix);current=result;sourceName=String(name||'GCF_Audit').replace(/\.[^.]+$/,'').replace(/[^\w-]/g,'_').slice(0,60)||'GCF_Audit';showSummary();reportNote(`${result.sourceRecords.toLocaleString()} source records → ${result.expandedRecords.toLocaleString()} checked date entries. ${result.counts.MISMATCH} mismatches, ${result.counts.INVALID} invalid. Batch processing: ${(performance.now()-started).toFixed(1)} ms (excludes parsing and downloads).`);}
-$('checkBtn').onclick=()=>{try{const t=$('paste').value;if(!t.trim())throw Error('Paste data or upload a file first');runMatrix(E.parseDelimited(t),'Pasted_Schedule');}catch(e){reportNote(e.message,true);}};
-$('upload').onchange=async(e)=>{const file=e.target.files[0];if(!file)return;try{reportNote('Reading '+file.name+'…');const matrix=file.name.toLowerCase().endsWith('.xlsx')?await readExcel(file):E.parseDelimited(await file.text());await runMatrix(matrix,file.name);}catch(err){reportNote('Could not process file: '+err.message,true);}};
-$('singleGo').onclick=()=>{const date=E.parseDate($('dateOne').value);if(!date){$('singleResult').innerHTML='<div class="notice error">Enter a valid Gregorian date in YYYY-MM-DD format, years 1–9999.</div>';return;}const a=E.gcf(date.y,date.m,date.d);$('singleResult').innerHTML='<h3 style="margin-top:22px">'+E.DAYS[a.W]+' <span class="hint">(weekday '+a.W+')</span></h3><div class="math-grid">'+[['C',a.C],['Y',a.Y],['M',a.M],['D',a.D]].map(([k,v])=>'<div class="math-box"><span>'+k+'</span><b>'+v+'</b></div>').join('')+'</div><div class="formula">W ≡ '+[a.C,a.Y,a.M,a.D].join(' + ')+' ≡ '+a.W+' (mod 7)</div><p class="hint">Year '+date.y+' · century '+a.century+' · year position '+a.small+' · '+(a.leap?'leap':'common')+' year. Batch mode uses an equivalent 400-year lookup table.</p>';};$('singleGo').click();
-$('monthCodes').innerHTML='<table><thead><tr><th>Month</th><th>Common</th><th>Leap</th></tr></thead><tbody>'+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((n,i)=>'<tr><td>'+n+'</td><td>'+E.COMMON[i]+'</td><td>'+E.LEAP[i]+'</td></tr>').join('')+'</tbody></table>';
-if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
-</script></body></html>
+:root{
+  --forest:#123524;
+  --forest-2:#1B4D37;
+  --forest-3:#285C43;
+  --sage:#8EAA97;
+  --sage-light:#DDE8E1;
+  --cream:#EEF2ED;
+  --paper:#FFFFFF;
+  --ink:#14231C;
+  --muted:#617067;
+  --line:#C9D5CD;
+  --good:#236946;
+  --good-bg:#E7F2EB;
+  --warn:#8A5B1E;
+  --warn-bg:#FFF0D8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#EAF0EA 0,#F5F7F3 42%,#F2F0E8 100%);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}
+.app{max-width:1060px;margin:0 auto;padding:18px 14px 42px}
+.header{background:linear-gradient(135deg,#0B2418 0%,#123524 55%,#1B4D37 100%);color:#fff;border-radius:22px;padding:22px 20px;box-shadow:0 12px 30px rgba(36,70,58,.18)}
+.header h1{margin:0;font-size:clamp(24px,5vw,38px);letter-spacing:-.5px}
+.header p{margin:8px 0 0;opacity:.9;line-height:1.45}
+.tabs{display:flex;gap:8px;overflow:auto;padding:12px 0 4px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--forest);padding:10px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;font-weight:700}
+.tab.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:14px}
+.card{background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 7px 18px rgba(22,33,43,.06)}
+.card h2,.card h3{margin:0 0 10px}.small{font-size:13px;color:var(--muted);line-height:1.45}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,select{width:100%;padding:13px 12px;border:1px solid #C7D4CC;border-radius:11px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:3px solid rgba(79,163,199,.22);border-color:var(--sage)}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{border:0;border-radius:11px;padding:13px 16px;font:inherit;font-weight:800;cursor:pointer}
+.btn-primary{background:var(--forest);color:#fff}.btn-secondary{background:#EAF0EA;color:var(--forest);border:1px solid var(--line)}
+.btn:active{transform:translateY(1px)}
+.result{border-radius:16px;padding:18px;background:var(--good-bg);border:1px solid #9CC7AD}
+.result.invalid{background:var(--warn-bg);border-color:#F0D19B}
+.weekday{font-size:clamp(30px,7vw,54px);font-weight:900;letter-spacing:-1px;margin:4px 0}
+.code{font-size:14px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.kpi b{display:block;font-size:20px;margin-top:2px}
+.steps{display:grid;gap:8px;margin-top:12px}
+.step{display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:10px}
+.stepnum{width:28px;height:28px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-weight:800}
+.formula{font-family:Cambria,Georgia,serif;font-size:20px;background:#F5F8F4;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;margin:10px 0}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:620px;background:#fff}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#EAF0EA;color:var(--forest)}
+tr:last-child td{border-bottom:0}
+.callout{border-left:4px solid var(--forest);padding:10px 12px;background:#F5F8F4;border-radius:8px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#EAF0EA;color:var(--forest)}
+.practice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.practice{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff;cursor:pointer}
+.practice:hover{border-color:var(--sage);box-shadow:0 4px 14px rgba(79,163,199,.13)}
+footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+@media (max-width:800px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.practice-grid{grid-template-columns:1fr}.app{padding:12px 10px 28px}}
+
+/* GCF learning redesign */
+.learning-lead{
+  font-size:15px; line-height:1.6; max-width:860px; color:var(--ink);
+}
+.process{
+  display:grid; gap:12px; margin-top:14px;
+}
+.process-card{
+  display:grid; grid-template-columns:44px 1fr; gap:14px; align-items:start;
+  border:1px solid var(--line); border-radius:15px; padding:14px 15px;
+  background:#fff;
+}
+.process-num{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--forest);color:#fff;font-weight:900;font-size:16px;
+}
+.process-card h3{margin:0 0 4px;font-size:15px}
+.process-card p{margin:0;color:var(--muted);line-height:1.52}
+.why-box{
+  margin-top:14px; border:1px solid var(--line); border-radius:15px;
+  background:linear-gradient(135deg,#F7FAF7,#ECF3EE); padding:15px;
+}
+.why-box h3{margin:0 0 6px;color:var(--forest)}
+.mini-flow{
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:10px;
+}
+.flow-pill{
+  background:#C9DACF; color:var(--forest); border:1px solid #C5D5C9;
+  padding:7px 10px;border-radius:999px;font-weight:800;font-size:13px;
+}
+.flow-arrow{color:var(--sage);font-weight:900}
+.subtle-title{
+  margin-top:20px!important; padding-top:3px; border-top:1px solid var(--line);
+}
+.formula.big{font-size:24px;background:#F1F6F2;border-color:#C9D8CE}
+@media (max-width:800px){
+  .process-card{grid-template-columns:36px 1fr}
+  .process-num{width:32px;height:32px;font-size:14px}
+}
+
+.header:before{
+  content:"";
+  display:block;
+  width:56px;height:5px;border-radius:5px;
+  background:#91B29D;
+  margin-bottom:14px;
+}
+.tab.active{
+  background:#0B2418 !important;
+  border-color:#0B2418 !important;
+  color:#fff !important;
+}
+.btn-primary{
+  background:#0B2418 !important;
+  color:#fff !important;
+}
+.badge{
+  background:#C9DACF;
+  color:#123524;
+}
+.result{
+  box-shadow:inset 0 0 0 1px rgba(18,53,36,.03);
+}
+
+/* ===== Interactive Mathematical Learning Layer ===== */
+.interactive-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:16px}
+.interactive-card{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px}
+.interactive-card h4{margin:0 0 8px}
+.interactive-card small{opacity:.72}
+.math-progress{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 18px}
+.math-progress span{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);font-size:.82rem;border:1px solid rgba(255,255,255,.08)}
+.math-progress span.active{background:rgba(93,142,111,.34);border-color:rgba(133,188,150,.55)}
+.math-progress span.done{background:rgba(93,142,111,.18)}
+.step-box{border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:18px;margin-top:14px}
+.step-box .prompt{font-size:1.08rem;line-height:1.5;margin-bottom:12px}
+.step-box input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.16);color:inherit;font:inherit}
+.step-box input:focus{outline:none;border-color:rgba(133,188,150,.8);box-shadow:0 0 0 3px rgba(93,142,111,.16)}
+.step-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.step-feedback{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);line-height:1.5}
+.step-feedback.good{border:1px solid rgba(102,190,129,.4)}
+.step-feedback.bad{border:1px solid rgba(211,108,108,.45)}
+.code-reveal{margin-top:12px;padding:12px;border-left:3px solid rgba(133,188,150,.7);background:rgba(255,255,255,.04);border-radius:8px}
+.why-btn{margin-left:8px;font-size:.8rem}
+.why-panel{display:none;margin-top:10px;padding:12px;border-radius:10px;background:rgba(255,255,255,.04);line-height:1.55}
+.why-panel.show{display:block}
+.stress-test-table{width:100%;border-collapse:collapse;margin-top:12px}
+.stress-test-table th,.stress-test-table td{padding:10px;border-bottom:1px solid rgba(255,255,255,.1);text-align:left}
+.stress-test-table th{opacity:.8;font-weight:600}
+.result-pill{display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(93,142,111,.22);border:1px solid rgba(133,188,150,.35)}
+@media (max-width:700px){.interactive-grid{grid-template-columns:1fr}}
+
+
+.offline-status{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.82rem}
+.offline-dot{width:8px;height:8px;border-radius:50%;background:#79b48b;display:inline-block}
+.offline-status.offline{background:rgba(183,120,89,.12);border-color:rgba(183,120,89,.3)}
+.offline-status.offline .offline-dot{background:#c68a6f}
+.builder-date{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.builder-date .date-chip{padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);font-weight:600}
+.builder-note{font-size:.88rem;opacity:.78;margin-top:4px}
+.step-box select#builderLeapAnswer{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.16);color:inherit;border:1px solid rgba(255,255,255,.16);font:inherit}
+
+
+.build-callout{margin-top:14px;padding:13px 15px;border-radius:14px;border:1px solid rgba(133,188,150,.28);background:rgba(93,142,111,.10);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.build-callout strong{display:block;margin-bottom:3px}
+.build-callout span{font-size:.86rem;opacity:.78}
+.builder-panel-wrap{display:none}
+.builder-panel-wrap.open{display:block}
+
+
+/* Consistent learning controls + unobtrusive diagnostics */
+.build-callout{grid-column:1/-1}
+.builder-panel-wrap{margin-top:15px}
+.builder-panel-wrap .interactive-card,.builder-panel-wrap .step-box{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.builder-panel-wrap .builder-date .date-chip{background:#f0f5f1;border-color:var(--line)}
+.builder-panel-wrap .step-box input,.builder-panel-wrap .step-box select#builderLeapAnswer{background:#fff;color:var(--ink);border-color:var(--line)}
+.builder-panel-wrap .why-panel,.builder-panel-wrap .step-feedback{background:#f3f7f4;border-color:var(--line)}
+.builder-panel-wrap .math-progress span{background:#edf3ee;border-color:var(--line);color:var(--ink)}
+.builder-panel-wrap .math-progress span.active{background:#d4e5d9;border-color:var(--sage)}
+.builder-panel-wrap .math-progress span.done{background:#e3f0e7;border-color:var(--sage)}
+.builder-panel-wrap .btn.primary{background:var(--forest);color:#fff}
+.builder-panel-wrap .btn.secondary{background:#eaf0ea;color:var(--forest);border:1px solid var(--line)}
+.builder-panel-wrap .result-pill{background:#e7efe9;color:var(--forest);border-color:var(--line)}
+.builder-panel-wrap .stress-test-table th,.builder-panel-wrap .stress-test-table td{border-bottom:1px solid var(--line)}
+.batch-details{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#f8faf8}
+.batch-details summary,.format-help summary{cursor:pointer;color:var(--forest)}
+.format-help{margin-top:6px}
+.format-help p{margin:7px 0 2px}
+.batch-tools .btn{padding:11px 13px}
+@media(max-width:640px){
+  .build-callout{padding:12px}.card{padding:15px}.process-card{padding:12px}
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible}
+  .tab{width:100%;text-align:center;white-space:normal;font-size:13px;padding:10px 8px}
+}
+/* ===== Batch Validator ===== */
+.batch-help{line-height:1.55;color:var(--muted);max-width:900px}
+.batch-tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.batch-drop{border:1.5px dashed #9BB7A4;border-radius:14px;padding:18px;background:#F5F8F4}
+.batch-drop input{display:block;margin-top:10px;max-width:100%}
+.batch-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.batch-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.batch-stat b{display:block;font-size:19px;margin-top:3px}
+.batch-stat.mismatch b{color:#B42318}
+.batch-stat.invalid b{color:#B54708}
+.batch-table-wrap{overflow:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px}
+.batch-table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}
+.batch-table th,.batch-table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.batch-table th{background:#EAF0EA;color:var(--forest)}
+.batch-table tr.batch-mismatch{background:#FDE8E7}
+.batch-table tr.batch-invalid{background:#FFF3E0}
+.batch-pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
+.batch-pill.match{background:#E4F2E7;color:#21613A}
+.batch-pill.mismatch{background:#F7D5D2;color:#A61B12}
+.batch-pill.invalid{background:#FFE6C2;color:#8A4B08}
+.batch-status-cell{font-weight:900;text-align:center;white-space:nowrap}
+.batch-status-cell.match{background:#E4F2E7!important;color:#21613A!important}
+.batch-status-cell.mismatch{background:#F7D5D2!important;color:#A61B12!important}
+.batch-status-cell.invalid{background:#FFE6C2!important;color:#8A4B08!important}
+.batch-expected-cell{font-weight:700}
+.batch-export-note{margin-top:12px;padding:12px;border-radius:12px;background:#F5F8F4;border:1px solid var(--line)}
+.batch-pill.invalid{background:#FBE3C0;color:#8A4B08}
+@media(max-width:900px){.batch-summary{grid-template-columns:repeat(2,1fr)}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <h1>Gregorian Congruence Formula</h1>
+    <p>Learn how the Gregorian Congruence Formula works, calculate weekdays, and check date–weekday records.</p>
+  
+<div id="offlineStatus" class="offline-status" role="status" aria-live="polite">
+  <span class="offline-dot"></span>
+  <span id="offlineText">Ready for offline use after the first visit.</span>
+</div>
+
+</header>
+
+  <nav class="tabs" aria-label="Main sections">
+    <button class="tab active" data-tab="calc">Calculator</button>
+    <button class="tab" data-tab="learn">Learn GCF</button>
+    <button class="tab" data-tab="practice">Practice</button>
+    <button class="tab" data-tab="batch">Batch Validator</button>
+  </nav>
+
+  <section id="calc" class="panel active">
+    <div class="grid">
+      <div class="card">
+        <h2>Enter a Date</h2>
+        <p class="small">Enter a positive Common Era year from 1–9999. The app checks whether the date is valid before calculating.</p>
+        <div class="row">
+          <div><label for="year">Year</label><input id="year" type="number" min="1" max="9999" value="1"></div>
+          <div><label for="month">Month</label><select id="month"></select></div>
+          <div><label for="day">Day</label><input id="day" type="number" min="1" max="31" value="1"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="calcBtn">Calculate</button>
+          <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+        <hr>
+        <div class="callout"><b>Learning mode:</b> the calculation below intentionally shows every GCF component instead of hiding the mathematics.</div>
+      </div>
+
+      <div class="card">
+        <div id="resultBox" class="result">
+          <span class="badge">GCF RESULT</span>
+          <div id="weekday" class="weekday">Friday</div>
+          <div id="resultText" class="code">GCF code: 5</div>
+          <div class="kpis">
+            <div class="kpi"><span class="small">Input status</span><b id="status">VALID</b></div>
+            <div class="kpi"><span class="small">Year type</span><b id="yearType">COMMON</b></div>
+          </div>
+        </div>
+      </div>
+    
+    <div class="build-callout">
+      <div>
+        <strong>Want to learn how the date was calculated?</strong>
+        <span>Build the GCF step by step using this exact date.</span>
+      </div>
+      <button type="button" class="btn btn-secondary" id="openBuilderBtn">Build the GCF →</button>
+    </div>
+</div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Step-by-Step GCF Calculation</h2>
+      <div id="steps" class="steps"></div>
+    </div>
+  </section>
+
+  <section id="learn" class="panel">
+    <div class="card">
+      <span class="badge">LEARNING MODE</span>
+      <h2 style="margin-top:8px">How GCF Works</h2>
+      <p class="learning-lead">
+        GCF turns a Gregorian date into four understandable contributions—century, year, month, and day—
+        and combines them in a seven-day cycle. The goal of this section is not only to give the answer,
+        but to show <b>why each number is used and how one step leads to the next</b>.
+      </p>
+
+      <div class="formula big">W ≡ C + Y + M + D (mod 7)</div>
+
+      <div class="process">
+        <div class="process-card">
+          <div class="process-num">1</div>
+          <div>
+            <h3>Start with a valid Gregorian date</h3>
+            <p>Enter the year, month, and day. First make sure the date actually exists and falls within the app's supported range of positive Common Era years 1–9999.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">2</div>
+          <div>
+            <h3>Split the year into century and year position</h3>
+            <p>For a year <i>N</i>, compute <b>c = ⌊N/100⌋</b> for the completed centuries and <b>y = N mod 100</b> for the years within the current century. This lets GCF handle long-term and within-century shifts separately.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">3</div>
+          <div>
+            <h3>Find the century code C</h3>
+            <p>Use <b>c mod 4</b> and the repeating GCF century pattern: 0 → 7, 1 → 5, 2 → 3, 3 → 1. The four-position repetition follows the Gregorian calendar's 400-year cycle.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">4</div>
+          <div>
+            <h3>Find the year code Y</h3>
+            <p>Use <b>Y ≡ y + ⌊y/4⌋ (mod 7)</b>. The <i>y</i> term represents one weekday shift for each completed year, while <b>⌊y/4⌋</b> counts the additional leap-year contributions within the year position.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">5</div>
+          <div>
+            <h3>Check the Gregorian leap-year rule</h3>
+            <p>A year is a leap year when it is divisible by 400, or divisible by 4 but not by 100. This matters because January and February use different month codes in a leap year.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">6</div>
+          <div>
+            <h3>Choose the month code M</h3>
+            <p>The common-year codes are generated from the January anchor and the lengths of the preceding months, reduced modulo 7. In leap years, January and February are each reduced by 1 because the extra February day has not yet occurred for those dates.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">7</div>
+          <div>
+            <h3>Use the day value D</h3>
+            <p>The day of the month is inserted directly. For example, the 24th day uses <b>D = 24</b>.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">8</div>
+          <div>
+            <h3>Combine the four components</h3>
+            <p>Add <b>C + Y + M + D</b>, then reduce the total modulo 7. The remainder is the GCF weekday code.</p>
+          </div>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">9</div>
+          <div>
+            <h3>Translate the code into the weekday</h3>
+            <p>GCF uses <b>0 = Sunday</b>, <b>1 = Monday</b>, through <b>6 = Saturday</b>. The app shows both the numerical code and the weekday name.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-box">
+        <h3>Think of GCF as a chain</h3>
+        <div class="mini-flow">
+          <span class="flow-pill">Date</span><span class="flow-arrow">→</span>
+          <span class="flow-pill">C</span><span class="flow-arrow">+</span>
+          <span class="flow-pill">Y</span><span class="flow-arrow">+</span>
+          <span class="flow-pill">M</span><span class="flow-arrow">+</span>
+          <span class="flow-pill">D</span><span class="flow-arrow">→</span>
+          <span class="flow-pill">mod 7</span><span class="flow-arrow">→</span>
+          <span class="flow-pill">Weekday</span>
+        </div>
+        <p class="small" style="margin-top:10px">
+          The formula is easier to understand when each component is treated as a weekday offset rather than as a random number.
+        </p>
+      </div>
+
+      <h3 class="subtle-title">Why the century code repeats</h3>
+      <p>
+        The Gregorian leap-year pattern repeats every 400 years. In each 400-year cycle there are 97 leap years,
+        giving 146,097 total days, which is exactly 20,871 weeks. Because the full number of weeks is an integer,
+        the weekday pattern returns to the same position after 400 years.
+      </p>
+
+      <h3>Why the year code uses a floor</h3>
+      <p>
+        A common year has 365 ≡ 1 (mod 7) days, while a leap year has 366 ≡ 2 (mod 7) days.
+        Therefore, each completed year contributes one shift and each completed leap year contributes one additional shift.
+        The floor symbol <b>⌊y/4⌋</b> counts only complete four-year groups. For example,
+        ⌊83/4⌋ = 20, not 20.75.
+      </p>
+
+      <h3>Why the month codes follow a pattern</h3>
+      <p>
+        The next month's code is obtained by adding the length of the current month and reducing modulo 7.
+        For example, January starts with code 6; since January has 31 days and 31 mod 7 = 3,
+        February's code is 6 + 3 ≡ 2 (mod 7). The same process continues through the year.
+      </p>
+
+      <h3>GCF Code Tables</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Month</th><th>Common Year</th><th>Leap Year</th><th>Month #</th></tr></thead>
+          <tbody id="monthTable"></tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead><tr><th>GCF Code</th><th>Weekday</th></tr></thead>
+          <tbody id="weekdayTable"></tbody>
+        </table>
+      </div>
+
+      <div class="why-box">
+        <h3>Quick memory guide</h3>
+        <p style="margin:0;line-height:1.55">
+          <b>C</b> = century contribution &nbsp;•&nbsp;
+          <b>Y</b> = completed-year contribution &nbsp;•&nbsp;
+          <b>M</b> = month offset &nbsp;•&nbsp;
+          <b>D</b> = day number &nbsp;•&nbsp;
+          <b>W</b> = final weekday code
+        </p>
+      </div>
+    </div>
+  </section>
+
+<section id="batch" class="panel">
+  <div class="card">
+    <span class="badge">PRELIMINARY CONSISTENCY CHECK</span>
+    <h2 style="margin-top:8px">Batch Date–Weekday Validator</h2>
+    <p class="batch-help">Upload or paste a list of dates and recorded weekdays. GCF flags mismatches and invalid entries while keeping your original record details for review.</p>
+    <div class="batch-drop">
+      <b>Upload a spreadsheet</b>
+      <div class="small">CSV, TSV, or Excel (.xlsx), with <code>Date</code> and <code>Recorded Weekday</code> columns.</div>
+      <details class="format-help"><summary>Input examples and supported date ranges</summary>
+        <p class="small">Keep additional columns such as Event or Location; they appear in the report. For a date range, use <code>2026-09-26..2026-09-27</code> and matching weekday labels <code>Sat-Sun</code> (up to 62 dates).</p>
+      </details>
+      <input id="batchFile" type="file" accept=".xlsx,.csv,.tsv,.txt">
+    </div>
+    <div style="margin-top:14px">
+      <label for="batchPaste"><b>Or paste spreadsheet data</b></label>
+      <textarea id="batchPaste" rows="7" style="width:100%;box-sizing:border-box;margin-top:7px;padding:11px;border:1px solid var(--line);border-radius:12px;font:inherit" placeholder="Date\tRecorded Weekday\n2026-01-01\tThursday\n2026-01-02\tFriday"></textarea>
+    </div>
+    <div class="batch-tools">
+      <button type="button" class="btn btn-primary" id="runBatchBtn">Validate Batch</button>
+      <button type="button" class="btn btn-secondary" id="clearBatchBtn">Clear</button>
+      <button type="button" class="btn btn-secondary" id="downloadBatchCsvBtn" disabled>Full CSV</button>
+      <button type="button" class="btn btn-primary" id="downloadBatchXlsBtn" disabled>Export Report (.xlsx)</button>
+      <button type="button" class="btn btn-secondary" id="downloadMismatchBtn" disabled>Flagged Records CSV</button>
+    </div>
+
+    <div id="batchSummary" style="display:none"></div>
+    <div id="batchResults" class="batch-table-wrap" style="display:none"></div>
+    <div id="batchNote" class="small" style="margin-top:10px" role="status" aria-live="polite"></div>
+    <details id="batchDiagnostics" class="batch-details" hidden><summary><b>View weekday-offset patterns</b></summary><div id="batchPatterns" class="small" style="margin-top:9px"></div></details>
+  </div>
+</section>
+
+<div id="builderPanel" class="builder-panel-wrap"><section id="build-gcf" class="section">
+  <div class="section-head">
+    <div>
+      <h2>Build the GCF</h2>
+      <p>Interactive mode for the date currently selected in the Calculator.</p>
+    </div>
+    <button type="button" class="btn btn-secondary" id="closeBuilderBtn" style="margin-bottom:12px">Close Build Mode</button>
+
+  </div>
+
+  <div class="interactive-grid">
+    <div class="interactive-card">
+      <h4>Build from your date</h4>
+      <div class="builder-note">Change the date in the Calculator first. The activity updates automatically.</div>
+      <div class="builder-date" id="builderDate"></div>
+    </div>
+    <div class="interactive-card">
+      <h4>Your goal</h4>
+      <div><span class="result-pill">C</span> + <span class="result-pill">Y</span> + <span class="result-pill">M</span> + <span class="result-pill">D</span></div>
+      <div class="builder-note">Eventually, you will construct W ≡ C + Y + M + D (mod 7).</div>
+    </div>
+  </div>
+
+  <div id="gcf-builder">
+    <div class="step-box">
+      <div class="math-progress" id="gcfProgress"></div>
+      <div class="prompt" id="gcfPrompt"></div>
+      <div id="gcfInputWrap"></div>
+      <div class="step-actions">
+        <button type="button" id="gcfCheckBtn" class="btn primary">Check answer</button>
+        <button type="button" id="gcfHintBtn" class="btn secondary">Why this step?</button>
+        <button type="button" id="gcfNextBtn" class="btn secondary" style="display:none">Next step</button>
+        <button type="button" id="gcfSyncBtn" class="btn secondary">Sync with Calculator</button>
+      </div>
+      <div id="gcfFeedback" class="step-feedback" style="display:none"></div>
+      <div id="gcfWhy" class="why-panel"></div>
+    </div>
+  </div>
+</section>
+
+
+<section id="stress-tests" class="section">
+  <div class="section-head">
+    <div>
+      <h2>Challenge the Formula</h2>
+      <p>These are not random dates. Each test targets a specific part of GCF.</p>
+    </div>
+  </div>
+  <table class="stress-test-table">
+    <thead><tr><th>Condition</th><th>Example</th><th>What it tests</th><th>Result</th></tr></thead>
+    <tbody id="stressRows"></tbody>
+  </table>
+</section></div>
+<section id="practice" class="panel">
+    <div class="card">
+      <h2>Practice with Worked Dates</h2>
+      <p class="small">Choose a case to load it into the calculator. Each case demonstrates a different part of the GCF procedure.</p>
+      <div class="practice-grid">
+        <div class="practice" data-y="1983" data-m="5" data-d="1"><b>May 1, 1983</b><br><span class="small">Common-year example</span></div>
+        <div class="practice" data-y="2008" data-m="2" data-d="1"><b>February 1, 2008</b><br><span class="small">Leap-year example</span></div>
+        <div class="practice" data-y="2000" data-m="2" data-d="29"><b>February 29, 2000</b><br><span class="small">400-year exception</span></div>
+      </div>
+      <hr>
+      <h3>What to look for</h3>
+      <div class="steps">
+        <div class="step"><div class="stepnum">A</div><div>Does the year split into the correct century and year position?</div></div>
+        <div class="step"><div class="stepnum">B</div><div>Does the leap-year rule choose the correct January/February code?</div></div>
+        <div class="step"><div class="stepnum">C</div><div>Does the final modulo-7 code map to the expected weekday?</div></div>
+        <div class="step"><div class="stepnum">D</div><div>Can you explain how C, Y, M and D create the final code?</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>GCF Weekday Calculator • Offline-capable mathematics learning app • Code-based Gregorian weekday model</footer>
+</div>
+
+<script src="./jszip.min.js"></script>
+<script src="./gcf-engine.js"></script>
+<script>
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const COMMON=[6,2,2,5,0,3,5,1,4,6,2,4];
+const LEAP=[5,1,2,5,0,3,5,1,4,6,2,4];
+const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31];
+const WEEKDAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function floorDiv(a,b){ return Math.floor(a/b); }
+function isLeap(y){ return (y%400===0) || (y%4===0 && y%100!==0); }
+function validDate(y,m,d){
+  if(!Number.isInteger(y)||y<1||y>9999) return false;
+  if(!Number.isInteger(m)||m<1||m>12) return false;
+  if(!Number.isInteger(d)||d<1||d>DAYS[m-1]+((m===2 && isLeap(y))?1:0)) return false;
+  return true;
+}
+function centuryCode(c){
+  return [7,5,3,1][((c%4)+4)%4];
+}
+function calcGCF(y,m,d){
+  const c=floorDiv(y,100), yy=y%100;
+  const C=centuryCode(c);
+  const q=floorDiv(yy,4);
+  const Y=(yy+q)%7;
+  const leap=isLeap(y);
+  const M=(leap?LEAP:COMMON)[m-1];
+  const W=(C+Y+M+d)%7;
+  return {c,yy,C,q,Y,leap,M,W,weekday:WEEKDAYS[W]};
+}
+// The visible calculator uses the original C+Y+M+D formulation only.
+// Independent algorithm comparisons are documented in the research paper.
+
+const els={
+  year:document.getElementById("year"),
+  month:document.getElementById("month"),
+  day:document.getElementById("day"),
+  calcBtn:document.getElementById("calcBtn"),
+  resetBtn:document.getElementById("resetBtn"),
+  weekday:document.getElementById("weekday"),
+  resultText:document.getElementById("resultText"),
+  status:document.getElementById("status"),
+  yearType:document.getElementById("yearType"),
+  resultBox:document.getElementById("resultBox"),
+  steps:document.getElementById("steps")
+};
+MONTHS.forEach((m,i)=>{const o=document.createElement("option");o.value=i+1;o.textContent=m;els.month.appendChild(o);});
+els.month.value=1;
+
+function step(n,title,body){
+  return `<div class="step"><div class="stepnum">${n}</div><div><b>${title}</b><br>${body}</div></div>`;
+}
+function calculate(){
+  const y=Number(els.year.value), m=Number(els.month.value), d=Number(els.day.value);
+  if(!validDate(y,m,d)){
+    els.resultBox.classList.add("invalid");
+    els.weekday.textContent="Invalid date";
+    els.resultText.textContent="Enter a valid Gregorian date (CE year 1–9999).";
+    els.status.textContent="INVALID";
+    els.yearType.textContent="—";
+    els.steps.innerHTML=step("!","Date validation","The date must use a positive CE year from 1–9999 and a valid month/day combination.");
+    return;
+  }
+  els.resultBox.classList.remove("invalid");
+  const g=calcGCF(y,m,d);
+  els.weekday.textContent=g.weekday;
+  els.resultText.textContent=`GCF code: ${g.W}`;
+  els.status.textContent="VALID";
+  els.yearType.textContent=g.leap?"LEAP":"COMMON";
+  const yd = `${g.yy} + ${g.q} = ${g.yy+g.q} ≡ ${g.Y} (mod 7)`;
+  const monthText = `${MONTHS[m-1]} code = ${g.M}${g.leap && (m===1||m===2) ? " (leap-year adjustment)" : ""}`;
+  const finalSum=g.C+g.Y+g.M+d;
+  els.steps.innerHTML=[
+    step(1,"Validate the date",`${MONTHS[m-1]} ${d}, ${y} is a valid Gregorian date.`),
+    step(2,"Split the year",`N = ${y}; c = ⌊${y}/100⌋ = <b>${g.c}</b>; y = ${y} mod 100 = <b>${g.yy}</b>.`),
+    step(3,"Find the century code",`${g.c} mod 4 = <b>${g.c%4}</b>, so C = <b>${g.C}</b>.`),
+    step(4,"Find the year code",`⌊${g.yy}/4⌋ = ${g.q}; ${yd}.`),
+    step(5,"Check the leap-year rule",`${y} is ${g.leap?"a":"not a"} leap year.`),
+    step(6,"Choose the month code",`${monthText}.`),
+    step(7,"Use the day",`D = <b>${d}</b>.`),
+    step(8,"Combine the GCF components",`W ≡ ${g.C} + ${g.Y} + ${g.M} + ${d} = ${finalSum} ≡ <b>${g.W}</b> (mod 7) → <b>${g.weekday}</b>.`)
+  ].join("");
+}
+
+
+els.calcBtn.addEventListener("click",()=>{calculate();window.dispatchEvent(new Event("gcf-date-updated"));});
+els.resetBtn.addEventListener("click",()=>{els.year.value=1;els.month.value=1;els.day.value=1;calculate();window.dispatchEvent(new Event("gcf-date-updated"));});
+// Date fields do not auto-calculate. The Calculate button controls when the result updates.
+
+document.querySelectorAll(".tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+document.querySelectorAll(".practice").forEach(card=>{
+  card.addEventListener("click",()=>{
+    els.year.value=card.dataset.y; els.month.value=card.dataset.m; els.day.value=card.dataset.d;
+    document.querySelector('[data-tab="calc"]').click(); calculate();
+  });
+});
+
+document.getElementById("monthTable").innerHTML=MONTHS.map((m,i)=>`<tr><td>${m}</td><td>${COMMON[i]}</td><td>${LEAP[i]}</td><td>${i+1}</td></tr>`).join("");
+document.getElementById("weekdayTable").innerHTML=WEEKDAYS.map((w,i)=>`<tr><td>${i}</td><td>${w}</td></tr>`).join("");
+
+calculate();
+</script>
+
+
+<script>
+(function(){
+  const COMMON_MONTH_CODES = [6,2,2,5,0,3,5,1,4,6,2,4];
+  const LEAP_MONTH_CODES   = [5,1,2,5,0,3,5,1,4,6,2,4];
+  const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  function isLeapYear(y){
+    return (y % 400 === 0) || (y % 4 === 0 && y % 100 !== 0);
+  }
+  function floorDiv(a,b){ return Math.floor(a/b); }
+  function getCenturyCode(c){
+    return [7,5,3,1][((c % 4)+4)%4];
+  }
+  function getYearCode(y){
+    return (y + floorDiv(y,4)) % 7;
+  }
+  function getMonthCode(y,m){
+    return (isLeapYear(y) ? LEAP_MONTH_CODES : COMMON_MONTH_CODES)[m-1];
+  }
+
+  let builder = {year:1, month:1, day:1, step:0, passed:false};
+  const steps = ["c","y","leap","C","Y","M","D","W"];
+
+  function readCalculatorDate(){
+    const yEl=document.getElementById("year");
+    const mEl=document.getElementById("month");
+    const dEl=document.getElementById("day");
+    const y=Math.max(1, Math.min(9999, Number(yEl.value)||1));
+    const m=Math.max(1, Math.min(12, Number(mEl.value)||1));
+    const maxd = m===2 ? (isLeapYear(y)?29:28) : ([4,6,9,11].includes(m)?30:31);
+    const d=Math.max(1, Math.min(maxd, Number(dEl.value)||1));
+    return {year:y, month:m, day:d};
+  }
+
+  function syncBuilder(resetStep=true){
+    const date=readCalculatorDate();
+    const changed=date.year!==builder.year || date.month!==builder.month || date.day!==builder.day;
+    builder.year=date.year; builder.month=date.month; builder.day=date.day;
+    if(resetStep || changed){ builder.step=0; builder.passed=false; }
+    renderBuilder();
+  }
+
+  function calcData(){
+    const y=builder.year, m=builder.month, d=builder.day;
+    const c=floorDiv(y,100), yy=y%100;
+    const C=getCenturyCode(c);
+    const Y=getYearCode(yy);
+    const leap=isLeapYear(y);
+    const M=getMonthCode(y,m);
+    const W=(C+Y+M+d)%7;
+    return {year:y,month:m,day:d,c,y:yy,C,Y,leap,M,D:d,W,weekday:WEEKDAYS[W]};
+  }
+
+  function stepLabel(s){
+    return {
+      c:"Century index c",
+      y:"Year position y",
+      leap:"Leap-year check",
+      C:"Century code C",
+      Y:"Year code Y",
+      M:"Month code M",
+      D:"Day contribution D",
+      W:"Final weekday code W"
+    }[s];
+  }
+
+  function expectedFor(step,data){
+    switch(step){
+      case "c": return String(data.c);
+      case "y": return String(data.y);
+      case "leap": return data.leap ? "yes" : "no";
+      case "C": return String(data.C);
+      case "Y": return String(data.Y);
+      case "M": return String(data.M);
+      case "D": return String(data.D);
+      case "W": return String(data.W);
+    }
+  }
+
+  function questionFor(step,data){
+    switch(step){
+      case "c": return `For <b>N = ${data.year}</b>, what is <b>c = ⌊N/100⌋</b>?`;
+      case "y": return `For <b>N = ${data.year}</b>, what is <b>y = N mod 100</b>?`;
+      case "leap": return `Is <b>${data.year}</b> a Gregorian leap year?`;
+      case "C": return `Using c = ${data.c}, what is the century code <b>C</b>?`;
+      case "Y": return `Using y = ${data.y}, what is <b>Y ≡ y + ⌊y/4⌋ (mod 7)</b>?`;
+      case "M": return `For <b>${data.year}-${String(data.month).padStart(2,'0')}</b>, what is the month code <b>M</b>?`;
+      case "D": return `The selected date is <b>${data.weekday}, ${data.month}/${data.day}/${data.year}</b>. What is the day contribution <b>D</b>?`;
+      case "W": return `What is <b>W ≡ C + Y + M + D (mod 7)</b>?`;
+    }
+  }
+
+  // The builder uses the same GCF result already calculated for the selected date.
+  // No independent calendar calculation is used to supply the weekday label.
+
+  function whyText(step,data){
+    const map={
+      c:`c separates the completed centuries from the rest of the year. For ${data.year}, c = ⌊${data.year}/100⌋ = ${data.c}.`,
+      y:`y is the year position within the current century: ${data.year} mod 100 = ${data.y}.`,
+      leap:`The Gregorian rule is divisible by 4, except century years not divisible by 400. So ${data.year} is ${data.leap?"a":"not a"} leap year.`,
+      C:`Use c mod 4. Here, ${data.c} mod 4 = ${data.c%4}, which selects C = ${data.C}.`,
+      Y:`Y ≡ y + ⌊y/4⌋ (mod 7). Here, Y ≡ ${data.y} + ⌊${data.y}/4⌋ ≡ ${data.Y} (mod 7).`,
+      M:`M is selected from the common-year or leap-year month-code table. The choice depends on ${data.year}'s leap-year status.`,
+      D:`D is simply the day number from the user's selected date. It is inserted directly into the final GCF sum.`,
+      W:`Add the four contributions and reduce modulo 7: W ≡ ${data.C} + ${data.Y} + ${data.M} + ${data.D} ≡ ${data.W} (mod 7).`
+    };
+    return map[step];
+  }
+
+  function renderProgress(){
+    const el=document.getElementById("gcfProgress");
+    el.innerHTML=steps.map((s,i)=>`<span class="${i<builder.step?'done ':''}${i===builder.step?'active':''}">${i+1}. ${stepLabel(s)}</span>`).join("");
+  }
+
+  function renderBuilder(){
+    const data=calcData();
+    const s=steps[builder.step];
+    document.getElementById("builderDate").innerHTML=
+      `<span class="date-chip">${String(data.month).padStart(2,"0")}/${String(data.day).padStart(2,"0")}/${data.year}</span>
+       <span class="builder-note">${data.leap?"Leap year":"Common year"}</span>`;
+    renderProgress();
+    document.getElementById("gcfPrompt").innerHTML=questionFor(s,data);
+    const wrap=document.getElementById("gcfInputWrap");
+    if(s==="leap"){
+      wrap.innerHTML=`<select id="builderLeapAnswer" aria-label="Leap year answer">
+        <option value="">Choose…</option><option value="yes">Yes</option><option value="no">No</option>
+      </select>`;
+    } else {
+      wrap.innerHTML=`<input id="gcfAnswer" type="number" step="1" min="-999999" inputmode="numeric" aria-label="Your answer" autocomplete="off" />`;
+    }
+    document.getElementById("gcfFeedback").style.display="none";
+    document.getElementById("gcfNextBtn").style.display="none";
+    document.getElementById("gcfWhy").classList.remove("show");
+    document.getElementById("gcfWhy").innerHTML=whyText(s,data);
+    if (builderHasOpened) {
+      const input=document.getElementById(s==="leap"?"builderLeapAnswer":"gcfAnswer");
+      if (input) input.focus();
+    }
+  }
+
+  function currentAnswerValue(){
+    const s=steps[builder.step];
+    const input=document.getElementById(s==="leap"?"builderLeapAnswer":"gcfAnswer");
+    return input ? String(input.value).trim().toLowerCase() : "";
+  }
+
+  function checkAnswer(){
+    const data=calcData();
+    const s=steps[builder.step];
+    const val=currentAnswerValue();
+    const expected=expectedFor(s,data);
+    const ok=val===String(expected).toLowerCase();
+    const fb=document.getElementById("gcfFeedback");
+    fb.style.display="block";
+    fb.className="step-feedback "+(ok?"good":"bad");
+    if(ok){
+      builder.passed=true;
+      fb.innerHTML=`<b>Correct.</b> ${stepLabel(s)} = <b>${expected}</b>.`;
+      document.getElementById("gcfNextBtn").style.display=builder.step<steps.length-1?"inline-block":"none";
+      if(builder.step===steps.length-1){
+        fb.innerHTML+=`<div class="code-reveal">You constructed <b>W = ${data.W}</b> → <b>${data.weekday}</b>.</div>`;
+      }
+    }else{
+      builder.passed=false;
+      fb.innerHTML=`<b>Not quite.</b> Recheck the selected date and this step. Use <b>Why this step?</b> for the mathematical reason.`;
+    }
+  }
+
+  document.getElementById("gcfCheckBtn").addEventListener("click",checkAnswer);
+  document.getElementById("gcfNextBtn").addEventListener("click",()=>{
+    if(builder.passed && builder.step<steps.length-1){builder.step++;renderBuilder();}
+  });
+  document.getElementById("gcfHintBtn").addEventListener("click",()=>{
+    document.getElementById("gcfWhy").classList.toggle("show");
+  });
+  document.getElementById("gcfSyncBtn").addEventListener("click",()=>syncBuilder(true));
+
+  document.getElementById("gcf-builder").addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();checkAnswer();}
+  });
+
+  // Calculator changes may update the builder only if Build mode is already open.
+  // The event is handled above; the builder never opens or scrolls automatically.
+  // (No direct builder sync listener is attached here.)
+
+  const stressTests=[
+    {condition:"Ordinary year",example:"1983-05-01",y:1983,m:5,d:1,what:"Basic GCF flow"},
+    {condition:"Leap year",example:"2008-02-01",y:2008,m:2,d:1,what:"Leap-year handling"},
+    {condition:"Leap day",example:"2000-02-29",y:2000,m:2,d:29,what:"February 29 handling"},
+    {condition:"Non-leap century",example:"1900-02-28",y:1900,m:2,d:28,what:"Century exception"},
+    {condition:"Leap century",example:"2000-02-29",y:2000,m:2,d:29,what:"Divisible-by-400 exception"},
+    {condition:"Century transition",example:"1999-12-31",y:1999,m:12,d:31,what:"c/y boundary behavior"},
+    {condition:"400-year cycle",example:"2000-01-01 vs 2400-01-01",y:2000,m:1,d:1,what:"Periodic structure"}
+  ];
+
+  function appWeek(y,m,d){
+    const c=Math.floor(y/100),yy=y%100,C=getCenturyCode(c),Y=getYearCode(yy),M=getMonthCode(y,m);
+    return (C+Y+M+d)%7;
+  }
+  function renderStress(){
+    const rows=document.getElementById("stressRows");
+    rows.innerHTML=stressTests.map(t=>{
+      if(t.condition==="400-year cycle"){
+        const a=appWeek(2000,1,1),b=appWeek(2400,1,1);
+        return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${a===b?"Pass":"Review"}</td></tr>`;
+      }
+      const got=appWeek(t.y,t.m,t.d),ground=GCFEngine.ordinal(t.y,t.m,t.d);
+      return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${got===ground?"Pass":"Review"}</td></tr>`;
+    }).join("");
+  }
+
+  /* ===== Batch Validator Engine ===== */
+  const batchState = { rows: [], filename: "", summary: null, matrix: null, header: null, dateIdx: -1, dayIdx: -1 };
+
+  function xmlEsc(v){
+    return String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+  }
+  function colName(n){
+    let s=""; n++;
+    while(n){ const r=(n-1)%26; s=String.fromCharCode(65+r)+s; n=Math.floor((n-1)/26); }
+    return s;
+  }
+  function parseDateParts(value){
+    const raw=String(value??"").trim();
+    if(!raw) return null;
+    let y,mo,d;
+    // Prefer unambiguous ISO: YYYY-MM-DD, even when the year has fewer than four digits.
+    let mt=raw.match(/^(\d{1,4})-(\d{1,2})-(\d{1,2})$/);
+    if(mt){y=+mt[1];mo=+mt[2];d=+mt[3];}
+    else{
+      // Unambiguous US spreadsheet form: M/D/YYYY; year must have 4 digits.
+      mt=raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if(mt){mo=+mt[1];d=+mt[2];y=+mt[3];}
+      else{
+        // Excel 1900-date-system serial; exclude its fictitious 1900-02-29.
+        if(!/^\d+(?:\.\d+)?$/.test(raw))return null;
+        const serial=Number(raw),whole=Math.floor(serial);
+        if(!Number.isFinite(serial)||whole<1||whole===60||whole>2958465)return null;
+        const offset=whole>60?whole-1:whole;
+        const dt=new Date(Date.UTC(1899,11,31)+offset*86400000);
+        y=dt.getUTCFullYear();mo=dt.getUTCMonth()+1;d=dt.getUTCDate();
+      }
+    }
+    if(!validDate(y,mo,d))return null;
+    return {y,mo,d,display:`${String(y).padStart(4,"0")}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`};
+  }
+  function normalizeWeekday(v){
+    const x=String(v ?? "").trim().toLowerCase();
+    const map={sun:"Sunday",sunday:"Sunday",mon:"Monday",monday:"Monday",tue:"Tuesday",tues:"Tuesday",tuesday:"Tuesday",wed:"Wednesday",wednesday:"Wednesday",thu:"Thursday",thur:"Thursday",thurs:"Thursday",thursday:"Thursday",fri:"Friday",friday:"Friday",sat:"Saturday",saturday:"Saturday"};
+    return map[x] || null;
+  }
+  function splitLine(line, delim){
+    const out=[]; let cur="", q=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){
+        if(q && line[i+1]==='"'){cur+='"';i++;}
+        else q=!q;
+      }else if(ch===delim && !q){ out.push(cur.trim()); cur=""; }
+      else cur+=ch;
+    }
+    out.push(cur.trim());
+    return out;
+  }
+  function parseDelimited(text){
+    const src=String(text).replace(/^\uFEFF/,"");
+    const first=src.split(/\r?\n/,1)[0]||"";
+    const delim=first.includes("\t")?"\t":",";
+    const rows=[],row=[];
+    let cell="",quoted=false;
+    for(let i=0;i<src.length;i++){
+      const ch=src[i];
+      if(ch==='"'){
+        if(quoted&&src[i+1]==='"'){cell+='"';i++;}
+        else quoted=!quoted;
+      }else if(ch===delim&&!quoted){row.push(cell);cell="";}
+      else if((ch==='\n'||ch==='\r')&&!quoted){
+        if(ch==='\r'&&src[i+1]==='\n')i++;
+        row.push(cell); cell="";
+        if(row.some(v=>v.trim()!=="")) rows.push(row.slice());
+        row.length=0;
+      }else cell+=ch;
+    }
+    if(quoted)throw new Error("Unclosed quoted field in CSV/TSV.");
+    row.push(cell);
+    if(row.some(v=>v.trim()!==""))rows.push(row);
+    if(!rows.length)throw new Error("The file is empty.");
+    return rows;
+  }
+  function textOf(el){ return el ? (el.textContent || "") : ""; }
+  function parseSharedStrings(doc){
+    return Array.from(doc.getElementsByTagNameNS("*","si")).map(si=>Array.from(si.getElementsByTagNameNS("*","t")).map(textOf).join(""));
+  }
+  function cellValue(cell, shared){
+    const t=cell.getAttribute("t");
+    if(t==="inlineStr") return Array.from(cell.getElementsByTagNameNS("*","t")).map(textOf).join("");
+    const v=cell.getElementsByTagNameNS("*","v")[0];
+    const raw=v ? textOf(v) : "";
+    if(t==="s") return shared[Number(raw)] ?? "";
+    if(t==="b") return raw==="1" ? "TRUE" : "FALSE";
+    return raw;
+  }
+  async function parseXlsx(file){
+    if(typeof JSZip==="undefined") throw new Error("The offline Excel parser is not available. Make sure jszip.min.js is uploaded with index.html.");
+    const zip=await JSZip.loadAsync(file);
+    const wbXml=await zip.file("xl/workbook.xml").async("string");
+    const relsXml=await zip.file("xl/_rels/workbook.xml.rels").async("string");
+    const parser=new DOMParser();
+    const wbDoc=parser.parseFromString(wbXml,"application/xml");
+    const relDoc=parser.parseFromString(relsXml,"application/xml");
+    const firstSheet=wbDoc.getElementsByTagNameNS("*","sheet")[0];
+    if(!firstSheet) throw new Error("No worksheet was found in the Excel file.");
+    const rid=firstSheet.getAttribute("r:id") || firstSheet.getAttribute("id");
+    const rel=Array.from(relDoc.getElementsByTagNameNS("*","Relationship")).find(x=>x.getAttribute("Id")===rid);
+    if(!rel) throw new Error("Could not locate the first worksheet.");
+    let target=rel.getAttribute("Target");
+    if(target.startsWith("/")) target=target.slice(1);
+    if(!target.startsWith("xl/")) target="xl/"+target.replace(/^\.?\//,"");
+    const sheetFile=zip.file(target);
+    if(!sheetFile) throw new Error("The worksheet data could not be read.");
+    const sharedFile=zip.file("xl/sharedStrings.xml");
+    const shared=sharedFile ? parseSharedStrings(parser.parseFromString(await sharedFile.async("string"),"application/xml")) : [];
+    const sheetDoc=parser.parseFromString(await sheetFile.async("string"),"application/xml");
+    const rows=Array.from(sheetDoc.getElementsByTagNameNS("*","row"));
+    const maxCol={};
+    const matrix=[];
+    for(const row of rows){
+      const arr=[];
+      for(const cell of Array.from(row.getElementsByTagNameNS("*","c"))){
+        const ref=cell.getAttribute("r") || "";
+        const cm=ref.match(/[A-Z]+/i);
+        if(!cm) continue;
+        let idx=0; for(const ch of cm[0].toUpperCase()) idx=idx*26 + ch.charCodeAt(0)-64; idx--;
+        arr[idx]=cellValue(cell,shared);
+      }
+      matrix.push(arr.map(x=>x==null?"":x));
+    }
+    if(!matrix.length) throw new Error("The Excel worksheet is empty.");
+    return matrix;
+  }
+  async function parseBatchFile(file){
+    const name=file.name.toLowerCase();
+    if(name.endsWith(".xlsx")) return await parseXlsx(file);
+    if(name.endsWith(".csv") || name.endsWith(".tsv") || name.endsWith(".txt")) return parseDelimited(await file.text());
+    throw new Error("Unsupported file type. Use .xlsx, .csv, .tsv, or .txt.");
+  }
+  function rowsToBatch(matrix){
+    if(!matrix.length) throw new Error("No rows were found.");
+    const header=matrix[0].map(x=>String(x??"").trim().toLowerCase());
+    const expandedDateIdx=header.indexOf("expanded date"), expandedDayIdx=header.indexOf("expanded recorded weekday");
+    // Allow exported GCF reports to be imported again without expanding date ranges twice.
+    const dateIdx=(expandedDateIdx>=0&&expandedDayIdx>=0)?expandedDateIdx:header.findIndex(x=>x==="date"||x.includes("date"));
+    const dayIdx=(expandedDateIdx>=0&&expandedDayIdx>=0)?expandedDayIdx:header.findIndex(x=>x==="recorded weekday"||x.includes("recorded weekday")||x==="day"||x.includes("weekday"));
+    if(dateIdx<0 || dayIdx<0) throw new Error("Required columns not found. Your spreadsheet must contain Date and Recorded Weekday columns.");
+    batchState.matrix=matrix.map(row=>(row||[]).map(v=>String(v??"")));
+    batchState.header=matrix[0].map(x=>String(x??""));
+    batchState.dateIdx=dateIdx;
+    batchState.dayIdx=dayIdx;
+    const out=[];
+    for(let i=1;i<matrix.length;i++){
+      const row=matrix[i]||[];
+      if(row.every(v=>String(v??"").trim()==="")) continue;
+      out.push({record:i+1,rowIndex:i,dateRaw:String(row[dateIdx]??""),recordedRaw:String(row[dayIdx]??""),original:row.slice()});
+    }
+    if(!out.length) throw new Error("No data rows were found below the header.");
+    return out;
+  }
+  function validateBatchRows(rows){
+    let matches=0,mismatches=0,invalid=0,missing=0;
+    const start=performance.now();
+    const result=[];
+    const shifts={"-3":0,"-2":0,"-1":0,"+1":0,"+2":0,"+3":0};
+    for(const r of rows){
+      if(!r.recordedRaw.trim()) missing++;
+      const expanded=GCFEngine.validateRecord(r.original,r.record,batchState.dateIdx,batchState.dayIdx);
+      for(const entry of expanded){
+        if(entry.status==="MATCH") matches++;
+        else if(entry.status==="MISMATCH"){
+          mismatches++;
+          shifts[(entry.shift>0?"+":"")+entry.shift]++;
+        }else invalid++;
+        result.push({ ...r, date:entry.date, recorded:entry.recorded,
+          gcf:entry.expected, status:entry.status, reason:entry.note||"",
+          shift:entry.shift, residue:entry.residue });
+      }
+    }
+    const valid=matches+mismatches;
+    const agreement=valid?matches/valid*100:0;
+    return {result,matches,mismatches,invalid,missing,total:result.length,
+      sourceRecords:rows.length,agreement,shifts,
+      calculationMs:Math.max(0,performance.now()-start),engine:"GCF-400 cached"};
+  }
+  function renderBatchResults(data){
+    const sum=document.getElementById("batchSummary");
+    sum.style.display="block";
+    sum.innerHTML=`<div class="batch-summary">
+      <div class="batch-stat"><span>Checked dates</span><b>${data.total.toLocaleString()}</b></div>
+      <div class="batch-stat"><span>Matches</span><b>${data.matches.toLocaleString()}</b></div>
+      <div class="batch-stat mismatch"><span>Mismatches</span><b>${data.mismatches.toLocaleString()}</b></div>
+      <div class="batch-stat invalid"><span>Invalid / unrecognized</span><b>${data.invalid.toLocaleString()}</b></div>
+      <div class="batch-stat"><span>Valid-pair agreement</span><b>${data.agreement.toFixed(3)}%</b></div>
+    </div>`;
+    const wrap=document.getElementById("batchResults");
+    wrap.style.display="block";
+    const flagged=data.result.filter(r=>r.status!=="MATCH");
+    const preview=flagged.slice(0,1500).concat(data.result.filter(r=>r.status==="MATCH").slice(0,Math.max(0,2000-Math.min(1500,flagged.length))));
+    const rows=preview.map(r=>{
+      const cls=r.status==="MISMATCH"?"batch-mismatch":r.status==="INVALID"?"batch-invalid":"";
+      const pill=r.status==="MATCH"?"match":r.status==="MISMATCH"?"mismatch":"invalid";
+      return `<tr class="${cls}"><td>${r.record}</td><td>${xmlEsc(r.date)}</td><td>${xmlEsc(r.recorded)}</td><td class="batch-expected-cell">${xmlEsc(r.gcf)}</td><td class="batch-status-cell ${pill}"><span class="batch-pill ${pill}">${r.status}</span></td><td>${r.status==="MISMATCH"?xmlEsc((r.shift>0?"+":"")+r.shift):"—"}</td></tr>`;
+    }).join("");
+    const note=data.result.length>preview.length ? `<p class="small" style="padding:10px">Preview prioritizes flagged rows and is limited to ${preview.length.toLocaleString()} entries. Downloads contain all ${data.result.length.toLocaleString()} records in original order.</p>` : "";
+    wrap.innerHTML=`<table class="batch-table"><thead><tr><th>Row</th><th>Date</th><th>Recorded Weekday</th><th>GCF Expected Day</th><th>Status</th><th>Weekday offset</th></tr></thead><tbody>${rows}</tbody></table>${note}`;
+    document.getElementById("batchNote").textContent = `${data.sourceRecords.toLocaleString()} source records → ${data.total.toLocaleString()} checked dates. Used ${data.engine}; classification: ${data.calculationMs.toFixed(2)} ms (excludes import and export). Nonzero weekday offsets require source review.`;
+    const patternBox=document.getElementById("batchDiagnostics");
+    patternBox.hidden=data.mismatches===0;
+    document.getElementById("batchPatterns").textContent=Object.entries(data.shifts).filter(([shift,count])=>count).map(([shift,count])=>`${shift} weekday position${Math.abs(Number(shift))===1?"":"s"}: ${count.toLocaleString()} record${count===1?"":"s"}`).join(" · ") || "No weekday discrepancies.";
+    document.getElementById("downloadBatchXlsBtn").disabled=data.total>100000;
+    document.getElementById("downloadBatchXlsBtn").title=data.total>100000?"For large datasets, use CSV to reduce memory usage.":"Download the complete Excel report";
+    ["downloadBatchCsvBtn","downloadMismatchBtn"].forEach(id=>document.getElementById(id).disabled=false);
+  }
+  function resetBatch(){
+    batchState.rows=[]; batchState.summary=null; batchState.filename=""; batchState.matrix=null; batchState.header=null; batchState.dateIdx=-1; batchState.dayIdx=-1;
+    document.getElementById("batchSummary").style.display="none";
+    document.getElementById("batchResults").style.display="none";
+    document.getElementById("batchDiagnostics").hidden=true;
+    document.getElementById("batchNote").textContent="";
+    document.getElementById("batchFile").value="";
+    document.getElementById("batchPaste").value="";
+    ["downloadBatchCsvBtn","downloadBatchXlsBtn","downloadMismatchBtn"].forEach(id=>document.getElementById(id).disabled=true);
+  }
+  function safeBaseName(name){
+    const base=String(name||"GCF_Data").replace(/\.[^.]+$/i,"").trim() || "GCF_Data";
+    return base.replace(/[<>:"/\\|?*\x00-\x1F]/g,"_").replace(/\s+/g," ").slice(0,80);
+  }
+  function downloadBlob(blob,name){
+    if(!blob) throw new Error("No report data is available for export.");
+    const a=document.createElement("a");
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=name; a.rel="noopener";
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
+  }
+  function csvCell(v){ const s=String(v??""); return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+  function downloadBatchCsv(all=true){
+    if(!batchState.summary) return;
+    const rows=(all?batchState.summary.result:batchState.summary.result.filter(r=>r.status!=="MATCH"));
+    const header=[...(batchState.header||["Date","Recorded Weekday"]),"Expanded Date","Expanded Recorded Weekday","GCF Expected Day","Status","Weekday Shift","Validation Note"];
+    const out=[header.map(csvCell).join(",")];
+    rows.forEach(r=>{
+      const base=(r.original||[]).slice();
+      while(base.length<header.length-6) base.push("");
+      base.push(r.date,r.recorded,r.gcf,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");
+      out.push(base.map(csvCell).join(","));
+    });
+    const stem=safeBaseName(batchState.filename||"GCF_Data");
+    const filename=all?`${stem}_Validated.csv`:`${stem}_Mismatches.csv`;
+    downloadBlob(new Blob(["\uFEFF"+out.join("\r\n")],{type:"text/csv;charset=utf-8"}),filename);
+  }
+  function sheetXml(rows, styleFn){
+    return `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows.map((row,ri)=>`<row r="${ri+1}">${row.map((v,ci)=>{const ref=colName(ci)+(ri+1);const sty=styleFn?styleFn(ri,ci,v):0;return `<c r="${ref}" t="inlineStr"${sty?` s="${sty}"`:""}><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;}).join("")}</row>`).join("")}</sheetData></worksheet>`;
+  }
+  function buildXlsx(rows, summaryRows, mismatchRows){
+    const zip=new JSZip();
+    const contentTypes=`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
+    const rootRels=`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+    const wb=`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Validated Records" sheetId="1" r:id="rId1"/><sheet name="Summary" sheetId="2" r:id="rId2"/><sheet name="Mismatches" sheetId="3" r:id="rId3"/></sheets></workbook>`;
+    const wbRels=`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/></Relationships>`;
+    const styles=`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="EAF0EA"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="E4F2E7"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="F7D5D2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6C2"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellXfs count="6"><xf fontId="0" fillId="0" borderId="0"/><xf fontId="1" fillId="2" borderId="0"/><xf fontId="1" fillId="3" borderId="0"/><xf fontId="1" fillId="4" borderId="0"/><xf fontId="1" fillId="5" borderId="0"/><xf fontId="0" fillId="0" borderId="0"/></cellXfs></styleSheet>`;
+    const header=[...(batchState.header||["Date","Recorded Weekday"]),"Expanded Date","Expanded Recorded Weekday","GCF Expected Day","Status","Weekday Shift","Validation Note"];
+    const baseRows=[header];
+    rows.forEach(r=>{
+      const base=(r.original||[]).slice();
+      while(base.length<header.length-6) base.push("");
+      base.push(r.date,r.recorded,r.gcf,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");
+      baseRows.push(base);
+    });
+    const statusIndex=header.length-3;
+    const styleMain=(ri,ci,v)=>{
+      if(ri===0) return 1;
+      if(ci!==statusIndex) return 0;
+      return String(v)==="MATCH"?2:String(v)==="MISMATCH"?3:String(v)==="INVALID"?4:0;
+    };
+    const mismatchBase=mismatchRows.map(r=>{const base=(r.original||[]).slice();while(base.length<header.length-6)base.push("");base.push(r.date,r.recorded,r.gcf,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");return base;});
+    const mismatchHeader=header;
+    const mismatchStyles=(ri,ci,v)=>{if(ri===0)return 1;if(ci!==statusIndex)return 0;return String(v)==="MISMATCH"?3:String(v)==="INVALID"?4:0;};
+    zip.file("[Content_Types].xml",contentTypes);zip.file("_rels/.rels",rootRels);zip.file("xl/workbook.xml",wb);zip.file("xl/_rels/workbook.xml.rels",wbRels);zip.file("xl/styles.xml",styles);
+    zip.file("xl/worksheets/sheet1.xml",sheetXml(baseRows,styleMain));
+    zip.file("xl/worksheets/sheet2.xml",sheetXml(summaryRows,(ri)=>ri===0?1:0));
+    zip.file("xl/worksheets/sheet3.xml",sheetXml([mismatchHeader,...mismatchBase],mismatchStyles));
+    return zip.generateAsync({type:"blob",compression:"DEFLATE"});
+  }
+  async function downloadBatchXls(){
+    if(!batchState.summary) return;
+    if(batchState.summary.total>100000){
+      document.getElementById("batchNote").textContent="XLSX export is limited to 100,000 checked dates for memory safety. Use CSV for this dataset.";
+      return;
+    }
+    const s=batchState.summary;
+    const summary=[
+      ["GCF Batch Validation Summary", ""],
+      ["Source file", batchState.filename],
+      ["Validation run", new Date().toLocaleString()],
+      ["Source records", s.sourceRecords],
+      ["Checked dates (after ranges expanded)", s.total],
+      ["Matches", s.matches],
+      ["Mismatches", s.mismatches],
+      ["Invalid / unrecognized", s.invalid],
+      ["Agreement rate", s.agreement.toFixed(3)+"%"],
+      ["Weekday offset counts", Object.entries(s.shifts).filter(([k,v])=>v).map(([k,v])=>k+": "+v).join("; ")||"None"],
+      ["Calendar scope", "Gregorian / proleptic Gregorian; years 1–9999"],
+      ["Validation purpose", "Preliminary date–weekday consistency checking"],
+      ["Interpretation", "MISMATCH indicates disagreement under the stated Gregorian framework; review the source record and context before drawing conclusions."],
+      ["Workbook structure", "Validated Records = full annotated dataset; Summary = run statistics and scope; Mismatches = records requiring review"]
+    ];
+    const mismatches=s.result.filter(r=>r.status!=="MATCH");
+    const blob=await buildXlsx(s.result,summary,mismatches);
+    const stem=safeBaseName(batchState.filename||"GCF_Data");
+    const outBlob=blob instanceof Blob ? new Blob([blob],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}) : blob;
+    downloadBlob(outBlob,`${stem}_Validated.xlsx`);
+  }
+  document.getElementById("batchFile").addEventListener("change",async(e)=>{
+    const file=e.target.files && e.target.files[0]; if(!file)return;
+    const note=document.getElementById("batchNote"); note.textContent=`Reading ${file.name}…`;
+    try{
+      const matrix=await parseBatchFile(file);
+      const rows=rowsToBatch(matrix);
+      batchState.filename=file.name;
+      batchState.summary=validateBatchRows(rows);
+      renderBatchResults(batchState.summary);
+    }catch(err){ resetBatch(); note.textContent="Error: "+(err?.message||String(err)); }
+  });
+  document.getElementById("runBatchBtn").addEventListener("click",()=>{
+    const text=document.getElementById("batchPaste").value.trim();
+    if(!text){ document.getElementById("batchNote").textContent="Paste spreadsheet data or choose an Excel/CSV file first."; return; }
+    try{
+      const rows=rowsToBatch(parseDelimited(text)); batchState.filename="Pasted spreadsheet data"; batchState.summary=validateBatchRows(rows); renderBatchResults(batchState.summary);
+    }catch(err){ document.getElementById("batchNote").textContent="Error: "+(err?.message||String(err)); }
+  });
+  document.getElementById("clearBatchBtn").addEventListener("click",resetBatch);
+  document.getElementById("downloadBatchCsvBtn").addEventListener("click",()=>downloadBatchCsv(true));
+  document.getElementById("downloadMismatchBtn").addEventListener("click",()=>downloadBatchCsv(false));
+  document.getElementById("downloadBatchXlsBtn").addEventListener("click",downloadBatchXls);
+
+  // Offline status
+  function updateOfflineStatus(){
+    const box=document.getElementById("offlineStatus");
+    const text=document.getElementById("offlineText");
+    if(!box||!text)return;
+    if(navigator.onLine){
+      box.classList.remove("offline");
+      text.textContent="Online — this app is also cached for offline use.";
+    }else{
+      box.classList.add("offline");
+      text.textContent="Offline — the calculator and learning tools remain available.";
+    }
+  }
+  window.addEventListener("online",updateOfflineStatus);
+  window.addEventListener("offline",updateOfflineStatus);
+  updateOfflineStatus();
+
+  // Register the service worker and report update errors silently.
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>{
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    });
+  }
+
+  const builderPanel=document.getElementById("builderPanel");
+  const openBuilderBtn=document.getElementById("openBuilderBtn");
+  let builderHasOpened=false;
+
+  function openBuilder(){
+    builderHasOpened=true;
+    syncBuilder(true);
+    builderPanel.classList.add("open");
+    builderPanel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  openBuilderBtn.addEventListener("click", openBuilder);
+  document.getElementById("closeBuilderBtn").addEventListener("click",()=>{
+    builderPanel.classList.remove("open");
+    openBuilderBtn.focus();
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+
+
+  // Keep the builder's stored date synchronized while it is open,
+  // but never open or scroll to it automatically.
+  window.addEventListener("gcf-date-updated", ()=>{
+    if(builderHasOpened){
+      syncBuilder(true);
+    }
+  });
+
+  // Build mode is intentionally opt-in. Do not render/focus it until the user opens it.
+  builderPanel.classList.remove("open");
+  builderHasOpened=false;
+  renderStress();
+})();
+</script>
+
+
+</body>
+</html>

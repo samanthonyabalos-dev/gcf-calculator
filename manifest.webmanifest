@@ -1,11 +1,11 @@
 {
-  "name": "GCF Date\u2013Weekday Consistency Auditor",
-  "short_name": "GCF Auditor",
+  "name": "GCF Weekday Calculator",
+  "short_name": "GCF Calculator",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F3F5EF",
   "theme_color": "#24463A",
-  "description": "Offline-friendly local batch date\u2013weekday consistency checking using GCF-400.",
+  "description": "Interactive GCF weekday calculator and mathematics learning tool with offline app-shell support.",
   "icons": []
 }
