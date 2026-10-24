@@ -32,25 +32,25 @@ function buildLines(items,file,pageNo){
  return lines;
 }
 async function readPdf(fileOrBytes,file='document.pdf'){
- const pdfjs=getPdfJs();pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+ const pdfjs=getPdfJs();pdfjs.GlobalWorkerOptions.workerSrc=(globalThis.__gcfLocalPdf?'./vendor/pdf.worker.min.js':'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');
  const data=fileOrBytes instanceof Uint8Array?fileOrBytes:new Uint8Array(await fileOrBytes.arrayBuffer());
  if(data.length>25*1024*1024)throw Error('PDF exceeds 25 MB. Split it before scanning.');
  const job=pdfjs.getDocument({data:data.slice(),useSystemFonts:true,isEvalSupported:false});
  let pdf;try{pdf=await job.promise;}catch(e){throw Error('PDF.js could not open the document: '+(e?.message||e));}
  if(pdf.numPages>180){await pdf.destroy();throw Error('PDF exceeds 180 pages. Split the file into smaller parts.');}
- const segments=[];const warnings=[];
+ const pageCount=pdf.numPages;const segments=[];const warnings=[],unreadablePages=[];
  try{for(let n=1;n<=pdf.numPages;n++){
   let page,content;
   try{page=await pdf.getPage(n);content=await page.getTextContent({disableCombineTextItems:false,includeMarkedContent:false});}
-  catch(err){warnings.push(`Page ${n}: text extraction failed (${err?.message||err})`);continue;}
+  catch(err){warnings.push(`Page ${n}: text extraction failed (${err?.message||err})`);unreadablePages.push(n);continue;}
   const lines=buildLines(content.items,file,n);
-  if(lines.length===0)warnings.push(`Page ${n}: no searchable text; could be scanned`);
+  if(lines.length===0){warnings.push(`Page ${n}: no searchable text; could be scanned`);unreadablePages.push(n);}
   segments.push(...lines);
   page.cleanup();
  }} finally{await pdf.destroy();}
  if(!segments.length)throw Error('No searchable PDF text was extracted. Image-only/scanned pages require OCR, which is not installed.');
  // Never silently classify a partially read document as completely audited.
- segments.auditWarnings=warnings;segments.pageCount=pdf.numPages;segments.extractor='PDF.js';
+ segments.auditWarnings=warnings;segments.pageCount=pageCount;segments.readPages=pageCount-unreadablePages.length;segments.ignoredPages=unreadablePages;segments.isPartial=Boolean(unreadablePages.length);segments.extractor='PDF.js';
  return segments;
 }
 function position(record){

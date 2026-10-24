@@ -175,7 +175,7 @@ async function readPdf(bytes,file='document.pdf'){
  if(!lines.length)throw Error('No extractable text detected. Scanned, custom-font, or complex PDFs need an OCR/PDF.js processing route.');
  const unseen=[];
  for(let p=1;p<=pages.length;p++)if(!lines.some(line=>line.page===p))unseen.push(p);
- if(unseen.length)throw Error('Incomplete PDF extraction (requires advanced PDF.js engine): no accessible text on '+unseen.length+' of '+pages.length+' pages (first: page '+unseen[0]+'). The audit was rejected rather than silently omitting scanned pages.');
+ const auditWarnings=unseen.length?[`PARTIAL SCAN: ${unseen.length} of ${pages.length} PDF pages could not be read by the offline reader (pages: ${unseen.join(', ')}). These pages are UNCHECKED. To check them, enable the advanced PDF.js library; results on accessible pages are not a full-document audit.`]:[];
  // Merge same-baseline, separate-cell PDF text into one row, including event details.
  const grouped=[];
  for(let pg=1;pg<=pages.length;pg++){
@@ -189,6 +189,7 @@ async function readPdf(bytes,file='document.pdf'){
     else grouped.push({file,page:pg,location:'Page '+pg+' · Text row '+(idx+1),kind:'pdf-table',text:bucket.blocks.map(z=>z.text).join(' | '),parts:bucket.blocks});
   }
  }
+ grouped.auditWarnings=auditWarnings; grouped.pageCount=pages.length; grouped.readPages=pages.length-unseen.length; grouped.ignoredPages=unseen; grouped.isPartial=Boolean(unseen.length); grouped.extractor='Basic offline PDF reader';
  return grouped;
 }
 function exportCSV(records){const heads=['Source file','Page','Location','Section','Original text','Date as written','Normalized date','Recorded weekday','GCF expected weekday','Status','Discrepancy residue','Signed shift','Validation note'];

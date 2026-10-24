@@ -467,7 +467,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 <section id="batch" class="panel active">
   <div class="card" id="docCard" style="margin-bottom:15px">
     <span class="badge">NEW · MULTI-FORMAT REVIEW</span>
-    <h2 style="margin-top:8px">Audit Word and PDF documents</h2>
+    <h2 style="margin-top:8px">Audit Word and PDF documents <span style="font-size:12px;color:#42624e;font-weight:600">v6</span></h2>
     <p class="batch-help">Check dates and their written weekdays inside paragraphs and tables. The report keeps the original text and the document location for each finding.</p>
     <div class="doc-layout">
       <div>
@@ -477,7 +477,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
       </div>
       <div>
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.5;margin:10px 0"><input type="checkbox" id="docPairedOnly" checked> Focus on date–weekday pairs (omit unrelated standalone dates in document annexes)</label>
-        <p class="small">Complex searchable PDFs use PDF.js and PDF-lib loaded from an online library. No document is uploaded to a server. Scanned pages require OCR, which is not included.</p>
+        <p class="small">The website can scan compatible pages even when advanced PDF libraries are blocked, but it will explicitly label incomplete audits. To read all pages of complex PDFs and export highlighted copies, PDF.js and PDF-lib must load. Scanned/image pages require OCR.</p><div id="pdfEngineStatus" class="small" style="padding:7px 10px;background:#EFF4F0;border:1px solid #CBD9D0;border-radius:8px;margin:7px 0">Checking PDF reader…</div>
         <label for="docOrder">Numeric date interpretation</label>
         <select id="docOrder">
           <option value="auto">Automatic (flag ambiguous dates)</option>
@@ -507,7 +507,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     <div id="docStats" class="batch-summary" style="display:none"></div>
     <div id="docPreview" class="batch-table-wrap" style="display:none;margin-top:12px"></div>
     <details style="margin-top:12px"><summary><b>Supported formats, limits and interpretation</b></summary>
-       <p class="small">The built-in PDF reader supports simple, searchable, unencrypted PDFs with standard text drawing instructions. It does not perform OCR, reliably parse custom-font/CMap PDFs, or guarantee complex multi-column reading order. Scanned or unsupported PDFs produce a clear error instead of fabricated matches. DOCX text paragraphs and tables are scanned; embedded images and comments are not.</p>
+       <p class="small">The built-in PDF reader can audit only compatible text streams. Complex object streams, custom fonts/CMaps and image-only pages may be unreadable unless the online PDF.js reader loads. Unreadable pages are listed as UNCHECKED; scanning some pages never means that all pages have been validated. DOCX paragraphs and tables are scanned; embedded images and comments are not.</p>
        <p class="small">A date with no nearby weekday is marked NO_WEEKDAY; ambiguous dates or competing weekdays are marked REVIEW. A match only checks Gregorian date–weekday consistency, not whether an event was actually scheduled for that date. Original files are not modified.</p>
     </details>
   </div>
@@ -621,8 +621,10 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 
 <!-- Complex searchable PDFs need industry-standard PDF.js and PDF-lib. 
      These libraries load online; no uploaded documents leave the browser. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<!-- Optional local copies keep advanced PDF reading functional if external CDNs are blocked.
+     Download the three pinned vendor libraries listed in vendor/README.md. -->
+<script src="./vendor/pdf.min.js" onload="window.__gcfLocalPdf=true" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'"></script>
+<script src="./vendor/pdf-lib.min.js" onload="window.__gcfLocalLib=true" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'"></script>
 <script src="./jszip.min.js"></script>
 <script src="./gcf-engine.js"></script>
 <script src="./pdf-enhanced.js"></script>
@@ -1368,19 +1370,25 @@ calculate();
  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
  function clear(){resetDownloads();result=null;scannedFiles=[];$('docFiles').value='';$('docAnnotationStatus').textContent='';$('docExportAnnotated').disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';$('docProgress').textContent='Ready to scan.';for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;}
  function exportRows(all){if(!result)return;const rows=all?result.records:result.records.filter(r=>r.status!=='MATCH');const blob=new Blob([auditor.exportCSV(rows)],{type:'text/csv;charset=utf-8'});const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=all?'GCF_Document_Audit_Full.csv':'GCF_Document_Audit_Review.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
- function render(data){const labels=[['Dates found',data.total],['Matches',data.counts.MATCH],['Mismatches',data.counts.MISMATCH],['Invalid',data.counts.INVALID],['Need review / no weekday',data.counts.REVIEW+data.counts.NO_WEEKDAY]];
+ function render(data){const labels=[['Date–weekday findings',data.total],['Matches',data.counts.MATCH],['Mismatches',data.counts.MISMATCH],['Invalid',data.counts.INVALID],['Need review / no weekday',data.counts.REVIEW+data.counts.NO_WEEKDAY]];
   $('docStats').style.display='grid';$('docStats').innerHTML=labels.map(([k,v])=>'<div class="batch-stat"><span>'+esc(k)+'</span><b>'+Number(v).toLocaleString()+'</b></div>').join('');
   let ordered=data.records.filter(x=>x.status!=='MATCH').slice(0,350).concat(data.records.filter(x=>x.status==='MATCH').slice(0,Math.max(0,500-Math.min(350,data.records.filter(x=>x.status!=='MATCH').length))));
   $('docPreview').style.display='block';$('docPreview').innerHTML='<table class="doc-table"><thead><tr><th>Document / location</th><th>Original context</th><th>Date found</th><th>Recorded</th><th>GCF weekday</th><th>Status</th></tr></thead><tbody>'+ordered.map(r=>'<tr><td><b>'+esc(r.file)+'</b><div class="small">'+esc(r.location)+'</div></td><td class="source-snippet">'+esc(r.sourceText)+'</td><td>'+esc(r.date||r.sourceDate)+'</td><td>'+esc(r.recorded||'—')+'</td><td>'+esc(r.expected||'—')+'</td><td><span class="doc-pill '+esc(r.status)+'">'+esc(r.status)+'</span><div class="small">'+esc(r.note)+'</div></td></tr>').join('')+'</tbody></table>'+(data.total>ordered.length?'<p class="small" style="padding:9px">Showing '+ordered.length+' entries (flagged first). Download CSV for all '+data.total+' findings.</p>':'');
   for(const id of ['docExportAll','docExportFlagged','docExportAnnotated'])$(id).disabled=false;
  }
  $('runDocAudit').addEventListener('click',async()=>{const files=Array.from($('docFiles').files||[]),progress=$('docProgress');if(!files.length){progress.textContent='Select at least one PDF or DOCX.';return;}if(files.length>10){progress.textContent='Select at most 10 files per batch.';return;}if(new Set(files.map(f=>f.name.toLowerCase())).size!==files.length){progress.textContent='Some files have identical names. Rename them before combining, so annotations cannot be assigned to the wrong document.';return;}
- resetDownloads();$('runDocAudit').disabled=true;result=null;scannedFiles=[]; $('docExportAnnotated').disabled=true;for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';let segs=[],errs=[],readWarnings=[],processed=0;const began=performance.now();
+ resetDownloads();$('runDocAudit').disabled=true;result=null;scannedFiles=[]; $('docExportAnnotated').disabled=true;for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';let segs=[],errs=[],readWarnings=[],processed=0,partialFiles=[];const began=performance.now();
  try{for(const file of files){progress.textContent='Reading '+file.name+' ('+(processed+1)+' / '+files.length+')…';await new Promise(resolve=>setTimeout(resolve,0));if(file.size>15*1024*1024){errs.push(file.name+': exceeds 15 MB');continue;}
- try{let parts;if(/\.docx$/i.test(file.name))parts=await auditor.readDocx(file,window.JSZip,file.name);else if(/\.pdf$/i.test(file.name))parts=await auditor.readPdf(file,file.name);else throw Error('Supported formats are PDF and DOCX');if(parts.auditWarnings?.length)readWarnings.push(...parts.auditWarnings.map(w=>file.name+': '+w));segs.push(...parts);scannedFiles.push(file);processed++;}catch(e){errs.push(file.name+': '+(e?.message||String(e)));}}
+ try{let parts;if(/\.docx$/i.test(file.name))parts=await auditor.readDocx(file,window.JSZip,file.name);else if(/\.pdf$/i.test(file.name))parts=await auditor.readPdf(file,file.name);else throw Error('Supported formats are PDF and DOCX');if(parts.auditWarnings?.length)readWarnings.push(...parts.auditWarnings.map(w=>file.name+': '+w));if(parts.isPartial)partialFiles.push({file:file.name,checked:parts.readPages,total:parts.pageCount,unreadable:parts.ignoredPages});segs.push(...parts);scannedFiles.push(file);processed++;}catch(e){errs.push(file.name+': '+(e?.message||String(e)));}}
  if(!processed){result=null;progress.textContent='No files could be scanned. '+errs.join(' | ');return;}
  result=auditor.scanSegments(segs,{dateOrder:$('docOrder').value,maxRecords:120000});if($('docPairedOnly').checked){result=auditor.summarize(result.records.filter(r=>r.status!=='NO_WEEKDAY'),processed,performance.now()-began);}result.elapsedMs=performance.now()-began;
- render(result);const warnings=readWarnings;progress.textContent=processed+' document(s) scanned · '+result.total.toLocaleString()+' date findings · '+result.elapsedMs.toFixed(1)+' ms in this browser'+(errs.length?' · Not scanned: '+errs.join(' | '):'')+'.'+(warnings.length?' WARNING: '+warnings.join('; '):'');
+ result.auditWarnings=readWarnings;result.partialFiles=partialFiles;
+ render(result);if(partialFiles.length&&scannedFiles.every(f=>partialFiles.some(p=>p.file===f.name))){$('docExportAnnotated').disabled=true;$('docAnnotationStatus').textContent='Annotated-PDF export is unavailable for this PARTIAL SCAN. The verified rows can be downloaded as CSV. To mark this exact PDF, the advanced PDF.js and PDF-lib libraries must load successfully.';}else{$('docAnnotationStatus').textContent='';}const warnings=readWarnings;
+ const summary=processed+' document(s) opened · '+result.total.toLocaleString()+' date–weekday findings · '+result.elapsedMs.toFixed(1)+' ms';
+ const partialMessage=partialFiles.length?' ⚠ PARTIAL AUDIT — unreadable pages were NOT checked: '+partialFiles.map(x=>x.file+' ('+x.checked+'/'+x.total+' pages readable; unreadable pages '+x.unreadable.join(', ')+')').join('; ')+'.':'';
+ const zeroMessage=result.total===0?' No date–weekday pairs found in the extracted text. Try unchecking “Focus on date–weekday pairs” to view standalone dates, or inspect the PDF reader status and any unreadable pages.':'';
+ progress.textContent=summary+'.'+partialMessage+zeroMessage+(errs.length?' Not scanned: '+errs.join(' | '):'')+(warnings.length?' Reader notes: '+warnings.join('; '):'');
+ progress.style.color=partialFiles.length||errs.length||result.total===0?'#8A4D16':'';
  }catch(e){result=null;progress.textContent='Audit stopped: '+(e?.message||String(e));}
  finally{$('runDocAudit').disabled=false;}
  });
@@ -1389,6 +1397,7 @@ calculate();
   const button=$('docExportAnnotated'),note=$('docAnnotationStatus');button.disabled=true;
   try{
     if(!window.JSZip||!window.GCFAnnotations)throw Error('Annotation libraries unavailable.');
+    if(scannedFiles.some(f=>/\.pdf$/i.test(f.name))&&!window.PDFLib){note.textContent='PDF annotation needs the PDF-lib script, which did not load. The scan and CSV report may still work. Allow online CDN scripts or use a DOCX file.';}
     resetDownloads();
     const zip=new window.JSZip(),manifest=[];let successes=0;
     const individualExports=[];
@@ -1398,6 +1407,7 @@ calculate();
       await new Promise(resolve=>setTimeout(resolve,0));
       const sourceRecords=result.records.filter(r=>r.file===file.name);
       try{
+        if(result.partialFiles?.some(p=>p.file===file.name))throw Error('This PDF was only partially decoded by the offline scanner. Annotation of a partially scanned PDF is disabled; open the full audit CSV instead or allow PDF.js to load.');
         const ann=/\.docx$/i.test(file.name)?await GCFAnnotations.annotateDocx(file,sourceRecords,window.JSZip,showAll):await GCFAnnotations.annotatePdf(file,sourceRecords,showAll);
         const basename=file.name.replace(/\.(pdf|docx)$/i,'');
         const ext=/\.docx$/i.test(file.name)?'docx':'pdf';
@@ -1430,6 +1440,9 @@ calculate();
   }catch(err){note.textContent='Annotation export error: '+(err.message||String(err));}
   finally{button.disabled=false;}
  }
+ function updatePdfEngineStatus(){const advanced=Boolean(window.GCFAdvancedPDF&&window.pdfjsLib);const annotation=Boolean(window.PDFLib);const el=$('pdfEngineStatus');if(!el)return;el.textContent=advanced?(annotation?'PDF reader: ADVANCED and PDF annotation libraries loaded.':'PDF reader: ADVANCED loaded, but PDF annotation library is unavailable.'):'PDF reader: BASIC offline fallback only. Complex PDFs may yield a PARTIAL AUDIT. Check your connection or browser blockers for the CDN scripts.';el.style.borderColor=advanced?'#95C3A4':'#D7B77B';el.style.color=advanced?'#225D39':'#81551C';}
+ setTimeout(updatePdfEngineStatus,0);
+ window.addEventListener('online',updatePdfEngineStatus);
  $('docExportAnnotated').addEventListener('click',downloadAnnotated);
  $('clearDocAudit').addEventListener('click',clear);$('docExportAll').addEventListener('click',()=>exportRows(true));$('docExportFlagged').addEventListener('click',()=>exportRows(false));
 })();
