@@ -1,11 +1,13 @@
-const CACHE_NAME = "gcf-v15-learning-restored";
+const CACHE_NAME = "gcf-auditor-v4-20261024";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./sw.js",
   "./jszip.min.js",
-  "./gcf-engine.js"
+  "./gcf-engine.js",
+  "./document-audit.js",
+  "./annotation-export.js"
 ];
 
 self.addEventListener("install", event => {

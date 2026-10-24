@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#24463A">
-<meta name="description" content="Gregorian Congruence Formula — an offline-friendly mathematics learning and weekday calculation app.">
-<title>GCF Weekday Calculator</title>
+<meta name="description" content="GCF-400: preliminary date–weekday audit of spreadsheets, Word files and text-based PDFs.">
+<title>GCF-400 · Date–Weekday Document Auditor</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{
@@ -232,6 +232,19 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 .batch-pill.invalid{background:#FBE3C0;color:#8A4B08}
 @media(max-width:900px){.batch-summary{grid-template-columns:repeat(2,1fr)}}
 
+
+/* Document auditing layout: compact, consistent with the original dark-forest palette. */
+.doc-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.doc-table{width:100%;min-width:850px;border-collapse:collapse}
+.doc-table th,.doc-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.doc-table .source-snippet{max-width:360px;min-width:220px;line-height:1.45;font-size:12px;white-space:normal}
+.doc-pill{display:inline-block;font-size:11px;font-weight:800;padding:4px 8px;border-radius:7px;background:#e6efea;color:#153522}
+.doc-pill.MISMATCH,.doc-pill.INVALID{color:#8b2116;background:#fbe9e6}
+.doc-pill.REVIEW,.doc-pill.NO_WEEKDAY{color:#835a15;background:#fff2d6}
+#docStats{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#docStats .batch-stat{min-width:0;padding:9px}
+#docStats .batch-stat b{font-size:19px}
+@media(max-width:720px){.doc-layout{grid-template-columns:1fr}#docStats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -248,13 +261,13 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 </header>
 
   <nav class="tabs" aria-label="Main sections">
-    <button class="tab active" data-tab="calc">Calculator</button>
+    <button class="tab" data-tab="calc">Calculator</button>
     <button class="tab" data-tab="learn">Learn GCF</button>
     <button class="tab" data-tab="practice">Practice</button>
-    <button class="tab" data-tab="batch">Batch Validator</button>
+    <button class="tab active" data-tab="batch">Document &amp; Batch Audit</button>
   </nav>
 
-  <section id="calc" class="panel active">
+  <section id="calc" class="panel">
     <div class="grid">
       <div class="card">
         <h2>Enter a Date</h2>
@@ -451,11 +464,55 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     </div>
   </section>
 
-<section id="batch" class="panel">
+<section id="batch" class="panel active">
+  <div class="card" id="docCard" style="margin-bottom:15px">
+    <span class="badge">NEW · MULTI-FORMAT REVIEW</span>
+    <h2 style="margin-top:8px">Audit Word and PDF documents</h2>
+    <p class="batch-help">Check dates and their written weekdays inside paragraphs and tables. The report keeps the original text and the document location for each finding.</p>
+    <div class="doc-layout">
+      <div>
+        <label for="docFiles">Upload text-based PDFs or Word documents</label>
+        <input type="file" id="docFiles" accept=".pdf,.docx" multiple>
+        <div class="small" style="margin-top:6px">Up to 10 documents · 15 MB each · PDF limit 180 pages. Documents are processed locally in your browser; no server upload.</div>
+      </div>
+      <div>
+        <label for="docOrder">Numeric date interpretation</label>
+        <select id="docOrder">
+          <option value="auto">Automatic (flag ambiguous dates)</option>
+          <option value="DMY">Day / Month / Year</option>
+          <option value="MDY">Month / Day / Year</option>
+          <option value="YMD">Year / Month / Day</option>
+          <option value="YDM">Year / Day / Month</option>
+        </select>
+        <div class="small" style="margin-top:6px">Examples: 24/10/2026 · 10/24/2026 · 2026/24/10 · October 24, 2026 · 2026-10-24.</div>
+      </div>
+    </div>
+    <div class="batch-tools" style="margin-top:12px">
+      <button class="btn btn-primary" id="runDocAudit" type="button">Scan documents</button>
+      <button class="btn btn-secondary" id="clearDocAudit" type="button">Clear</button>
+      <button class="btn btn-secondary" id="docExportAll" type="button" disabled>Download full findings CSV</button>
+      <button class="btn btn-secondary" id="docExportFlagged" type="button" disabled>Download review list CSV</button>
+      <button class="btn btn-primary" id="docExportAnnotated" type="button" disabled>Download annotated documents (.zip)</button>
+    </div>
+    <label class="small" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input id="annotateMatches" type="checkbox" style="width:17px;height:17px"> Also highlight correct matches (off by default; best for lengthy documents)</label>
+    <div id="docAnnotationStatus" class="small" role="status" aria-live="polite" style="margin:9px 0 0"></div>
+    <div id="docDownloadLinks" class="card" style="display:none;margin-top:10px;padding:12px;background:#F3F7F3">
+      <b>Export ready</b>
+      <p class="small" style="margin:5px 0 8px">If your browser did not save the file automatically, use the permanent links below. These links remain available until you scan again or leave the page.</p>
+      <div id="docDownloadItems" class="batch-tools" style="gap:8px"></div>
+    </div>
+    <div id="docProgress" class="small" role="status" aria-live="polite" style="margin-top:10px">Ready to scan.</div>
+    <div id="docStats" class="batch-summary" style="display:none"></div>
+    <div id="docPreview" class="batch-table-wrap" style="display:none;margin-top:12px"></div>
+    <details style="margin-top:12px"><summary><b>Supported formats, limits and interpretation</b></summary>
+       <p class="small">The built-in PDF reader supports simple, searchable, unencrypted PDFs with standard text drawing instructions. It does not perform OCR, reliably parse custom-font/CMap PDFs, or guarantee complex multi-column reading order. Scanned or unsupported PDFs produce a clear error instead of fabricated matches. DOCX text paragraphs and tables are scanned; embedded images and comments are not.</p>
+       <p class="small">A date with no nearby weekday is marked NO_WEEKDAY; ambiguous dates or competing weekdays are marked REVIEW. A match only checks Gregorian date–weekday consistency, not whether an event was actually scheduled for that date. Original files are not modified.</p>
+    </details>
+  </div>
   <div class="card">
     <span class="badge">PRELIMINARY CONSISTENCY CHECK</span>
-    <h2 style="margin-top:8px">Batch Date–Weekday Validator</h2>
-    <p class="batch-help">Upload or paste a list of dates and recorded weekdays. GCF flags mismatches and invalid entries while keeping your original record details for review.</p>
+    <h2 style="margin-top:8px">Spreadsheet batch validator</h2>
+    <p class="batch-help">Import CSV or XLSX records with date and recorded weekday columns. GCF-400 flags mismatches while preserving every source field for review.</p>
     <div class="batch-drop">
       <b>Upload a spreadsheet</b>
       <div class="small">CSV, TSV, or Excel (.xlsx), with <code>Date</code> and <code>Recorded Weekday</code> columns.</div>
@@ -463,6 +520,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
         <p class="small">Keep additional columns such as Event or Location; they appear in the report. For a date range, use <code>2026-09-26..2026-09-27</code> and matching weekday labels <code>Sat-Sun</code> (up to 62 dates).</p>
       </details>
       <input id="batchFile" type="file" accept=".xlsx,.csv,.tsv,.txt">
+      <div class="small" style="margin-top:7px">Spreadsheet date order follows the selection above. Explicit ISO YYYY-MM-DD is always interpreted as Year–Month–Day.</div>
     </div>
     <div style="margin-top:14px">
       <label for="batchPaste"><b>Or paste spreadsheet data</b></label>
@@ -561,6 +619,8 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 
 <script src="./jszip.min.js"></script>
 <script src="./gcf-engine.js"></script>
+<script src="./document-audit.js"></script>
+<script src="./annotation-export.js"></script>
 <script>
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const COMMON=[6,2,2,5,0,3,5,1,4,6,2,4];
@@ -1045,7 +1105,7 @@ calculate();
     const shifts={"-3":0,"-2":0,"-1":0,"+1":0,"+2":0,"+3":0};
     for(const r of rows){
       if(!r.recordedRaw.trim()) missing++;
-      const expanded=GCFEngine.validateRecord(r.original,r.record,batchState.dateIdx,batchState.dayIdx);
+      const expanded=GCFEngine.validateRecord(r.original,r.record,batchState.dateIdx,batchState.dayIdx,62,document.getElementById("docOrder").value);
       for(const entry of expanded){
         if(entry.status==="MATCH") matches++;
         else if(entry.status==="MISMATCH"){
@@ -1274,5 +1334,98 @@ calculate();
 </script>
 
 
+<script>
+(function(){
+ const $=id=>document.getElementById(id);const auditor=window.GCFDocumentAudit;
+ let result=null,scannedFiles=[];
+ // Keep browser download links alive until a new scan. Immediate revocation can
+ // invalidate delayed/mobile downloads, even when the document was generated.
+ let generatedUrls=[];
+ function resetDownloads(){
+   for(const url of generatedUrls)URL.revokeObjectURL(url);
+   generatedUrls=[];
+   $('docDownloadItems').replaceChildren();
+   $('docDownloadLinks').style.display='none';
+ }
+ function addDownloadLink(blob,name,description){
+   const url=URL.createObjectURL(blob);generatedUrls.push(url);
+   const a=document.createElement('a');a.href=url;a.download=name;
+   a.textContent=description||name;
+   a.className='btn btn-secondary';
+   a.style.cssText='display:inline-flex;text-decoration:none;align-items:center;white-space:normal';
+   $('docDownloadItems').appendChild(a);
+   $('docDownloadLinks').style.display='block';
+   return a;
+ }
+ window.addEventListener('pagehide',()=>{for(const url of generatedUrls)URL.revokeObjectURL(url);});
+ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function clear(){resetDownloads();result=null;scannedFiles=[];$('docFiles').value='';$('docAnnotationStatus').textContent='';$('docExportAnnotated').disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';$('docProgress').textContent='Ready to scan.';for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;}
+ function exportRows(all){if(!result)return;const rows=all?result.records:result.records.filter(r=>r.status!=='MATCH');const blob=new Blob([auditor.exportCSV(rows)],{type:'text/csv;charset=utf-8'});const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=all?'GCF_Document_Audit_Full.csv':'GCF_Document_Audit_Review.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+ function render(data){const labels=[['Dates found',data.total],['Matches',data.counts.MATCH],['Mismatches',data.counts.MISMATCH],['Invalid',data.counts.INVALID],['Need review / no weekday',data.counts.REVIEW+data.counts.NO_WEEKDAY]];
+  $('docStats').style.display='grid';$('docStats').innerHTML=labels.map(([k,v])=>'<div class="batch-stat"><span>'+esc(k)+'</span><b>'+Number(v).toLocaleString()+'</b></div>').join('');
+  let ordered=data.records.filter(x=>x.status!=='MATCH').slice(0,350).concat(data.records.filter(x=>x.status==='MATCH').slice(0,Math.max(0,500-Math.min(350,data.records.filter(x=>x.status!=='MATCH').length))));
+  $('docPreview').style.display='block';$('docPreview').innerHTML='<table class="doc-table"><thead><tr><th>Document / location</th><th>Original context</th><th>Date found</th><th>Recorded</th><th>GCF weekday</th><th>Status</th></tr></thead><tbody>'+ordered.map(r=>'<tr><td><b>'+esc(r.file)+'</b><div class="small">'+esc(r.location)+'</div></td><td class="source-snippet">'+esc(r.sourceText)+'</td><td>'+esc(r.date||r.sourceDate)+'</td><td>'+esc(r.recorded||'—')+'</td><td>'+esc(r.expected||'—')+'</td><td><span class="doc-pill '+esc(r.status)+'">'+esc(r.status)+'</span><div class="small">'+esc(r.note)+'</div></td></tr>').join('')+'</tbody></table>'+(data.total>ordered.length?'<p class="small" style="padding:9px">Showing '+ordered.length+' entries (flagged first). Download CSV for all '+data.total+' findings.</p>':'');
+  for(const id of ['docExportAll','docExportFlagged','docExportAnnotated'])$(id).disabled=false;
+ }
+ $('runDocAudit').addEventListener('click',async()=>{const files=Array.from($('docFiles').files||[]),progress=$('docProgress');if(!files.length){progress.textContent='Select at least one PDF or DOCX.';return;}if(files.length>10){progress.textContent='Select at most 10 files per batch.';return;}if(new Set(files.map(f=>f.name.toLowerCase())).size!==files.length){progress.textContent='Some files have identical names. Rename them before combining, so annotations cannot be assigned to the wrong document.';return;}
+ resetDownloads();$('runDocAudit').disabled=true;result=null;scannedFiles=[]; $('docExportAnnotated').disabled=true;for(const id of ['docExportAll','docExportFlagged'])$(id).disabled=true;$('docStats').style.display='none';$('docPreview').style.display='none';let segs=[],errs=[],processed=0;const began=performance.now();
+ try{for(const file of files){progress.textContent='Reading '+file.name+' ('+(processed+1)+' / '+files.length+')…';await new Promise(resolve=>setTimeout(resolve,0));if(file.size>15*1024*1024){errs.push(file.name+': exceeds 15 MB');continue;}
+ try{let parts;if(/\.docx$/i.test(file.name))parts=await auditor.readDocx(file,window.JSZip,file.name);else if(/\.pdf$/i.test(file.name))parts=await auditor.readPdf(file,file.name);else throw Error('Supported formats are PDF and DOCX');segs.push(...parts);scannedFiles.push(file);processed++;}catch(e){errs.push(file.name+': '+(e?.message||String(e)));}}
+ if(!processed){result=null;progress.textContent='No files could be scanned. '+errs.join(' | ');return;}
+ result=auditor.scanSegments(segs,{dateOrder:$('docOrder').value,maxRecords:120000});result.elapsedMs=performance.now()-began;
+ render(result);progress.textContent=processed+' document(s) scanned · '+result.total.toLocaleString()+' date findings · '+result.elapsedMs.toFixed(1)+' ms in this browser'+(errs.length?' · Not scanned: '+errs.join(' | '):'')+'.';
+ }catch(e){result=null;progress.textContent='Audit stopped: '+(e?.message||String(e));}
+ finally{$('runDocAudit').disabled=false;}
+ });
+ async function downloadAnnotated(){
+  if(!result||!scannedFiles.length)return;
+  const button=$('docExportAnnotated'),note=$('docAnnotationStatus');button.disabled=true;
+  try{
+    if(!window.JSZip||!window.GCFAnnotations)throw Error('Annotation libraries unavailable.');
+    resetDownloads();
+    const zip=new window.JSZip(),manifest=[];let successes=0;
+    const individualExports=[];
+    const showAll=$('annotateMatches').checked;
+    for(let index=0;index<scannedFiles.length;index++){
+      const file=scannedFiles[index];note.textContent='Annotating '+file.name+' ('+(index+1)+' / '+scannedFiles.length+')…';
+      await new Promise(resolve=>setTimeout(resolve,0));
+      const sourceRecords=result.records.filter(r=>r.file===file.name);
+      try{
+        const ann=/\.docx$/i.test(file.name)?await GCFAnnotations.annotateDocx(file,sourceRecords,window.JSZip,showAll):await GCFAnnotations.annotatePdf(file,sourceRecords,showAll);
+        const basename=file.name.replace(/\.(pdf|docx)$/i,'');
+        const ext=/\.docx$/i.test(file.name)?'docx':'pdf';
+        const outputName=basename+'_GCF_Annotated.'+ext;
+        zip.file('Annotated/'+outputName,ann.blob);
+        individualExports.push({blob:ann.blob,name:outputName});
+        manifest.push({file:file.name,format:ext,status:'EXPORTED',...ann.summary});
+        successes++;
+      }catch(err){manifest.push({file:file.name,status:'UNSUPPORTED',error:err.message||String(err)});}
+    }
+    const quote=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
+    const unresolved=manifest.flatMap(m=>(m.issues||[]).map(x=>({file:m.file,...x})));
+    const col=['Document','Format','Export status','Findings','Highlighted','Unresolved','Explanation'];
+    const lines=[col.map(quote).join(',')];
+    for(const m of manifest)lines.push([m.file,m.format||'',m.status,m.total||0,m.highlighted||0,m.unresolved||0,m.error||''].map(quote).join(','));
+    zip.file('GCF_Annotation_Summary.csv','\uFEFF'+lines.join('\r\n'));
+    const issueCols=['Document','Record number','Date','Location','Reason'];
+    zip.file('GCF_Unresolved_Anchors.csv','\uFEFF'+[issueCols.map(quote).join(','),...unresolved.map(u=>[u.file,u.record,u.date,u.location,u.reason].map(quote).join(','))].join('\r\n'));
+    zip.file('GCF_Full_Document_Audit.csv',auditor.exportCSV(result.records));
+    zip.file('README.txt','GCF-400 ANNOTATED DOCUMENT REPORT\r\n\r\nOnly source dates with confidently mapped positions are highlighted. Original files are preserved.\r\nUnresolved anchors and unsupported documents are explicitly listed in CSV files.\r\nColors: GREEN match, RED mismatch, ORANGE invalid, YELLOW review, BLUE no weekday.\r\nVerification checks weekday consistency only, not whether an event date is authentic.');
+    const bytes=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:5}});
+    const archiveLink=addDownloadLink(bytes,'GCF400_Annotated_Documents.zip','Save all annotations and reports (.zip)');
+    // Offer the actual PDF/DOCX as direct downloads too: users should not need
+    // to unpack the ZIP merely to open a document.
+    for(const item of individualExports){addDownloadLink(item.blob,item.name,'Download '+item.name);}
+    // Browser-initiated saves are not guaranteed after an asynchronous process;
+    // always keep a visible user-clickable backup link.
+    if(successes){archiveLink.click();}
+    note.textContent=successes+' annotated document(s) prepared. '+unresolved.length+' anchors unresolved. '+manifest.filter(m=>m.status==='UNSUPPORTED').length+' unsupported file(s). Use the links under Export ready if no automatic download appears. Original files were not modified.';
+  }catch(err){note.textContent='Annotation export error: '+(err.message||String(err));}
+  finally{button.disabled=false;}
+ }
+ $('docExportAnnotated').addEventListener('click',downloadAnnotated);
+ $('clearDocAudit').addEventListener('click',clear);$('docExportAll').addEventListener('click',()=>exportRows(true));$('docExportFlagged').addEventListener('click',()=>exportRows(false));
+})();
+</script>
 </body>
 </html>

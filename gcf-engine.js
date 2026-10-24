@@ -33,17 +33,33 @@ function doomsday(y,m,d){const c=Math.floor(y/100),small=y%100,q=Math.floor(smal
 function iso(y,m,d){return String(y).padStart(4,'0')+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
 function parseISO(s){const x=String(s??'').trim().match(/^(\d{1,4})-(\d{1,2})-(\d{1,2})$/);if(!x)return null;const y=+x[1],m=+x[2],d=+x[3];return validDate(y,m,d)?{y,m,d,iso:iso(y,m,d)}:null;}
 function fromSerial(serial){const n=Number(serial);if(!Number.isInteger(n)||n<1||n===60||n>2958465)return null;const d=new Date(Date.UTC(1899,11,31)+(n>60?n-1:n)*86400000);const y=d.getUTCFullYear(),m=d.getUTCMonth()+1,dd=d.getUTCDate();return validDate(y,m,dd)?{y,m,d:dd,iso:iso(y,m,dd)}:null;}
-function parseDate(raw){const text=String(raw??'').trim();const isoDate=parseISO(text);if(isoDate)return isoDate;let m=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m){const y=+m[3],mo=+m[1],d=+m[2];return validDate(y,mo,d)?{y,m:mo,d,iso:iso(y,mo,d)}:null;}if(/^\d+$/.test(text))return fromSerial(text);return null;}
+function parseDate(raw,order='auto'){
+ const text=String(raw??'').trim();const isoDate=parseISO(text);if(isoDate)return isoDate;
+ const mon={jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,may:5,jun:6,june:6,jul:7,july:7,aug:8,august:8,sep:9,sept:9,september:9,oct:10,october:10,nov:11,november:11,dec:12,december:12};
+ const mword='(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\.?';
+ let m=text.match(new RegExp('^('+mword+')\\s+(\\d{1,2})(?:st|nd|rd|th)?[,]?\\s+(\\d{4})$','i'));
+ if(m){const month=mon[m[1].toLowerCase().replace(/\.$/,'')];return validDate(+m[3],month,+m[2])?{y:+m[3],m:month,d:+m[2],iso:iso(+m[3],month,+m[2])}:null;}
+ m=text.match(new RegExp('^(\\d{1,2})(?:st|nd|rd|th)?\\s+('+mword+')[,]?\\s+(\\d{4})$','i'));
+ if(m){const month=mon[m[2].toLowerCase().replace(/\.$/,'')];return validDate(+m[3],month,+m[1])?{y:+m[3],m:month,d:+m[1],iso:iso(+m[3],month,+m[1])}:null;}
+ m=text.match(new RegExp('^(\\d{4})[,]?\\s+(\\d{1,2})(?:st|nd|rd|th)?\\s+('+mword+')$','i'));
+ if(m){const month=mon[m[3].toLowerCase().replace(/\.$/,'')];return validDate(+m[1],month,+m[2])?{y:+m[1],m:month,d:+m[2],iso:iso(+m[1],month,+m[2])}:null;}
+ m=text.match(/^(\d{1,4})([-/])(\d{1,2})\2(\d{1,2})$/);
+ if(m){let y=+m[1],a=+m[3],b=+m[4],mm,dd;if(order==='YDM'){dd=a;mm=b;}else if(order==='YMD'||m[2]==='-'){mm=a;dd=b;}else if(a>12&&b<=12){dd=a;mm=b;}else if(b>12&&a<=12){mm=a;dd=b;}else return null;return validDate(y,mm,dd)?{y,m:mm,d:dd,iso:iso(y,mm,dd)}:null;}
+ m=text.match(/^(\d{1,2})([-/])(\d{1,2})\2(\d{4})$/);
+ if(m){const a=+m[1],b=+m[3],y=+m[4];let mm,dd;if(order==='DMY'){dd=a;mm=b;}else if(order==='MDY'){mm=a;dd=b;}else if(a>12&&b<=12){dd=a;mm=b;}else if(b>12&&a<=12){mm=a;dd=b;}else return null;return validDate(y,mm,dd)?{y,m:mm,d:dd,iso:iso(y,mm,dd)}:null;}
+ if(/^\d+$/.test(text))return fromSerial(text);
+ return null;
+}
 const BYDAY={sun:0,sunday:0,mon:1,monday:1,tue:2,tues:2,tuesday:2,wed:3,wednesday:3,thu:4,thur:4,thurs:4,thursday:4,fri:5,friday:5,sat:6,saturday:6};
 function parseWeekday(raw){const v=BYDAY[String(raw??'').trim().toLowerCase().replace(/\.$/,'')];return v===undefined?null:v;}
 function difference(recorded,computed){const r=(recorded-computed+7)%7;return {residue:r,shift:r<=3?r:r-7};}
 function nextDay(a){const monthMax=MONTH_DAYS[a.m-1]+(a.m===2&&isLeap(a.y)?1:0);if(a.d<monthMax)return {y:a.y,m:a.m,d:a.d+1,iso:iso(a.y,a.m,a.d+1)};if(a.m<12)return {y:a.y,m:a.m+1,d:1,iso:iso(a.y,a.m+1,1)};if(a.y===9999)return null;return {y:a.y+1,m:1,d:1,iso:iso(a.y+1,1,1)};}
 /* Only unambiguous complete ISO dates: YYYY-MM-DD, YYYY-MM-DD..YYYY-MM-DD;
    YYYY-MM-DD;YYYY-MM-DD. ISO commas also accepted if CSV-quoted. */
-function expandDates(raw,maxExpansion=62){const text=String(raw??'').trim();if(!text)return {error:'Missing date'};
+function expandDates(raw,maxExpansion=62,dateOrder="auto"){const text=String(raw??'').trim();if(!text)return {error:'Missing date'};
   if(text.includes('..')){const parts=text.split('..');if(parts.length!==2)return {error:'Invalid date range'};const a=parseISO(parts[0]),b=parseISO(parts[1]);if(!a||!b)return {error:'Ranges require two complete ISO dates (YYYY-MM-DD..YYYY-MM-DD)'};const list=[];let cur=a;while(cur&&cur.iso<=b.iso&&list.length<=maxExpansion){list.push(cur);if(cur.iso===b.iso)break;cur=nextDay(cur);}if(!list.length||list.length>maxExpansion||list.at(-1).iso!==b.iso)return {error:'Range reversed or exceeds '+maxExpansion+' days'};return {dates:list};}
   if(/[;,]/.test(text)){const bits=text.split(/[;,]/).map(s=>s.trim()).filter(Boolean);if(!bits.length||bits.length>maxExpansion)return {error:'Unsupported date list length'};const dates=bits.map(parseISO);if(dates.some(x=>!x))return {error:'Date lists require complete ISO dates'};return {dates};}
-  const a=parseDate(text);return a?{dates:[a]}:{error:'Invalid or ambiguous Gregorian date'};
+  const a=parseDate(text,dateOrder);return a?{dates:[a]}:{error:'Invalid or ambiguous Gregorian date'};
 }
 function expandWeekdays(raw,count){const text=String(raw??'').trim();if(count===1)return {days:[parseWeekday(text)]};if(!text)return {error:'Missing corresponding weekday list'};let parts=text.split(/\s*(?:[,;|]|\s+[–—-]\s+|\s*\/\s*)\s*/).filter(Boolean);
   // Support compact "Sat-Sun" because both tokens contain letters, never numeric date fields here.
@@ -51,7 +67,7 @@ function expandWeekdays(raw,count){const text=String(raw??'').trim();if(count===
   if(parts.length!==count)return {error:'Provide one recorded weekday for each expanded date'};
   const days=parts.map(parseWeekday);return days.some(x=>x===null)?{error:'Unrecognized weekday label'}:{days};
 }
-function validateRecord(row,rowNum, dateIdx,dayIdx, maxExpansion=62){const rawDate=String(row[dateIdx]??''),rawDay=String(row[dayIdx]??'');const dateInfo=expandDates(rawDate,maxExpansion);const bad=(reason)=>[{sourceRow:rowNum,sourceDate:rawDate,date:rawDate,recorded:rawDay,expected:'',status:'INVALID',residue:'',shift:'',note:reason,original:row.slice()}];if(dateInfo.error)return bad(dateInfo.error);
+function validateRecord(row,rowNum, dateIdx,dayIdx, maxExpansion=62,dateOrder="auto"){const rawDate=String(row[dateIdx]??''),rawDay=String(row[dayIdx]??'');const dateInfo=expandDates(rawDate,maxExpansion,dateOrder);const bad=(reason)=>[{sourceRow:rowNum,sourceDate:rawDate,date:rawDate,recorded:rawDay,expected:'',status:'INVALID',residue:'',shift:'',note:reason,original:row.slice()}];if(dateInfo.error)return bad(dateInfo.error);
   const daysInfo=expandWeekdays(rawDay,dateInfo.dates.length);if(daysInfo.error||daysInfo.days.some(x=>x===null))return bad(daysInfo.error||'Unrecognized recorded weekday');
   return dateInfo.dates.map((date,i)=>{const w=gcf400(date.y,date.m,date.d),r=daysInfo.days[i],df=difference(r,w);return {sourceRow:rowNum,sourceDate:rawDate,date:date.iso,recorded:DAYS[r],expected:DAYS[w],status:r===w?'MATCH':'MISMATCH',residue:df.residue,shift:df.shift,note:r===w?'Consistent':'Recorded weekday '+(df.shift>0?'+':'')+df.shift+' day(s) relative to calculated weekday; verify source',original:row.slice()};});
 }
