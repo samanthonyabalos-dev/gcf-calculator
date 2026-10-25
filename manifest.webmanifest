@@ -1,11 +1,11 @@
 {
-  "name": "GCF-400 Document Auditor",
+  "name": "GCF-400 Date-Weekday Auditor",
   "short_name": "GCF Auditor",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F3F5EF",
-  "theme_color": "#24463A",
+  "theme_color": "#102E26",
   "description": "Gregorian calendar weekday calculator and document review. OCR and document audits run locally when optional libraries are loaded.",
   "icons": []
 }

@@ -18,7 +18,7 @@ async function open(file){
  if(xml.getElementsByTagName('parsererror').length)throw Error('Invalid Word document XML');
  return {zip,xml};
 }
-function paragraphs(xml,file){const all=[...xml.getElementsByTagNameNS(NS,'p')],lines=[];for(let i=0;i<all.length;i++){const texts=[...all[i].getElementsByTagNameNS(NS,'t')];const txt=texts.map(t=>t.textContent).join('');if(txt.trim())lines.push({file,page:1,lineNo:i,text:txt,location:'Paragraph '+(i+1),method:'Word text',parts:[]});}return lines;}
+function paragraphs(xml,file){const all=[...xml.getElementsByTagNameNS(NS,'p')],tableRows=[...xml.getElementsByTagNameNS(NS,'tr')],lines=[];for(let i=0;i<all.length;i++){const texts=[...all[i].getElementsByTagNameNS(NS,'t')];const txt=texts.map(t=>t.textContent).join('');let parent=all[i].parentNode,tableRow=null;while(parent&&parent.nodeType===1){if(parent.namespaceURI===NS&&parent.localName==='tr'){tableRow=tableRows.indexOf(parent);break;}parent=parent.parentNode;}if(txt.trim())lines.push({file,page:1,lineNo:i,text:txt,location:'Paragraph '+(i+1)+(tableRow!=null?' · table row '+(tableRow+1):''),method:'Word text',parts:[],tableRow});}return lines;}
 async function read(file){
  const source=await open(file),lines=paragraphs(source.xml,file.name);
  const ignored=Object.keys(source.zip.files).filter(n=>/^word\/(?:media\/|charts\/|header\d+\.xml$|footer\d+\.xml$|footnotes\.xml$|endnotes\.xml$|comments\d*\.xml$)/i.test(n));
