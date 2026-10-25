@@ -1,34 +1,44 @@
 (function(){
 'use strict';
-const $=id=>document.getElementById(id);let docs=[],rows=[],coverage=[],urls=[],running=false;
+const $=id=>document.getElementById(id);let docs=[],rows=[],coverage=[],urls=[],running=false,stopRequested=false,quality=[];
 const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+// Protect reviewers opening exported CSV files in Excel/Sheets against formula injection.
+// Never allow untrusted filenames, OCR text or document cells to become formulas.
+const safeCsvCell=v=>{const text=String(v??'').replace(/\u0000/g,'');return /^[\s\uFEFF]*[=+@\-\t\r]/.test(text)?"'"+text:text;};
+const q=v=>'"'+safeCsvCell(v).replace(/"/g,'""')+'"';
 const csv=(heads,items)=>'\uFEFF'+[heads.map(q).join(','),...items.map(it=>it.map(q).join(','))].join('\r\n');
 const recordCSV=()=>csv(['File','Page','Location','Date','Recorded weekday','Expected weekday','Status','Method','Confidence','Note'],rows.map(r=>[r.file,r.page,r.location,r.date,r.recorded,r.expected,r.status,r.method,r.confidence,r.note]));
 const coverageCSV=()=>csv(['File','Page','Status','Text method','Native lines','OCR attempted','OCR lines','OCR confidence','Notes'],coverage.map(c=>[c.file,c.page,c.status,c.method,c.nativeLines,c.ocrAttempted,c.ocrLines,c.ocrConfidence,c.note]));
+const qualityCSV=()=>csv(['Source file','Bytes','SHA256 (if supported)','PDF pages or DOCX units','Readable or blank','Unchecked','Date expressions','Matches','Mismatches','Review','Processing ms','Outcome'],quality.map(q=>[q.file,q.bytes,q.sha256,q.pages,q.processed,q.unchecked,q.dates,q.matches,q.mismatches,q.review,q.elapsedMs,q.outcome]));
 function status(text,kind='normal'){$('status').textContent=text;$('status').className='status'+(kind==='warning'?' warning':kind==='error'?' error':'');}
 function linksClear(){urls.forEach(x=>URL.revokeObjectURL(x));urls=[];$('links').replaceChildren();}
+async function fingerprint(file){if(!globalThis.crypto?.subtle)return '';const h=await crypto.subtle.digest('SHA-256',await file.arrayBuffer());return [...new Uint8Array(h)].map(n=>n.toString(16).padStart(2,'0')).join('');}
 function direct(blob,name,label){const url=URL.createObjectURL(blob);urls.push(url);const link=document.createElement('a');link.className='download';link.href=url;link.download=name;link.textContent=label||name;$('links').appendChild(link);return link;}
-function reset(){docs=[];rows=[];coverage=[];linksClear();$('files').value='';$('results').classList.add('hide');status('Choose a document to begin.');}
+function reset(){if(running)return status('Finish or cancel the current scan before clearing.','warning');docs=[];rows=[];coverage=[];quality=[];linksClear();$('files').value='';$('results').classList.add('hide');status('Choose a document to begin.');}
 function summarize(){let c=Object.fromEntries(['MATCH','MISMATCH','INVALID','REVIEW','NO_WEEKDAY'].map(s=>[s,0]));rows.forEach(r=>c[r.status]=(c[r.status]||0)+1);$('statDates').textContent=rows.length.toLocaleString();$('statMatches').textContent=c.MATCH.toLocaleString();$('statMismatch').textContent=c.MISMATCH.toLocaleString();$('statPages').textContent=coverage.length.toLocaleString();
  let chosen=[...rows.filter(r=>r.status!=='MATCH'),...rows.filter(r=>r.status==='MATCH')].slice(0,70);$('recordRows').innerHTML=chosen.map(r=>`<tr><td>${esc(r.file)}</td><td>${esc(r.page)}</td><td>${esc(r.sourceDate)}</td><td>${esc(r.recorded||'—')}</td><td>${esc(r.expected||'—')}</td><td><span class="pill ${esc(r.status)}">${esc(r.status)}</span></td></tr>`).join('')||'<tr><td colspan="6">No recognizable date expressions. This is not proof the document is error-free.</td></tr>';
  $('coverageRows').innerHTML=coverage.map(r=>`<tr><td>${esc(r.file)}</td><td>${esc(r.page)}</td><td>${esc(r.method)}</td><td>${esc(r.status)}</td><td>${esc(r.ocrConfidence??'—')}</td><td>${esc(r.note||'')}</td></tr>`).join('');$('previewNote').textContent=`${rows.length} date expressions detected. Preview displays up to 70, with flagged records first; CSV contains every extracted finding.`;
  $('results').classList.remove('hide');
 }
 async function scan(){if(running)return;const files=[...$('files').files];if(!files.length)return status('Choose one or more PDF or Word files.','warning');if(files.length>10)return status('Select up to ten files.','warning');if(files.some(f=>f.size>15*1024*1024))return status('Some files exceed 15 MB. Split them before scanning.','warning');if(new Set(files.map(f=>f.name.toLowerCase())).size!==files.length)return status('Rename duplicate filenames to avoid mixing findings.','warning');
- running=true;$('scan').disabled=true;docs=[];rows=[];coverage=[];linksClear();$('results').classList.add('hide');const problems=[];try{for(const [i,file] of files.entries()){
+ running=true;stopRequested=false;$('scan').disabled=true;$('reset').disabled=true;$('cancel').classList.remove('hide');docs=[];rows=[];coverage=[];quality=[];linksClear();$('results').classList.add('hide');const problems=[];try{for(const [i,file] of files.entries()){
    status(`Scanning ${file.name} (${i+1}/${files.length})...`);
-   try{let document;if(/\.pdf$/i.test(file.name)){
-    $('engine').textContent='Loading PDF.js; Tesseract OCR is loaded on demand…';document=await GCFPDF.readPdf(file,{ocr:$('ocr').value,onProgress:(a,b,method)=>status(`${file.name}: page ${a}/${b} · ${method}`)});$('engine').textContent=`PDF.js ready. PDF pages are inspected individually; OCR is ${$('ocr').value}.`;
+   try{const started=performance.now();let document;if(stopRequested)throw Error('Scan canceled.');if(/\.pdf$/i.test(file.name)){
+    $('engine').textContent='Loading PDF.js; Tesseract OCR is loaded on demand…';document=await GCFPDF.readPdf(file,{ocr:$('ocr').value,shouldStop:()=>stopRequested,onProgress:(a,b,method)=>status(`${file.name}: page ${a}/${b} · ${method}`)});$('engine').textContent=`PDF.js ready. PDF pages are inspected individually; OCR is ${$('ocr').value}.`;
    }else if(/\.docx$/i.test(file.name)){document=await GCFWord.read(file);}else throw Error('Only PDF and DOCX files are supported');
-   docs.push({...document,fileObj:file});coverage.push(...document.coverage.map(p=>({nativeLines:p.nativeLines??0,ocrAttempted:p.ocrAttempted??false,ocrLines:p.ocrLines??0,ocrConfidence:p.ocrConfidence??'',note:p.note||'',...p})));rows.push(...GCFScanner.scanDocument([document],{order:$('order').value}).records);
-   if(!document.complete)problems.push(file.name+': unreadable pages '+document.unchecked.map(p=>p.page).join(', '));
-   }catch(error){problems.push(file.name+': '+error.message);coverage.push({file:file.name,page:'—',status:'FAILED',method:'Unavailable',note:error.message});}
+   if(stopRequested)throw Error('Scan canceled.');
+   const scanned=GCFScanner.scanDocument([document],{order:$('order').value});
+   docs.push({...document,fileObj:file});coverage.push(...document.coverage.map(p=>({nativeLines:p.nativeLines??0,ocrAttempted:p.ocrAttempted??false,ocrLines:p.ocrLines??0,ocrConfidence:p.ocrConfidence??'',note:p.note||'',...p})));
+   rows.push(...scanned.records);
+   const processed=document.coverage.filter(x=>x.status==='READABLE'||x.status==='BLANK').length;
+   quality.push({file:file.name,bytes:file.size,sha256:await fingerprint(file).catch(()=>'unavailable'),pages:document.coverage.length,processed,unchecked:document.coverage.length-processed,dates:scanned.records.length,matches:scanned.counts.MATCH,mismatches:scanned.counts.MISMATCH,review:scanned.counts.REVIEW,elapsedMs:Math.round(performance.now()-started),outcome:document.complete?'PAGES PROCESSED, DATE EXTRACTION NOT CERTIFIED':'INCOMPLETE'});
+   if(!document.complete)problems.push(file.name+': '+(document.scopeWarning||'unreadable pages '+(document.unchecked||[]).map(p=>p.page).join(', ')));
+   }catch(error){problems.push(file.name+': '+error.message);coverage.push({file:file.name,page:'—',status:'FAILED',method:'Unavailable',note:error.message});quality.push({file:file.name,bytes:file.size,sha256:'',pages:0,processed:0,unchecked:1,dates:0,matches:0,mismatches:0,review:0,elapsedMs:0,outcome:'FAILED: '+error.message});if(stopRequested)break;}
   }
-  summarize();const passed=coverage.filter(c=>c.status==='READABLE'||c.status==='BLANK').length,total=coverage.filter(c=>Number.isInteger(c.page)).length;const bad=coverage.filter(c=>c.status==='UNREADABLE'||c.status==='FAILED').length;
+  summarize();const passed=coverage.filter(c=>c.status==='READABLE'||c.status==='BLANK').length,total=coverage.filter(c=>Number.isInteger(c.page)).length;const bad=coverage.filter(c=>c.status==='UNREADABLE'||c.status==='FAILED'||c.status==='PARTIAL').length;
   if(problems.length||bad)status(`${passed}/${total} pages were readable or verified blank. ${bad} unreadable/failed page entries. Document NOT fully verified.\n${problems.join('\n')}`,'warning');
-  else status(`${total} of ${total} pages inspected with no unreadable pages. Found ${rows.length} date expressions, including ${rows.filter(r=>r.status==='MATCH').length} matches and ${rows.filter(r=>r.status==='MISMATCH').length} weekday mismatches. Page coverage does not guarantee that OCR recognized every printed date.`);
- }finally{running=false;$('scan').disabled=false;try{await GCFPDF.closeOCR();}catch(e){}}}
+  else status(`${total} of ${total} pages processed with no unreadable pages. Found ${rows.length} date expressions, including ${rows.filter(r=>r.status==='MATCH').length} matches and ${rows.filter(r=>r.status==='MISMATCH').length} weekday mismatches. Page coverage does not guarantee that OCR recognized every printed date.`);
+ }finally{running=false;$('scan').disabled=false;$('reset').disabled=false;$('cancel').classList.add('hide');try{await GCFPDF.closeOCR();}catch(e){}}}
 function saveText(content,name,label){const link=direct(new Blob([content],{type:'text/csv;charset=utf-8'}),name,label);link.click();}
 async function annotatedPDF(doc,selected){await GCFPDF.load('write');const lib=PDFLib,pdf=await lib.PDFDocument.load(new Uint8Array(await doc.fileObj.arrayBuffer()),{updateMetadata:false});const pageList=pdf.getPages();const unresolved=[];let count=0;const colors={MATCH:[.24,.71,.34],MISMATCH:[.91,.23,.25],REVIEW:[.97,.75,.12],INVALID:[.96,.48,.12],NO_WEEKDAY:[.30,.61,.9]};
  for(const row of selected){if(!row.rect||row.page<1||row.page>pageList.length){unresolved.push(`${row.date}: exact PDF date anchor not found`);continue;}
@@ -37,8 +47,8 @@ async function annotatedPDF(doc,selected){await GCFPDF.load('write');const lib=P
  const legend=pdf.addPage([612,792]);const reg=await pdf.embedFont(lib.StandardFonts.Helvetica),bold=await pdf.embedFont(lib.StandardFonts.HelveticaBold),black=lib.rgb(.10,.20,.15);legend.drawText('GCF-400 — Document Audit Legend',{x:45,y:745,size:17,font:bold,color:black});legend.drawText('Green: match | Red: mismatch | Orange: invalid | Yellow: review | Blue: no weekday',{x:45,y:708,size:10,font:reg});legend.drawText(`Date records: ${selected.length}   |   highlights: ${count}   |   unresolved locations: ${unresolved.length}`,{x:45,y:675,size:10,font:reg});legend.drawText('Findings check weekday consistency, not source authenticity.',{x:45,y:641,size:9,font:reg});
  const bytes=await pdf.save({useObjectStreams:false});return {blob:new Blob([bytes],{type:'application/pdf'}),count,unresolved};
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());const issues=[];let files=0;
- for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&r.status!=='NO_WEEKDAY');const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());const issues=[];let files=0;
+ for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
   }else{const a=await GCFWord.annotate(doc.fileObj,selected);zip.file(`Annotated/${stem}_Annotated.docx`,a.blob);files++;issues.push(...a.issues.map(it=>doc.fileObj.name+': '+it.reason));}}
@@ -47,7 +57,8 @@ async function downloadPackage(){if(!docs.length&&!coverage.length)return status
  zip.file('Annotation_Notes.txt',`Generated annotated files: ${files}\r\nUnresolved locations or issues:\r\n${issues.length?issues.join('\r\n'):'None identified'}\r\n\r\nOriginal uploads were never overwritten. A missing annotation must not be interpreted as a correct record.\r\n`);
  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});const link=direct(blob,'GCF400_Audit_Reports.zip','Save ZIP of findings, coverage, and annotated copies');link.click();status(`Report ZIP prepared with ${files} annotated document(s). ${issues.length} annotation notes. The downloadable ZIP contains findings and page coverage even when an annotated copy could not be made.`,issues.length?'warning':'normal');
  }catch(e){status('Export failed: '+e.message,'error');}finally{$('downloadPackage').disabled=false;}}
-$('scan').addEventListener('click',scan);$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'GCF_Findings.csv','Findings CSV'));
+$('scan').addEventListener('click',scan);$('cancel').addEventListener('click',()=>{stopRequested=true;status('Cancel requested. The current PDF/OCR operation may finish before it can stop.','warning');});$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'GCF_Findings.csv','Findings CSV'));
 $('downloadCoverage').addEventListener('click',()=>saveText(coverageCSV(),'GCF_Page_Coverage.csv','Page coverage CSV'));
+$('downloadEvidence').addEventListener('click',()=>saveText(qualityCSV(),'GCF_Quality_Evidence.csv','Quality evidence CSV'));
 $('downloadPackage').addEventListener('click',downloadPackage);
 })();

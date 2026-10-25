@@ -32,9 +32,10 @@ function classify(date,day,source,neighbor=null){
  const expected=G.DAYS[G.gcf400(date.y,date.m,date.d)];label.expected=expected;
  if(!day){label.status='NO_WEEKDAY';label.note='No uniquely associated written weekday';return label;}
  label.status=day.weekday===G.gcf400(date.y,date.m,date.d)?'MATCH':'MISMATCH';
- if(neighbor)label.note='Weekday associated from adjacent line, review layout';
+ if(neighbor){label.note='Tentative '+label.status+': weekday associated from an adjacent line; confirm on original page';label.tentativeStatus=label.status;label.status='REVIEW';}
  if((source.method||'').includes('OCR')&&(source.confidence??100)<70){label.status='REVIEW';label.note='Low-confidence OCR (manual confirmation required)';}
  label.rect=locateDate(source,date);
+ if((source.method||'').includes('OCR')&&(source.confidence??0)<80)label.rect=null;
  return label;
 }
 function locateDate(line,date){

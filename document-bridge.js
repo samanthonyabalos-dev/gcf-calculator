@@ -2,9 +2,29 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFWord=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const NS='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-async function open(file){const zip=await JSZip.loadAsync(file),entry=zip.file('word/document.xml');if(!entry)throw Error('Word document.xml not found');const xml=new DOMParser().parseFromString(await entry.async('string'),'application/xml');if(xml.querySelector('parsererror'))throw Error('Invalid Word document XML');return {zip,xml};}
+async function open(file){
+ // Check the ZIP directory before expanding document.xml to reduce zip-bomb risk.
+ const zip=await JSZip.loadAsync(file,{checkCRC32:true});
+ const members=Object.values(zip.files).filter(e=>!e.dir);
+ if(members.length>2500)throw Error('DOCX has too many embedded files to audit safely.');
+ const entry=zip.file('word/document.xml');if(!entry)throw Error('Word document.xml not found');
+ const n=entry._data?.uncompressedSize;
+ if(Number.isFinite(n)&&n>12*1024*1024)throw Error('Word XML exceeds 12 MB uncompressed. Split the file.');
+ const raw=await entry.async('string');
+ if(raw.length>12*1024*1024)throw Error('Word XML exceeds 12 MB. Split the file.');
+ // Prevent XML parser from processing document type declarations / entities.
+ if(/<!DOCTYPE|<!ENTITY/i.test(raw))throw Error('Unsupported document XML declarations.');
+ const xml=new DOMParser().parseFromString(raw,'application/xml');
+ if(xml.getElementsByTagName('parsererror').length)throw Error('Invalid Word document XML');
+ return {zip,xml};
+}
 function paragraphs(xml,file){const all=[...xml.getElementsByTagNameNS(NS,'p')],lines=[];for(let i=0;i<all.length;i++){const texts=[...all[i].getElementsByTagNameNS(NS,'t')];const txt=texts.map(t=>t.textContent).join('');if(txt.trim())lines.push({file,page:1,lineNo:i,text:txt,location:'Paragraph '+(i+1),method:'Word text',parts:[]});}return lines;}
-async function read(file){const source=await open(file);return {file:file.name,lines:paragraphs(source.xml,file.name),coverage:[{file:file.name,page:1,status:'READABLE',method:'Word XML',nativeLines:paragraphs(source.xml,file.name).length,note:'Includes paragraphs and table cells; excludes embedded images.'}],complete:true};}
+async function read(file){
+ const source=await open(file),lines=paragraphs(source.xml,file.name);
+ const ignored=Object.keys(source.zip.files).filter(n=>/^word\/(?:media\/|charts\/|header\d+\.xml$|footer\d+\.xml$|footnotes\.xml$|endnotes\.xml$|comments\d*\.xml$)/i.test(n));
+ const warning=ignored.length?'Manual review needed: Word contains '+ignored.length+' non-body or embedded parts (images, headers, footers, notes or charts) not examined by the date scanner.':'Word body paragraphs and tables were processed. Physical printed pages and hidden text are not certified.';
+ return {file:file.name,lines,coverage:[{file:file.name,page:1,status:ignored.length?'PARTIAL':'READABLE',method:'Word body XML',nativeLines:lines.length,note:warning}],complete:ignored.length===0,scopeWarning:warning,unchecked:ignored.map(n=>({part:n,page:'embedded'}))};
+}
 function splitRun(node,target,color,xml){const parent=node.parentNode; if(parent.localName!=='r'||!parent.parentNode||[...parent.children].some(x=>!['rPr','t'].includes(x.localName)))return false;
  const str=node.textContent,index=str.indexOf(target);if(index<0||str.indexOf(target,index+1)!==-1)return false;
  const fragments=[str.slice(0,index),target,str.slice(index+target.length)];let anchor=parent;
