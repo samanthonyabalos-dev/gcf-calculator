@@ -26,7 +26,7 @@ function dateMatches(text,order='auto'){
  }
  return output;
 }
-function dayMatches(text){return [...String(text??'').matchAll(WEEKDAY)].map(m=>({day:m[1],start:m.index,end:m.index+m[0].length,weekday:G.parseWeekday(m[1])}));}
+function dayMatches(text){return [...String(text??'').normalize('NFKC').replace(/[\u00a0\u200b-\u200d\ufeff]/g,' ').matchAll(WEEKDAY)].map(m=>({day:m[1],start:m.index,end:m.index+m[0].length,weekday:G.parseWeekday(m[1])}));}
 function locateDate(line,date){
  const parts=line.parts||[];const matches=[];
  for(const p of parts){const t=String(p.text||'');const pos=t.toLowerCase().indexOf(date.raw.toLowerCase());if(pos>=0&&t.toLowerCase().indexOf(date.raw.toLowerCase(),pos+1)<0)matches.push({p,pos});}
@@ -67,31 +67,62 @@ function getPairings(dates,days,line){
  }
  return {matched,uncertain};
 }
-function neighborCandidate(line,neighbor){
- if(!neighbor||neighbor.file!==line.file||neighbor.page!==line.page)return false;
- if(dateMatches(neighbor.text).length)return false;
- const days=dayMatches(neighbor.text);if(days.length!==1||neighbor.text.trim().length>95)return false;
- if(line.tableRow!=null||neighbor.tableRow!=null){if(line.tableRow!==neighbor.tableRow)return false;}
- else if(line.baseline!==undefined&&neighbor.baseline!==undefined&&Math.abs(line.baseline-neighbor.baseline)>28)return false;
- if(line.parts?.length&&neighbor.parts?.length){const ax=Math.min(...line.parts.map(p=>p.x||0)),bx=Math.min(...neighbor.parts.map(p=>p.x||0));if(Math.abs(ax-bx)>185)return false;}
- return true;
+// PDF.js may split a visibly continuous heading into separate text items/lines.
+// Resolve geometry across ALL plausible lines on the same page, not only i ± 1.
+// Never associate with a weekday in a separate table row or faraway paragraph.
+function lineRegion(line){const ps=line.parts||[];if(!ps.length)return null;
+ const left=Math.min(...ps.map(p=>Number(p.rect?.x0??p.x)).filter(Number.isFinite));
+ const right=Math.max(...ps.map(p=>Number(p.rect?.x1??((p.x||0)+(p.width||0)))).filter(Number.isFinite));
+ const lo=Math.min(...ps.map(p=>Number(p.rect?.y0??p.y)).filter(Number.isFinite));
+ const hi=Math.max(...ps.map(p=>Number(p.rect?.y1??p.y)).filter(Number.isFinite));
+ if(![left,right,lo,hi].every(Number.isFinite))return null;return {left,right,lo,hi,midY:(lo+hi)/2};
+}
+function weekdayCandidates(line,ordered){
+ const a=lineRegion(line),out=[];
+ for(const neighbor of ordered){
+  if(neighbor===line||neighbor.file!==line.file||neighbor.page!==line.page)continue;
+  if(line.tableRow!=null||neighbor.tableRow!=null){if(line.tableRow!==neighbor.tableRow)continue;}
+  if(dateMatches(neighbor.text).length)continue;
+  const days=dayMatches(neighbor.text);if(days.length!==1||String(neighbor.text).trim().length>65)continue;
+  const b=lineRegion(neighbor);
+  if(a&&b){
+   // Same visible row (baseline drift), or immediately neighboring line.
+   const verticalGap=Math.max(0,Math.max(a.lo,b.lo)-Math.min(a.hi,b.hi));
+   if(verticalGap>19)continue;
+   const h=Math.max(1,Math.min(a.hi-a.lo,b.hi-b.lo));
+   if(Math.abs(a.midY-b.midY)>Math.max(35,2.8*h))continue;
+   const horizontalGap=Math.max(0,Math.max(a.left,b.left)-Math.min(a.right,b.right));
+   // Consecutive fragments in a heading or aligned column; reject a different column.
+   if(horizontalGap>95 && Math.abs(a.left-b.left)>100)continue;
+  }else if((line.lineNo!=null&&neighbor.lineNo!=null)&&Math.abs(line.lineNo-neighbor.lineNo)>2)continue;
+  else if((line.tableRow==null&&neighbor.tableRow==null)&&(!a||!b)&&line.lineNo==null)continue;
+  const rank=(a&&b)?Math.abs(a.midY-b.midY)+Math.max(0,Math.max(a.left,b.left)-Math.min(a.right,b.right))*.04:Math.abs((line.lineNo??0)-(neighbor.lineNo??0))*16;
+  out.push({line:neighbor,day:days[0],rank});
+ }
+ return out.sort((a,b)=>a.rank-b.rank);
 }
 function scanPage(lines,opts={}){
- const rows=[];const ordered=[...lines].sort((a,b)=>(a.lineNo??0)-(b.lineNo??0));
+ const rows=[],ordered=[...lines].sort((a,b)=>(a.lineNo??0)-(b.lineNo??0));
  for(let i=0;i<ordered.length;i++){
   const line=ordered[i],dates=dateMatches(line.text,opts.order||'auto'),days=dayMatches(line.text);
   const pairing=getPairings(dates,days,line);
   for(let j=0;j<dates.length;j++){
    let found=pairing.matched.get(j),uncertain=pairing.uncertain.has(j),rowLine=line;
    if(!found&&!days.length&&dates.length===1){
-    const nearby=[];
-    for(const idx of [i-1,i+1]){
-     if(neighborCandidate(line,ordered[idx]))nearby.push(ordered[idx]);
+    const possible=weekdayCandidates(line,ordered);
+    if(possible.length){
+     const closest=possible[0],runnerUp=possible[1];
+     // If two equally plausible weekdays are printed around the date, don't guess.
+     if(runnerUp&&Math.abs(runnerUp.rank-closest.rank)<4)uncertain=true;
+     else{found={day:closest.day,kind:'adjacent'};
+       rowLine={...line,text:closest.line.text+' | '+line.text};}
     }
-    if(nearby.length===1){found={day:dayMatches(nearby[0].text)[0],kind:'adjacent'};rowLine={...line,text:line.text+' | '+nearby[0].text};}
-    else if(nearby.length>1)uncertain=true;
    }
-   rows.push(classify(dates[j],found?.day||null,rowLine,{association:found?.kind||'none',uncertain}));
+   const rec=classify(dates[j],found?.day||null,rowLine,{association:found?.kind||'none',uncertain});
+   // Preserve original source line and the evidence used for a separated weekday.
+   rec.sourceText=line.text;rec.dayEvidence=found?.kind==='adjacent'?(rowLine.text):line.text;
+   if(found?.kind==='adjacent')rec.note+='; verify adjacent-line association';
+   rows.push(rec);
   }
  }
  return rows;
@@ -101,5 +132,5 @@ function scanDocument(pages,opts={}){
  const counts=Object.fromEntries(['MATCH','MISMATCH','INVALID','REVIEW','NO_WEEKDAY'].map(x=>[x,0]));for(const r of records)counts[r.status]=(counts[r.status]||0)+1;
  return {records,counts,total:records.length,pairs:counts.MATCH+counts.MISMATCH,unpaired:counts.NO_WEEKDAY};
 }
-return {dateMatches,dayMatches,getPairings,scanPage,scanDocument,locateDate};
+return {dateMatches,dayMatches,getPairings,scanPage,scanDocument,locateDate,weekdayCandidates};
 });

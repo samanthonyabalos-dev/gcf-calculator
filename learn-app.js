@@ -1,0 +1,6 @@
+(function(){'use strict';const $=id=>document.getElementById(id);const toggle=$('learnGCFButton'),box=$('learnGCFContent');if(!toggle||!box)return;
+toggle.addEventListener('click',()=>{const opening=box.hidden;box.hidden=!opening;toggle.setAttribute('aria-expanded',String(opening));toggle.textContent=opening?'Hide Learn GCF':'Learn GCF';});
+const G=window.GCFEngine;const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const tbl=$('learnMonthTable');if(tbl){for(let m=1;m<=12;m++){const tr=document.createElement('tr');const values=[months[m-1],G.gcf(2025,m,1).M,G.gcf(2024,m,1).M,m];for(const v of values){const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td);}tbl.appendChild(tr);}}
+const days=$('learnWeekdayTable');if(days)G.DAYS.forEach((d,i)=>{const tr=document.createElement('tr');for(const v of [i,d]){const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td);}days.appendChild(tr);});
+})();
