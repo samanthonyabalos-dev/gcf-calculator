@@ -1,0 +1,27 @@
+name: GCF-400 quality gates
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript syntax
+        run: |
+          for file in gcf-engine.js scan-core.js audit-utils.js pdf-bridge.js pdf-export.js document-bridge.js audit-app.js quality-app.js sheet-app.js calc-app.js nav.js sw.js; do node --check "$file"; done
+      - name: Date and PRC regressions
+        run: |
+          node tests/regression.js
+          node tests/prc-fixtures.js
+      - name: Security and audit evidence
+        run: node tests/hardening.js
