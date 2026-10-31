@@ -1,4 +1,4 @@
-/* GCF-400 v17 deterministic regression tests. Run: node tests/regression.js */
+/* GCF-400 v18 deterministic regression tests. Run: node tests/regression.js */
 'use strict';
 const assert=require('node:assert/strict');
 globalThis.GCFEngine=require('../gcf-engine.js');
@@ -6,7 +6,7 @@ globalThis.GCFScanner=require('../scan-core.js');
 globalThis.GCFPDF=require('../pdf-bridge.js');
 require('../quality-app.js');
 const result=globalThis.GCFQuality.runSelfChecks();
-assert.equal(result.total,251,'Expected 251 checks');
+assert.equal(result.total,298,'Expected 251 checks');
 assert.equal(result.failed,0,'Regression failures: '+result.failures.join(' | '));
 const scanner=globalThis.GCFScanner;
 function runLine(text){return scanner.scanPage([{file:'regression.pdf',page:1,lineNo:0,text,method:'Test',parts:[]}],{reading:'auto'});}
