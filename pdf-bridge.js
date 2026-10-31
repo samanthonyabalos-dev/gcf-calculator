@@ -10,12 +10,46 @@ const LIBS={
 const pending={};
 function js(src){return new Promise((resolve,reject)=>{let done=false;const el=document.createElement('script');el.src=src;el.async=true;const timer=setTimeout(()=>finish(Error('Load timed out: '+src)),7000);function finish(e){if(done)return;done=true;clearTimeout(timer);el.onload=el.onerror=null;if(e){el.remove();reject(e);}else resolve();}el.onload=()=>finish();el.onerror=()=>finish(Error('Library unavailable: '+src));document.head.append(el);});}
 async function load(which){const field=which==='pdf'?'pdfjsLib':which==='ocr'?'Tesseract':'PDFLib';if(globalThis[field])return {provider:'already loaded'};if(pending[which])return pending[which];pending[which]=(async()=>{let errors=[];for(const entry of LIBS[which]){try{await js(entry[1]);if(globalThis[field]){if(which==='pdf')globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc=entry[2];globalThis['__gcfProvider_'+which]=entry[0];return {provider:entry[0]};}errors.push(entry[0]+': loaded but no global object');}catch(e){errors.push(e.message);}}pending[which]=null;throw Error('Could not load '+which+' engine. Add the missing vendor libraries or allow CDN scripts. '+errors.slice(0,2).join(' | '));})();return pending[which];}
-function groupSpans(items,page,file){const raw=[];for(const obj of items||[]){if(!obj.str?.trim()||!obj.transform)continue;const [a,b,c,d,x,y]=obj.transform;const size=Math.max(6,Math.hypot(c,d)||Number(obj.height)||9);const width=Math.max(1,Number(obj.width)||obj.str.length*size*.52);raw.push({text:obj.str.trim(),x,y,width,rect:{x0:x,x1:x+width,y0:y-size*.24,y1:y+size*.84},size});}
+// Reconstruct PDF text using glyph spacing instead of inserting a space between every text fragment.
+function joinGlyphRuns(parts){
+ let result='',prev=null;
+ for(const part of parts){
+  const raw=String(part.text||'').normalize('NFKC').replace(/[\u00a0\u200b-\u200d\ufeff]/g,' ');
+  if(!raw)continue;
+  if(prev){
+   const gap=part.x-(prev.x+prev.width);
+   const font=Math.max(4,Math.min(Number(part.size)||9,Number(prev.size)||9));
+   const explicit=/\s$/.test(result)||/^\s/.test(raw);
+   const separate=!explicit&&gap>Math.max(1.15,font*.20);
+   if(separate)result+=' ';
+  }
+  result+=raw;prev=part;
+ }
+ return result.replace(/\s+/g,' ').trim();
+}
+function groupSpans(items,page,file){
+ const raw=[];
+ for(const obj of items||[]){
+  if(!obj.str?.trim()||!obj.transform)continue;
+  const [a,b,c,d,x,y]=obj.transform;
+  const size=Math.max(6,Math.hypot(c,d)||Number(obj.height)||9);
+  const width=Math.max(.1,Number(obj.width)||obj.str.length*size*.52);
+  raw.push({text:String(obj.str),x,y,width,rect:{x0:x,x1:x+width,y0:y-size*.24,y1:y+size*.84},size});
+ }
  const clusters=[];raw.sort((a,b)=>b.y-a.y||a.x-b.x);
- for(const span of raw){const last=clusters[clusters.length-1],tol=Math.min(8,Math.max(3.5,span.size*.50));
-   if(last&&Math.abs(last.y-span.y)<=tol){last.parts.push(span);last.y=(last.y*(last.parts.length-1)+span.y)/last.parts.length;}
-   else clusters.push({y:span.y,parts:[span]});}
- return clusters.map((g,i)=>{g.parts.sort((a,b)=>a.x-b.x);const text=g.parts.map(x=>x.text).join(' ').normalize('NFKC').replace(/[\u00a0\u200b-\u200d\ufeff]/g,' ');return {file,page,lineNo:i,location:'Page '+page+' · line '+(i+1),method:'PDF text',text,parts:g.parts,baseline:g.y,confidence:null};}).filter(x=>x.text);
+ for(const span of raw){
+  const tol=Math.min(8,Math.max(3.5,span.size*.50));
+  let closest=null,err=Infinity;
+  for(const c of clusters){const diff=Math.abs(c.y-span.y);if(diff<=tol&&diff<err){closest=c;err=diff;}}
+  if(closest){closest.parts.push(span);closest.y=(closest.y*(closest.parts.length-1)+span.y)/closest.parts.length;}
+  else clusters.push({y:span.y,parts:[span]});
+ }
+ clusters.sort((a,b)=>b.y-a.y);
+ return clusters.map((g,i)=>{
+  g.parts.sort((a,b)=>a.x-b.x);
+  const text=joinGlyphRuns(g.parts);
+  return {file,page,lineNo:i,location:'Page '+page+' · line '+(i+1),method:'PDF text',text,parts:g.parts,baseline:g.y,confidence:null};
+ }).filter(x=>x.text);
 }
 async function workerOCR(){await load('ocr');if(!globalThis.__gcfWorker){let settings={logger:()=>{}};if(globalThis.__gcfProvider_ocr==='Local'){settings.workerPath=new URL('vendor/tesseract.worker.min.js',location.href).href;settings.corePath=new URL('vendor/tesseract-core',location.href).href;settings.langPath=new URL('vendor/lang',location.href).href;}globalThis.__gcfWorker=await Tesseract.createWorker('eng',1,settings);}return globalThis.__gcfWorker;}
 async function extractOCR(pdfPage,file,pageIndex){const viewport=pdfPage.getViewport({scale:1.55}),canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);if(canvas.width*canvas.height>18000000)throw Error('Page too large for browser OCR');const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Canvas unavailable');try{await pdfPage.render({canvasContext:ctx,viewport}).promise;
@@ -25,7 +59,7 @@ async function extractOCR(pdfPage,file,pageIndex){const viewport=pdfPage.getView
   for(const word of words){const box=word.bbox||word.boundingBox;if(!box||!word.text?.trim())continue;const a=viewport.convertToPdfPoint(box.x0,box.y0),b=viewport.convertToPdfPoint(box.x1,box.y1),rect={x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),y0:Math.min(a[1],b[1]),y1:Math.max(a[1],b[1])};spans.push({text:word.text.trim(),rect,x:rect.x0,y:(rect.y0+rect.y1)/2,width:rect.x1-rect.x0,confidence:Number(word.confidence)||0});}
   const clusters=[];for(const word of spans){let g=clusters.find(x=>Math.abs(x.y-word.y)<Math.max(3,Math.min(7,(word.rect.y1-word.rect.y0)*.45)));if(!g){g={y:word.y,parts:[]};clusters.push(g);}g.parts.push(word);}
   clusters.sort((a,b)=>b.y-a.y);
-  let lines=clusters.map((g,i)=>{g.parts.sort((a,b)=>a.x-b.x);return {file,page:pageIndex,lineNo:i,location:'Page '+pageIndex+' · OCR line '+(i+1),method:'OCR',text:g.parts.map(p=>p.text).join(' '),parts:g.parts,baseline:g.y,confidence:g.parts.reduce((s,w)=>s+w.confidence,0)/g.parts.length};});
+  let lines=clusters.map((g,i)=>{g.parts.sort((a,b)=>a.x-b.x);return {file,page:pageIndex,lineNo:i,location:'Page '+pageIndex+' · OCR line '+(i+1),method:'OCR',text:joinGlyphRuns(g.parts),parts:g.parts,baseline:g.y,confidence:g.parts.reduce((s,w)=>s+w.confidence,0)/g.parts.length};});
   // Prefer line boxes when the OCR engine reports lines but omits word boxes.
   if(!lines.length&&result.lines?.length){lines=result.lines.filter(l=>l.text?.trim()).map((l,i)=>{
     const box=l.bbox||l.boundingBox, parts=[];
@@ -62,8 +96,8 @@ async function readPdf(file,{ocr='auto',reading='auto',order='auto',onProgress=(
    if(need)details.note+='Reason for OCR: '+ocrCheck.reason+'; ';
    if(need){details.ocrAttempted=true;onProgress(i,doc.numPages,'OCR');if(shouldStop())throw Error('Scan canceled by user.');try{if(!pg)pg=await doc.getPage(i);recognized=await extractOCR(pg,file.name,i);details.ocrLines=recognized.lines.length;details.ocrConfidence=recognized.confidence??'';}catch(e){details.note+='OCR: '+e.message+'; ';}}
    const nativePairs=globalThis.GCFScanner?.scanPage(native,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length||0,ocrPairs=recognized?.lines?.length?(GCFScanner.scanPage(recognized.lines,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length):0;
-   let picked=native,method='Text layer';if(ocr==='all'){picked=recognized?.lines||[];method='OCR only';}else if(recognized?.lines?.length&&(!native.length||ocrPairs>nativePairs)){picked=recognized.lines;method='OCR';}
-   if(ocr==='all'&&need&&!recognized){details.status='UNREADABLE';details.method='OCR required but failed';}
+   let picked=native,method='Text layer';if(recognized?.lines?.length&&(!native.length||ocrPairs>nativePairs)){picked=recognized.lines;method='OCR';details.note+='OCR produced more verified weekday/date pairs than native text; ';}else if(ocr==='all'&&native.length){details.note+='OCR comparison retained higher-coverage native text; ';}
+   if(ocr==='all'&&need&&!recognized&&!native.length){details.status='UNREADABLE';details.method='No native text and OCR failed';}
    else if(!picked.length&&recognized?.blank){details.status='BLANK';details.method='Verified visually blank';}
    else if(!picked.length){details.status='UNREADABLE';details.method='Unverified';if(ocr==='all')details.note+='OCR generated no positioned text; cannot certify or highlight this page. ';}
    else {details.status='READABLE';details.method=method;lines.push(...picked);}
@@ -93,5 +127,5 @@ async function renderPreview(file,pageNo,canvas){
 }
 function previewPage(file,pageNo,canvas){previewQueue=previewQueue.catch(()=>{}).then(()=>renderPreview(file,pageNo,canvas));return previewQueue;}
 async function closePreview(){await previewQueue.catch(()=>{});if(previewCache?.pdf)await previewCache.pdf.destroy();previewCache=null;}
-return {load,readPdf,groupSpans,needsOCR,closeOCR,previewPage,closePreview};
+return {load,readPdf,groupSpans,joinGlyphRuns,needsOCR,closeOCR,previewPage,closePreview};
 });
