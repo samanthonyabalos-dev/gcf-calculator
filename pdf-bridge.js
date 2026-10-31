@@ -88,22 +88,36 @@ function needsOCR(mode,native,reading='auto'){
  return {needed:mode==='all'||(mode==='auto'&&(textLen<50||garbled||(uncertain>0&&paired===0&&reading==='auto')||scheduleWithoutPairs)),
    missingDays:lone,knownPairs:paired,reason:textLen<50?'Insufficient native text':garbled?'Corrupted text layer':scheduleWithoutPairs?'Schedule dates lack a readable weekday':uncertain>0?'Uncertain weekday association':'Native text is usable'};
 }
-async function readPdf(file,{ocr='auto',reading='auto',order='auto',onProgress=()=>{},shouldStop=()=>false}={}){
- await load('pdf');const bytes=new Uint8Array(await file.arrayBuffer());const job=pdfjsLib.getDocument({data:bytes.slice(),useSystemFonts:true,isEvalSupported:false}),doc=await job.promise;if(doc.numPages>180)throw Error('PDF over 180 pages; split it into smaller files');
- const coverage=[],lines=[];try{for(let i=1;i<=doc.numPages;i++){if(shouldStop())throw Error('Scan canceled by user.');const details={file:file.name,page:i,method:'',nativeLines:0,ocrAttempted:false,ocrLines:0,ocrConfidence:'',status:'',note:''};let pg=null,native=[],recognized=null;onProgress(i,doc.numPages,'Decoding');try{pg=await doc.getPage(i);const content=await pg.getTextContent({disableCombineTextItems:false});native=groupSpans(content.items,i,file.name);}catch(e){details.note+='Text layer: '+e.message+'; ';}
+async function readPdf(file,{ocr='auto',reading='auto',order='auto',pageNumbers=null,onProgress=()=>{},shouldStop=()=>false}={}){
+ await load('pdf');const bytes=new Uint8Array(await file.arrayBuffer());const job=pdfjsLib.getDocument({data:bytes.slice(),useSystemFonts:true,isEvalSupported:false});const doc=await job.promise;
+ if(doc.numPages>180){await doc.destroy();throw Error('PDF over 180 pages; split it into smaller files');}
+ const coverage=[],lines=[],selected=pageNumbers?([...new Set(pageNumbers.map(Number))].filter(n=>Number.isInteger(n)&&n>=1&&n<=doc.numPages).sort((a,b)=>a-b)):Array.from({length:doc.numPages},(_,i)=>i+1);
+ let stopped=false;
+ try{for(const [index,i] of selected.entries()){
+  if(shouldStop()){stopped=true;break;}
+  const began=performance.now(),details={file:file.name,page:i,method:'',nativeLines:0,ocrAttempted:false,ocrLines:0,ocrConfidence:'',status:'',note:'',durationMs:0};let pg=null,native=[],recognized=null;
+  onProgress(index+1,selected.length,'Decoding page '+i);
+  try{
+   try{pg=await doc.getPage(i);const content=await pg.getTextContent({disableCombineTextItems:false});native=groupSpans(content.items,i,file.name);}catch(e){details.note+='Text layer: '+e.message+'; ';}
    details.nativeLines=native.length;
-   const ocrCheck=needsOCR(ocr,native,reading),need=ocrCheck.needed,missingDays=ocrCheck.missingDays;
-   if(need)details.note+='Reason for OCR: '+ocrCheck.reason+'; ';
-   if(need){details.ocrAttempted=true;onProgress(i,doc.numPages,'OCR');if(shouldStop())throw Error('Scan canceled by user.');try{if(!pg)pg=await doc.getPage(i);recognized=await extractOCR(pg,file.name,i);details.ocrLines=recognized.lines.length;details.ocrConfidence=recognized.confidence??'';}catch(e){details.note+='OCR: '+e.message+'; ';}}
-   const nativePairs=globalThis.GCFScanner?.scanPage(native,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length||0,ocrPairs=recognized?.lines?.length?(GCFScanner.scanPage(recognized.lines,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length):0;
-   let picked=native,method='Text layer';if(recognized?.lines?.length&&(!native.length||ocrPairs>nativePairs)){picked=recognized.lines;method='OCR';details.note+='OCR produced more verified weekday/date pairs than native text; ';}else if(ocr==='all'&&native.length){details.note+='OCR comparison retained higher-coverage native text; ';}
-   if(ocr==='all'&&need&&!recognized&&!native.length){details.status='UNREADABLE';details.method='No native text and OCR failed';}
-   else if(!picked.length&&recognized?.blank){details.status='BLANK';details.method='Verified visually blank';}
-   else if(!picked.length){details.status='UNREADABLE';details.method='Unverified';if(ocr==='all')details.note+='OCR generated no positioned text; cannot certify or highlight this page. ';}
-   else {details.status='READABLE';details.method=method;lines.push(...picked);}
-   coverage.push(details);if(pg)pg.cleanup();onProgress(i,doc.numPages,details.status);
- }}finally{await doc.destroy();}
- return {file:file.name,lines,coverage,pageCount:coverage.length,complete:coverage.every(x=>x.status!=='UNREADABLE'),unchecked:coverage.filter(x=>x.status==='UNREADABLE')};
+   const check=needsOCR(ocr,native,reading);
+   if(check.needed){details.ocrAttempted=true;details.note+='Reason for OCR: '+check.reason+'; ';onProgress(index+1,selected.length,'OCR page '+i);
+    try{if(!pg)pg=await doc.getPage(i);recognized=await extractOCR(pg,file.name,i);details.ocrLines=recognized.lines.length;details.ocrConfidence=recognized.confidence??'';}catch(e){details.note+='OCR: '+e.message+'; ';}}
+   const nativePairs=globalThis.GCFScanner?.scanPage(native,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length||0;
+   const ocrPairs=recognized?.lines?.length?(GCFScanner.scanPage(recognized.lines,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length):0;
+   let picked=native,method='Text layer';
+   if(recognized?.lines?.length&&(!native.length||ocrPairs>nativePairs)){picked=recognized.lines;method='OCR';details.note+='OCR yielded more validated pairs than native text; ';}
+   else if(ocr==='all'&&native.length){details.note+='Retained higher-coverage native text after OCR comparison; ';}
+   if(!picked.length&&recognized?.blank){details.status='BLANK';details.method='Verified visually blank';}
+   else if(!picked.length){details.status='UNREADABLE';details.method='Unverified';details.note+='No usable text; human review required. ';}
+   else{details.status='READABLE';details.method=method;lines.push(...picked);}
+  }catch(e){details.status='UNREADABLE';details.method='Page processing failed';details.note+=String(e?.message||e)+'; ';}
+  finally{details.durationMs=Math.round(performance.now()-began);coverage.push(details);if(pg){try{pg.cleanup();}catch(e){details.note+='Page cleanup: '+e.message+'; ';}}onProgress(index+1,selected.length,details.status+' page '+i);}
+ }
+ if(stopped)for(const i of selected){if(!coverage.some(c=>c.page===i))coverage.push({file:file.name,page:i,status:'SKIPPED',method:'Interrupted',note:'Scan stopped before this page; retry in this tab',nativeLines:0,ocrAttempted:false,ocrLines:0,ocrConfidence:'',durationMs:0});}
+ }finally{await doc.destroy();}
+ coverage.sort((a,b)=>a.page-b.page);
+ return {file:file.name,lines,coverage,pageCount:doc.numPages,stopped,complete:!stopped&&!pageNumbers&&coverage.length===doc.numPages&&coverage.every(x=>x.status!=='UNREADABLE'&&x.status!=='SKIPPED'),unchecked:coverage.filter(x=>x.status==='UNREADABLE'||x.status==='SKIPPED')};
 }
 async function closeOCR(){if(globalThis.__gcfWorker){await globalThis.__gcfWorker.terminate();globalThis.__gcfWorker=null;}}
 // Render an original PDF page inside the audit panel. Highlights are drawn as
