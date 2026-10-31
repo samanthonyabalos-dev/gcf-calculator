@@ -153,6 +153,188 @@ const examples=[
     "status": "MATCH",
     "expected": "Wednesday",
     "url": "https://www.prc.gov.ph/sites/default/files/Nov%202025%20DLE%20Program%20of%20Exam%20Written.pdf"
+  },
+  {
+    "label": "Sanitary Engineers Jan 2026",
+    "text": "MONDAY, JANUARY 26, 2026",
+    "status": "MATCH",
+    "expected": "Monday",
+    "url": "https://www.prc.gov.ph/sites/default/files/exam%20program%20january%202026%20sanengg.pdf"
+  },
+  {
+    "label": "Sanitary Engineers Jan 2026",
+    "text": "TUESDAY, JANUARY 27, 2026",
+    "status": "MATCH",
+    "expected": "Tuesday",
+    "url": "https://www.prc.gov.ph/sites/default/files/exam%20program%20january%202026%20sanengg.pdf"
+  },
+  {
+    "label": "Sanitary Engineers Jan 2026",
+    "text": "WEDNESDAY, JANUARY 28, 2026",
+    "status": "MATCH",
+    "expected": "Wednesday",
+    "url": "https://www.prc.gov.ph/sites/default/files/exam%20program%20january%202026%20sanengg.pdf"
+  },
+  {
+    "label": "Criminologists Feb 2026",
+    "text": "WEDNESDAY, FEBRUARY 4, 2026",
+    "status": "MATCH",
+    "expected": "Wednesday",
+    "url": "https://www.prc.gov.ph/sites/default/files/Program%20of%20Exam%20Feb%202026%20LE%20for%20Criminologists.pdf"
+  },
+  {
+    "label": "Criminologists Feb 2026",
+    "text": "THURSDAY, FEBRUARY 5, 2026",
+    "status": "MATCH",
+    "expected": "Thursday",
+    "url": "https://www.prc.gov.ph/sites/default/files/Program%20of%20Exam%20Feb%202026%20LE%20for%20Criminologists.pdf"
+  },
+  {
+    "label": "Criminologists Feb 2026",
+    "text": "FRIDAY, FEBRUARY 6, 2026",
+    "status": "MATCH",
+    "expected": "Friday",
+    "url": "https://www.prc.gov.ph/sites/default/files/Program%20of%20Exam%20Feb%202026%20LE%20for%20Criminologists.pdf"
+  },
+  {
+    "label": "Criminologists Aug 2026",
+    "text": "SATURDAY, AUGUST 1, 2026",
+    "status": "MATCH",
+    "expected": "Saturday",
+    "url": "https://www.prc.gov.ph/sites/default/files/Crim%20Program%20of%20Exam%20August%202026.pdf"
+  },
+  {
+    "label": "Criminologists Aug 2026",
+    "text": "SUNDAY, AUGUST 2, 2026",
+    "status": "MATCH",
+    "expected": "Sunday",
+    "url": "https://www.prc.gov.ph/sites/default/files/Crim%20Program%20of%20Exam%20August%202026.pdf"
+  },
+  {
+    "label": "Criminologists Aug 2026",
+    "text": "MONDAY, AUGUST 3, 2026",
+    "status": "MATCH",
+    "expected": "Monday",
+    "url": "https://www.prc.gov.ph/sites/default/files/Crim%20Program%20of%20Exam%20August%202026.pdf"
+  },
+  {
+    "label": "Teachers Sep 2026",
+    "text": "SUNDAY, SEPTEMBER 20, 2026",
+    "status": "MATCH",
+    "expected": "Sunday",
+    "url": "https://www.prc.gov.ph/sites/default/files/SEptember%202026%20LEPT%20Program%20final.pdf"
+  },
+  {
+    "label": "Pharmacists Oct 2026",
+    "text": "THURSDAY, OCTOBER 15, 2026",
+    "status": "MATCH",
+    "expected": "Thursday",
+    "url": "https://www.prc.gov.ph/sites/default/files/October%202026%20Pharmacists%20LEx%20board%20program.pdf"
+  },
+  {
+    "label": "Pharmacists Oct 2026",
+    "text": "FRIDAY OCTOBER 16, 2026",
+    "status": "MATCH",
+    "expected": "Friday",
+    "url": "https://www.prc.gov.ph/sites/default/files/October%202026%20Pharmacists%20LEx%20board%20program.pdf"
+  },
+  {
+    "label": "Chemical Engineers May 2026",
+    "text": "Wednesday, May 20, 2026",
+    "status": "MATCH",
+    "expected": "Wednesday",
+    "url": "https://www.prc.gov.ph/sites/default/files/CHELE%20program_20MAY_202026.pdf"
+  },
+  {
+    "label": "Chemical Engineers May 2026",
+    "text": "Thursday , May 21, 2026",
+    "status": "MATCH",
+    "expected": "Thursday",
+    "url": "https://www.prc.gov.ph/sites/default/files/CHELE%20program_20MAY_202026.pdf"
+  },
+  {
+    "label": "Chemical Engineers May 2026",
+    "text": "Friday, May 22, 2026",
+    "status": "MATCH",
+    "expected": "Friday",
+    "url": "https://www.prc.gov.ph/sites/default/files/CHELE%20program_20MAY_202026.pdf"
+  },
+  {
+    "label": "Chemical Engineers Nov 2026",
+    "text": "Saturday, November 14, 2026",
+    "status": "MATCH",
+    "expected": "Saturday",
+    "url": "https://www.prc.gov.ph/sites/default/files/CHELE%20program_november_202026.pdf"
+  },
+  {
+    "label": "Chemical Engineers Nov 2026",
+    "text": "Sunday , November 15, 2026",
+    "status": "MATCH",
+    "expected": "Sunday",
+    "url": "https://www.prc.gov.ph/sites/default/files/CHELE%20program_november_202026.pdf"
+  },
+  {
+    "label": "Chemical Engineers Nov 2026",
+    "text": "Monday, November 16, 2026",
+    "status": "MATCH",
+    "expected": "Monday",
+    "url": "https://www.prc.gov.ph/sites/default/files/CHELE%20program_november_202026.pdf"
+  },
+  {
+    "label": "Physicians Oct 2025",
+    "text": "SATURDAY, OCTOBER 4, 2025",
+    "status": "MATCH",
+    "expected": "Saturday",
+    "url": "https://www.prc.gov.ph/sites/default/files/October%202025%20PLE%20Program%20%28med%29%20Physicians.pdf"
+  },
+  {
+    "label": "Physicians Oct 2025",
+    "text": "SUNDAY, OCTOBER 5, 2025",
+    "status": "MATCH",
+    "expected": "Sunday",
+    "url": "https://www.prc.gov.ph/sites/default/files/October%202025%20PLE%20Program%20%28med%29%20Physicians.pdf"
+  },
+  {
+    "label": "Physicians Oct 2025",
+    "text": "SATURDAY, OCTOBER 11, 2025",
+    "status": "MATCH",
+    "expected": "Saturday",
+    "url": "https://www.prc.gov.ph/sites/default/files/October%202025%20PLE%20Program%20%28med%29%20Physicians.pdf"
+  },
+  {
+    "label": "Physicians Oct 2025",
+    "text": "SUNDAY, OCTOBER 12, 2025",
+    "status": "MATCH",
+    "expected": "Sunday",
+    "url": "https://www.prc.gov.ph/sites/default/files/October%202025%20PLE%20Program%20%28med%29%20Physicians.pdf"
+  },
+  {
+    "label": "Electronics Oct 2025",
+    "text": "SATURDAY, OCTOBER 18, 2025",
+    "status": "MATCH",
+    "expected": "Saturday",
+    "url": "https://www.prc.gov.ph/sites/default/files/revised%20ra%20ect%2010-2025.pdf"
+  },
+  {
+    "label": "Electronics Oct 2025",
+    "text": "SUNDAY, OCTOBER 19, 2025",
+    "status": "MATCH",
+    "expected": "Sunday",
+    "url": "https://www.prc.gov.ph/sites/default/files/revised%20ra%20ect%2010-2025.pdf"
+  },
+  {
+    "label": "Electronics Oct 2025",
+    "text": "MONDAY, OCTOBER 20, 2025",
+    "status": "MATCH",
+    "expected": "Monday",
+    "url": "https://www.prc.gov.ph/sites/default/files/revised%20ra%20ect%2010-2025.pdf"
+  },
+  {
+    "label": "Real Estate Brokers Apr 2026",
+    "text": "THURSDAY, APRIL 16, 2026",
+    "status": "MATCH",
+    "expected": "Thursday",
+    "url": "https://www.prc.gov.ph/sites/default/files/exam%20program%20REB%202026%20revised.pdf"
   }
 ];
 for(const [i,t] of examples.entries()){
