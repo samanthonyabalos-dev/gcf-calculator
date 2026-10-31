@@ -46,7 +46,19 @@ async function create(file,records,pdfLib=globalThis.PDFLib){
     a.set(pdfLib.PDFName.of('QuadPoints'),ctx.obj([rect.x0,rect.y1,rect.x1,rect.y1,rect.x0,rect.y0,rect.x1,rect.y0]));
     a.set(pdfLib.PDFName.of('C'),ctx.obj(rgb));
     a.set(pdfLib.PDFName.of('CA'),pdfLib.PDFNumber.of(.10));
-    a.set(pdfLib.PDFName.of('Contents'),pdfLib.PDFString.of(`GCF-400 ${row.status}: ${(row.sourceDate||'').replace(/[^\x20-\x7e]/g,'?')}`));
+    a.set(pdfLib.PDFName.of('F'),pdfLib.PDFNumber.of(4)); // Printable PDF annotation.
+    const description=[
+     'Status: '+(row.status||'REVIEW'),
+     'Date checked: '+(row.sourceDate||row.date||'Not available'),
+     'Normalized date: '+(row.date||'Not available'),
+     'Recorded weekday: '+(row.recorded||'Not printed'),
+     'Expected weekday: '+(row.expected||'Not available'),
+     'Note: '+(row.note||notes[row.status]||'No additional details')
+    ].join('\n');
+    a.set(pdfLib.PDFName.of('T'),pdfLib.PDFHexString.fromText('GCF-400 | '+row.status));
+    a.set(pdfLib.PDFName.of('Subj'),pdfLib.PDFHexString.fromText('Date and weekday audit'));
+    a.set(pdfLib.PDFName.of('Contents'),pdfLib.PDFHexString.fromText(description.slice(0,1200)));
+    a.set(pdfLib.PDFName.of('NM'),pdfLib.PDFString.of('gcf-'+row.page+'-'+annotationMarks));
     page.node.addAnnot(ctx.register(a));annotationMarks++;
    }catch(e){/* Visible page ink survives even if PDF annotation dictionaries fail. */}
   }
@@ -61,8 +73,9 @@ async function create(file,records,pdfLib=globalThis.PDFLib){
   legend.drawText(`${status}: ${notes[status]} (${perStatus[status]||0})`,{x:69,y,font:reg,size:10,color:pdfLib.rgb(.15,.22,.18)});y-=36;
  }
  legend.drawText(`${records.length} findings  |  ${inkMarks} ink boxes  |  ${unresolved.length} unresolved`,{x:42,y:y-12,font:bold,size:11});
- legend.drawText('Visible highlights are added; the source PDF is never overwritten.',{x:42,y:y-41,font:reg,size:9});
- legend.drawText('A matching weekday does not authenticate the schedule or event.',{x:42,y:y-60,font:reg,size:9});
+ legend.drawText('Select or hover annotations to see the recorded and expected weekday.',{x:42,y:y-41,font:reg,size:9});
+ legend.drawText('Popups depend on your PDF reader; Acrobat or another annotation-capable reader is recommended.',{x:42,y:y-56,font:reg,size:8});
+ legend.drawText('A matching weekday does not authenticate the schedule or event.',{x:42,y:y-77,font:reg,size:9});
  const bytes=await doc.save({useObjectStreams:false});
  return {blob:new Blob([bytes],{type:'application/pdf'}),count:inkMarks,fullyAnnotated,partiallyAnnotated,nativeAnnotations:annotationMarks,unresolved,perStatus};
 }

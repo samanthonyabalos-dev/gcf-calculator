@@ -24,8 +24,13 @@ function summarize(){let c=Object.fromEntries(['MATCH','MISMATCH','INVALID','REV
  else $('pdfPreviewCard').classList.add('hide');
 }
 const previewColors={MATCH:'rgba(47,190,76,.30)',MISMATCH:'rgba(232,58,65,.32)',REVIEW:'rgba(252,182,37,.32)',INVALID:'rgba(255,118,38,.34)',DATE_ONLY:'rgba(87,158,235,.28)'};
+function annotationSummary(r){
+ const date=(r.sourceDate||'Not available')+(r.date&&r.date!==r.sourceDate?' ['+r.date+']':'');
+ return `Status: ${r.status||'REVIEW'}\nDate checked: ${date}\nRecorded weekday: ${r.recorded||'Not printed'}\nExpected weekday: ${r.expected||'Not available'}${r.note?'\nNote: '+r.note:''}`;
+}
 function drawPreviewOverlays(file,page,selectedIndex){
  const target=$('pdfPreviewOverlays');target.replaceChildren();if(!previewViewport)return;
+ $('annotationDetails').textContent='Hover, tap, or keyboard-focus a colored date to see its status, recorded weekday, and expected weekday.';
  const all=rows.filter(r=>r.file===file&&r.page===page&&(r.rects?.length||r.rect));
  let highlighted=0;
  for(const r of all)for(const q of (r.rects?.length?r.rects:[r.rect])){
@@ -36,11 +41,17 @@ function drawPreviewOverlays(file,page,selectedIndex){
   if(width<2||height<2)continue;
   const item=document.createElement('div');item.className='pdf-mark';
   if(displayRows[selectedIndex]===r)item.classList.add('pdf-mark-active');
+  if(top<110)item.classList.add('pdf-tooltip-below');
+  if(left>previewViewport.width-245)item.classList.add('pdf-tooltip-right');
   item.style.cssText=`left:${left}px;top:${top}px;width:${width}px;height:${height}px;background:${previewColors[r.status]||previewColors.REVIEW}`;
-  item.title=`${r.sourceDate} • ${r.status} • recorded: ${r.recorded||'none'} • expected: ${r.expected||'not available'}`;
+  const detail=annotationSummary(r),tip=document.createElement('span');tip.className='pdf-tooltip';tip.textContent=detail;
+  item.setAttribute('tabindex','0');item.setAttribute('role','button');item.setAttribute('aria-label',detail.replace(/\n/g,'. '));item.appendChild(tip);
+  const activate=()=>{target.querySelectorAll('.pdf-mark-info-active').forEach(n=>n.classList.remove('pdf-mark-info-active'));item.classList.add('pdf-mark-info-active');$('annotationDetails').textContent=detail;};
+  item.addEventListener('pointerenter',activate);item.addEventListener('focus',activate);item.addEventListener('click',activate);
+  item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
   target.appendChild(item);highlighted++;
  }
- $('pdfPreviewStatus').textContent=`Page ${page} · ${highlighted} located highlight(s) · Hover or select a finding to inspect its original position`;
+ $('pdfPreviewStatus').textContent=`Page ${page} · ${highlighted} located highlight(s) · Hover, tap or focus a highlighted date to inspect status and expected weekday`;
 }
 async function showPdfPreview(index){
  const row=displayRows[index];if(!row||!/\.pdf$/i.test(row.file)||!Number.isInteger(row.page))return;
@@ -114,7 +125,7 @@ async function downloadHighlightedPDF(){
  }catch(e){status('PDF export unavailable: '+e.message,'error');}
  finally{button.disabled=false;}
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v15\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());const issues=[];let files=0;
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v16\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());const issues=[];let files=0;
  for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);direct(a.blob,`${stem}_Annotated.pdf`,`Open/download highlighted ${doc.fileObj.name}`);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
