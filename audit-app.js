@@ -216,16 +216,20 @@ $('verifyEvidence').addEventListener('click',async()=>{
  try{
   const envelope=GCFSecurity.parseEnvelope(await file.text());
   const result=source?await GCFSecurity.verifySourceFile(envelope,source):await GCFSecurity.verify(envelope);
-  view.dataset.state=result.valid&&(!source||result.sourceMatch)?'valid':'invalid';
+  const trusted=$('trustedKeyFingerprint').value.trim().toLowerCase();
+  if(trusted&&!/^[a-f0-9]{64}$/.test(trusted))throw Error('Trusted public-key fingerprint must contain exactly 64 hexadecimal characters.');
+  const trustedMatch=trusted?result.fingerprint===trusted:null;
+  view.dataset.state=result.valid&&(!source||result.sourceMatch)&&trustedMatch!==false?'valid':'invalid';
   view.textContent='Evidence seal: '+(result.valid?'VALID':'INVALID')+'\n'+
   (source?'Original file comparison: '+(result.sourceMatch?'MATCH':'DOES NOT MATCH')+'\n':'')+
+  'Independently provided signing key: '+(trusted?(trustedMatch?'MATCH':'DOES NOT MATCH'):'NOT PROVIDED / NOT TRUSTED')+'\n'+
   'Public key SHA-256: '+(result.fingerprint||'unavailable')+'\nEvidence SHA-256: '+(result.hash||'unavailable')+'\n'+
   result.reason+'\nIdentity/authority: NOT VERIFIED. Never infer official PRC authenticity from a valid self-generated signature.';
  }catch(e){view.dataset.state='invalid';view.textContent='Verification failed: '+e.message;}
  finally{button.disabled=false;}
 });
 $('clearVerification').addEventListener('click',()=>{
- $('verifyEvidenceFile').value='';$('verifySourceFile').value='';$('verifyEvidenceStatus').dataset.state='';
+ $('verifyEvidenceFile').value='';$('verifySourceFile').value='';$('trustedKeyFingerprint').value='';$('verifyEvidenceStatus').dataset.state='';
  $('verifyEvidenceStatus').textContent='Verification files cleared from the selection fields. The signing key and scanned data remain in this browser tab until cleared.';
 });
 $('downloadPdf').addEventListener('click',downloadHighlightedPDF);$('downloadPackage').addEventListener('click',downloadPackage);
