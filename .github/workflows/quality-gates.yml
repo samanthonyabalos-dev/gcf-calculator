@@ -27,6 +27,8 @@ jobs:
         run: node tests/hardening.js
       - name: Signed evidence tamper and source integrity tests
         run: node tests/security-seal.js
+      - name: Persistent non-exportable signing keys
+        run: node tests/persistent-key.js
       - name: Security policy, safe cache and verifier accessibility
         run: |
           node - <<'NODE'
@@ -39,6 +41,9 @@ jobs:
           assert.ok(html.includes('./security-seal.js'));
           assert.ok(html.includes('id="trustedKeyFingerprint"'));
           assert.ok(html.includes('id="downloadSignedManifest"'));
+          assert.ok(html.includes('id="createDeviceSigner"'));
+          assert.ok(html.includes('id="loadDeviceSigner"'));
+          assert.ok(html.includes('id="eraseDeviceSigner"'));
           assert.ok(html.includes('id="verifyEvidenceFile"'));
           assert.ok(html.includes('id="verifySourceFile"'));
           assert.ok(html.indexOf('id="verifyEvidenceFile"')<html.indexOf('id="results"'),'Independent verifier must be available without scanning');
