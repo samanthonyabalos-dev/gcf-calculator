@@ -18,7 +18,7 @@ jobs:
           node-version: '22'
       - name: Validate JavaScript syntax
         run: |
-          for file in gcf-engine.js scan-core.js audit-utils.js pdf-bridge.js pdf-export.js document-bridge.js audit-app.js quality-app.js sheet-app.js calc-app.js nav.js sw.js; do node --check "$file"; done
+          for file in gcf-engine.js scan-core.js audit-utils.js pdf-bridge.js pdf-export.js document-bridge.js audit-app.js quality-app.js sheet-app.js calc-app.js nav.js offline-app.js sw.js; do node --check "$file"; done
       - name: Date and PRC regressions
         run: |
           node tests/regression.js
@@ -27,3 +27,20 @@ jobs:
         run: node tests/hardening.js
       - name: Document audit UI smoke
         run: node tests/ui-smoke.js
+      - name: Offline calculator and private-request safety
+        run: node tests/offline.js
+      - name: Offline shell assets and PWA references
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),assert=require('node:assert/strict');
+          const html=fs.readFileSync('index.html','utf8');
+          for(const item of ['rel="manifest"','./offline-app.js','id="offlineStatus"','id="calcToday"','id="calcCopy"'])assert.ok(html.includes(item),item+' missing');
+          const sw=fs.readFileSync('sw.js','utf8');
+          assert.ok(sw.includes("'./calc-app.js'"));
+          assert.ok(sw.includes("'./gcf-engine.js'"));
+          assert.ok(sw.includes("'./offline-app.js'"));
+          const manifest=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
+          assert.ok(manifest.icons.length>=1);
+          for(const entry of manifest.icons)assert.ok(fs.existsSync(entry.src.replace(/^\.\//,'')));
+          console.log('Offline PWA references PASS');
+          NODE
