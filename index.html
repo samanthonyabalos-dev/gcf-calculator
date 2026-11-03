@@ -62,7 +62,7 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
 #resultSearch,#resultFilter{min-height:44px}#quickInput:focus-visible{outline:3px solid #245D45;outline-offset:2px}#quickResult[data-state='MATCH']{border-color:#6CB686}#quickResult[data-state='MISMATCH'],#quickResult[data-state='INVALID']{border-color:#C56565;background:#FFF7F5}.audit-record:focus-visible{outline:3px solid #946600;outline-offset:-3px}.pdf-mark:focus-visible{outline:3px solid #182F25!important;box-shadow:0 0 0 4px #FFF!important}@media(forced-colors:active){.legend-swatch{border:2px solid CanvasText}.pdf-mark{outline:2px solid Highlight!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 </style></head><body>
-<header><div class="inner"><div class="eyebrow">Gregorian Congruence Formula · GCF-400 · v24</div><h1>Date–weekday auditor</h1><p>Verify recorded weekdays in documents or spreadsheets, or calculate a date directly.</p>
+<header><div class="inner"><div class="eyebrow">Gregorian Congruence Formula · GCF-400 · v25</div><h1>Date–weekday auditor</h1><p>Verify recorded weekdays in documents or spreadsheets, or calculate a date directly.</p>
 <section class="offline-strip" aria-label="Offline application readiness">
  <div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Preparing offline calculator verification…</span></div>
  <div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline readiness</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div>
@@ -94,6 +94,11 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
  <div class="card"><section class="security-box" aria-labelledby="securityHeading">
  <h3 id="securityHeading">Audit integrity and independent verification</h3>
  <p class="fine">A signed audit contains a local SHA-256 digest, an ECDSA P-256 signature and a public verification key. No document, private key or source data is uploaded to GCF-400. Anyone can create a new signing key; this does <strong>not authenticate the signer's identity or validate a PRC schedule</strong>.</p>
+ <div class="fieldgroup">
+ <p class="fine">Optional device signing key — creates a stable public fingerprint across sessions on this browser. The private key is non-exportable and stored locally. Anyone with access to this browser profile may use this key; it is not proof of personal identity.</p>
+ <div class="bar"><button type="button" class="secondary" id="createDeviceSigner">Create or replace device signing key</button><button type="button" class="secondary" id="loadDeviceSigner">Use existing device key</button><button type="button" class="secondary" id="eraseDeviceSigner">Erase device key</button></div>
+ <div id="deviceSignerStatus" class="quality-panel" role="status" aria-live="polite">Using an ephemeral signing key unless a stored device key is explicitly selected.</div>
+ </div>
  <div class="fieldgroup two">
   <div><label class="field" for="verifyEvidenceFile">Previously exported signed evidence (.json)</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"></div>
   <div><label class="field" for="verifySourceFile">Original source file (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div>
