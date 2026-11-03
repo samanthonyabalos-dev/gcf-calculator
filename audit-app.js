@@ -149,7 +149,7 @@ async function downloadHighlightedPDF(){
  }catch(e){status('PDF export unavailable: '+e.message,'error');}
  finally{button.disabled=false;}
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v23\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v23'}),null,2));const issues=[];let files=0;
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v24\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v24'}),null,2));const issues=[];let files=0;
  for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);direct(a.blob,`${stem}_Annotated.pdf`,`Open/download highlighted ${doc.fileObj.name}`);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
@@ -192,6 +192,41 @@ $('retryPages').addEventListener('click',retryIncomplete);
 $('scan').addEventListener('click',scan);$('cancel').addEventListener('click',()=>{stopRequested=true;status('Cancel requested. The current PDF/OCR operation may finish before it can stop.','warning');});$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'GCF_Findings.csv','Findings CSV'));
 $('downloadCoverage').addEventListener('click',()=>saveText(coverageCSV(),'GCF_Page_Coverage.csv','Page coverage CSV'));
 $('downloadEvidence').addEventListener('click',()=>saveText(qualityCSV(),'GCF_Quality_Evidence.csv','Quality evidence CSV'));
-$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v23'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v24'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('downloadSignedManifest').addEventListener('click',async()=>{
+ const button=$('downloadSignedManifest');if(!rows.length&&!coverage.length)return status('Scan a document before signing its audit evidence.','warning');
+ button.disabled=true;
+ try{
+  const missing=quality.filter(x=>!/^[a-f0-9]{64}$/.test(x.sha256||''));
+  if(missing.length)throw Error('Cannot sign auditable evidence without verified source hashes: '+missing.map(x=>x.file).join(', '));
+  const evidence=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v24'});
+  const sealed=await GCFSecurity.seal(evidence);
+  const proof=await GCFSecurity.verify(sealed);
+  if(!proof.valid)throw Error('The generated signature failed independent local verification: '+proof.reason);
+  direct(new Blob([JSON.stringify(sealed,null,2)],{type:'application/json'}),'GCF400_Signed_Evidence.json','Save signed audit evidence JSON').click();
+  status('Signed audit evidence generated and locally verified. Public-key fingerprint: '+sealed.publicKeyFingerprint+'. This is a locally generated seal; signer identity has NOT been authenticated.');
+ }catch(e){status('Signing unavailable: '+e.message,'error');}
+ finally{button.disabled=false;}
+});
+$('verifyEvidence').addEventListener('click',async()=>{
+ const file=$('verifyEvidenceFile').files[0],source=$('verifySourceFile').files[0],view=$('verifyEvidenceStatus'),button=$('verifyEvidence');
+ if(!file){view.textContent='Select an exported signed evidence JSON first.';view.dataset.state='invalid';return;}
+ if(file.size>4*1024*1024){view.textContent='Evidence file exceeds 4 MB.';view.dataset.state='invalid';return;}
+ button.disabled=true;view.textContent='Validating evidence signature and hashes…';view.dataset.state='';
+ try{
+  const envelope=GCFSecurity.parseEnvelope(await file.text());
+  const result=source?await GCFSecurity.verifySourceFile(envelope,source):await GCFSecurity.verify(envelope);
+  view.dataset.state=result.valid&&(!source||result.sourceMatch)?'valid':'invalid';
+  view.textContent='Evidence seal: '+(result.valid?'VALID':'INVALID')+'\n'+
+  (source?'Original file comparison: '+(result.sourceMatch?'MATCH':'DOES NOT MATCH')+'\n':'')+
+  'Public key SHA-256: '+(result.fingerprint||'unavailable')+'\nEvidence SHA-256: '+(result.hash||'unavailable')+'\n'+
+  result.reason+'\nIdentity/authority: NOT VERIFIED. Never infer official PRC authenticity from a valid self-generated signature.';
+ }catch(e){view.dataset.state='invalid';view.textContent='Verification failed: '+e.message;}
+ finally{button.disabled=false;}
+});
+$('clearVerification').addEventListener('click',()=>{
+ $('verifyEvidenceFile').value='';$('verifySourceFile').value='';$('verifyEvidenceStatus').dataset.state='';
+ $('verifyEvidenceStatus').textContent='Verification files cleared from the selection fields. The signing key and scanned data remain in this browser tab until cleared.';
+});
 $('downloadPdf').addEventListener('click',downloadHighlightedPDF);$('downloadPackage').addEventListener('click',downloadPackage);
 })();
