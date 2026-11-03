@@ -2,7 +2,8 @@
 (function(){'use strict';
 const status=document.getElementById('offlineStatus'),details=document.getElementById('offlineDetails'),checkButton=document.getElementById('offlineCheck'),installButton=document.getElementById('offlineInstall');
 const essentials=['./index.html','./gcf-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
-const cacheName='gcf400-offline-v26-20261103';
+const updateButton=document.getElementById('offlineApplyUpdate');
+const cacheName='gcf400-offline-v27-20261104';
 let ready=false,promptEvent=null,checking=false;
 function show(message,kind='info'){
  if(status){status.textContent=message;status.dataset.state=kind;}
@@ -24,6 +25,7 @@ async function checkOffline({register=true}={}){
  try{
   if(register&&'serviceWorker' in navigator){
    const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+   if(navigator.onLine)reg.update().catch(()=>{});
    await navigator.serviceWorker.ready;
    if(reg.installing)await new Promise(resolve=>{const w=reg.installing;const done=()=>{if(w.state==='activated'||w.state==='redundant')resolve();};w.addEventListener('statechange',done);done();});
   }
@@ -42,6 +44,13 @@ if(installButton)installButton.addEventListener('click',async()=>{
 if(checkButton)checkButton.addEventListener('click',()=>checkOffline());
 window.addEventListener('online',()=>show(ready?'Offline calculator installed and verified.':'Connected — verify offline installation.',ready?'success':'info'));
 window.addEventListener('offline',()=>show(ready?'Offline mode active — calculator ready.':'Offline; caching was not verified.',ready?'success':'warning'));
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  show('A newer GCF-400 version is ready. Choose “Load updated app” to use the latest page.','warning');
+  if(updateButton)updateButton.hidden=false;
+ });
+}
+if(updateButton)updateButton.addEventListener('click',()=>window.location.reload());
 window.addEventListener('load',()=>checkOffline());
 window.GCFOffline={verify,checkOffline};
 })();
