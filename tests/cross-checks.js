@@ -12,8 +12,10 @@ for(let n=0;n<2000;n++){
  const utc=new Date(Date.UTC(2000,m-1,d));utc.setUTCFullYear(y);
  assert.equal(G.gcf400(y,m,d),utc.getUTCDay(),'GCF/UTC parity '+[y,m,d]);
 }
-const incorrect={...G,gcf400:()=>0};const mock={exports:{}};
-new Function('module','require',fs.readFileSync(path.join(__dirname,'../scan-core.js'),'utf8'))(mock,()=>incorrect);
+const incorrect={...G,gcf400:()=>0},vm=require('node:vm');
+const context={module:{exports:{}},require:()=>incorrect};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../scan-core.js'),'utf8'),context);
+const mock=context.module;
 assert.equal(scan('MONDAY, MAY 4, 2026',mock.exports)[0].status,'REVIEW','Internal disagreement must never claim MATCH');
 assert.equal(scan('THURSDAY, JANUARY 22, 2025')[0].status,'MISMATCH');
 function row(date,recorded,status='MATCH'){return {date,recorded,status};}
