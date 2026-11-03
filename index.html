@@ -98,6 +98,8 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
   <div><label class="field" for="verifyEvidenceFile">Previously exported signed evidence (.json)</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"></div>
   <div><label class="field" for="verifySourceFile">Original source file (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div>
  </div>
+ <label class="field" for="trustedKeyFingerprint">Expected public-key fingerprint (optional; obtain independently from your trusted signer)</label>
+ <input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64-character SHA-256 hex fingerprint" style="display:block;width:100%;margin:9px 0;border:1px solid #A5C6AF;border-radius:8px;padding:11px;font:12px ui-monospace,monospace">
  <div class="bar"><button type="button" id="verifyEvidence" class="secondary">Verify signature and source hash</button><button type="button" id="clearVerification" class="secondary">Clear verification files</button></div>
  <div id="verifyEvidenceStatus" class="quality-panel" aria-live="polite" role="status">Choose a signed audit evidence JSON to independently check its contents. You may also select the original document to compare its SHA-256 hash.</div>
  <p class="fine">The public key fingerprint only identifies the embedded key. Authenticity of a real person requires an independently trusted key, certificate, or signed identity system.</p>
