@@ -88,6 +88,14 @@ function needsOCR(mode,native,reading='auto'){
  return {needed:mode==='all'||(mode==='auto'&&(textLen<50||garbled||(uncertain>0&&paired===0&&reading==='auto')||scheduleWithoutPairs)),
    missingDays:lone,knownPairs:paired,reason:textLen<50?'Insufficient native text':garbled?'Corrupted text layer':scheduleWithoutPairs?'Schedule dates lack a readable weekday':uncertain>0?'Uncertain weekday association':'Native text is usable'};
 }
+function evidenceDisagreements(nativeRecords,ocrRecords){
+ const paired=records=>(records||[]).filter(r=>['MATCH','MISMATCH'].includes(r.status)&&r.date&&r.recorded);
+ const n=paired(nativeRecords),o=paired(ocrRecords),reasons=[];
+ const nativeDates=new Map(n.map(r=>[r.date,String(r.recorded).toLowerCase().replace(/\./g,'')]));
+ for(const r of o){const a=nativeDates.get(r.date),b=String(r.recorded).toLowerCase().replace(/\./g,'');if(a&&a!==b)reasons.push('Same date with different weekdays: '+r.date);}
+ if(n.length===1&&o.length===1&&n[0].date!==o[0].date)reasons.push('Different extracted dates: '+n[0].date+' versus '+o[0].date);
+ return [...new Set(reasons)];
+}
 async function readPdf(file,{ocr='auto',reading='auto',order='auto',pageNumbers=null,onProgress=()=>{},shouldStop=()=>false}={}){
  await load('pdf');const bytes=new Uint8Array(await file.arrayBuffer());const job=pdfjsLib.getDocument({data:bytes.slice(),useSystemFonts:true,isEvalSupported:false});const doc=await job.promise;
  if(doc.numPages>180){await doc.destroy();throw Error('PDF over 180 pages; split it into smaller files');}
@@ -103,8 +111,12 @@ async function readPdf(file,{ocr='auto',reading='auto',order='auto',pageNumbers=
    const check=needsOCR(ocr,native,reading);
    if(check.needed){details.ocrAttempted=true;details.note+='Reason for OCR: '+check.reason+'; ';onProgress(index+1,selected.length,'OCR page '+i);
     try{if(!pg)pg=await doc.getPage(i);recognized=await extractOCR(pg,file.name,i);details.ocrLines=recognized.lines.length;details.ocrConfidence=recognized.confidence??'';}catch(e){details.note+='OCR: '+e.message+'; ';}}
-   const nativePairs=globalThis.GCFScanner?.scanPage(native,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length||0;
-   const ocrPairs=recognized?.lines?.length?(GCFScanner.scanPage(recognized.lines,{reading,order}).filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length):0;
+   const nativeRecords=globalThis.GCFScanner?.scanPage(native,{reading,order})||[];
+   const ocrRecords=recognized?.lines?.length?GCFScanner.scanPage(recognized.lines,{reading,order}):[];
+   const nativePairs=nativeRecords.filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length;
+   const ocrPairs=ocrRecords.filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length;
+   const conflicts=evidenceDisagreements(nativeRecords,ocrRecords);
+   if(conflicts.length){details.disagreement=true;details.note+='TEXT/OCR DISAGREEMENT: '+conflicts.join(' | ')+'; human review required. ';}
    let picked=native,method='Text layer';
    if(recognized?.lines?.length&&(!native.length||ocrPairs>nativePairs)){picked=recognized.lines;method='OCR';details.note+='OCR yielded more validated pairs than native text; ';}
    else if(ocr==='all'&&native.length){details.note+='Retained higher-coverage native text after OCR comparison; ';}
@@ -141,5 +153,5 @@ async function renderPreview(file,pageNo,canvas){
 }
 function previewPage(file,pageNo,canvas){previewQueue=previewQueue.catch(()=>{}).then(()=>renderPreview(file,pageNo,canvas));return previewQueue;}
 async function closePreview(){await previewQueue.catch(()=>{});if(previewCache?.pdf)await previewCache.pdf.destroy();previewCache=null;}
-return {load,readPdf,groupSpans,joinGlyphRuns,needsOCR,closeOCR,previewPage,closePreview};
+return {load,readPdf,groupSpans,joinGlyphRuns,needsOCR,evidenceDisagreements,closeOCR,previewPage,closePreview};
 });
