@@ -25,3 +25,5 @@ jobs:
           node tests/prc-fixtures.js
       - name: Security and audit evidence
         run: node tests/hardening.js
+      - name: Document audit UI smoke
+        run: node tests/ui-smoke.js
