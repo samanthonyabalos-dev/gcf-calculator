@@ -31,6 +31,8 @@ jobs:
         run: node tests/offline.js
       - name: One-line verification and ambiguity tests
         run: node tests/quick-verify.js
+      - name: Independent calendar and OCR disagreement safeguards
+        run: node tests/cross-checks.js
       - name: Offline shell assets and PWA references
         run: |
           node - <<'NODE'
