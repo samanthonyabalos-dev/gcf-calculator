@@ -48,6 +48,15 @@ function manifest({rows=[],coverage=[],quality=[],settings={},version='v19',gene
   settings:{reading:String(settings.reading||'auto'),numericDateOrder:String(settings.order||'auto'),recognition:String(settings.ocr||'auto')},
   files:quality.map(f=>({file:String(f.file||''),bytes:Number(f.bytes)||0,sha256:f.sha256||null,pages:Number(f.pages)||0,processed:Number(f.processed)||0,unchecked:Number(f.unchecked)||0,dates:Number(f.dates)||0,matches:Number(f.matches)||0,mismatches:Number(f.mismatches)||0,review:Number(f.review)||0,processingMs:Number(f.elapsedMs)||0,outcome:String(f.outcome||'')})),
   pageCoverage:coverage.map(p=>({file:String(p.file||''),page:p.page,status:String(p.status||''),method:String(p.method||''),ocrAttempted:!!p.ocrAttempted,processingMs:Number(p.durationMs)||0})),
+  findings:rows.map(r=>({
+   file:String(r.file||''),page:r.page,location:String(r.location||''),
+   sourceDate:String(r.sourceDate||''),normalizedDate:String(r.date||''),
+   recordedWeekday:String(r.recorded||''),expectedWeekday:String(r.expected||''),
+   status:String(r.status||''),association:String(r.association||''),
+   method:String(r.method||''),confidence:Number.isFinite(r.confidence)?Number(r.confidence):null,
+   sourceEvidence:String(r.dayEvidence||r.sourceText||'').slice(0,1800),
+   note:String(r.note||'').slice(0,1200)
+  })),
   caveats:['A hash identifies a file version; it is NOT a signed identity or tamper-proof audit trail.','Readable pages can still contain dates missed by extraction.','DATE_ONLY is not a weekday mismatch.','Uncertain results and incomplete highlight positions require human review.']
  };
 }
