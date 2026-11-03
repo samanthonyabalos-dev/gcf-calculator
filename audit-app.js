@@ -149,7 +149,7 @@ async function downloadHighlightedPDF(){
  }catch(e){status('PDF export unavailable: '+e.message,'error');}
  finally{button.disabled=false;}
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v24\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v24'}),null,2));const issues=[];let files=0;
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v25\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v25'}),null,2));const issues=[];let files=0;
  for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);direct(a.blob,`${stem}_Annotated.pdf`,`Open/download highlighted ${doc.fileObj.name}`);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
@@ -192,14 +192,32 @@ $('retryPages').addEventListener('click',retryIncomplete);
 $('scan').addEventListener('click',scan);$('cancel').addEventListener('click',()=>{stopRequested=true;status('Cancel requested. The current PDF/OCR operation may finish before it can stop.','warning');});$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'GCF_Findings.csv','Findings CSV'));
 $('downloadCoverage').addEventListener('click',()=>saveText(coverageCSV(),'GCF_Page_Coverage.csv','Page coverage CSV'));
 $('downloadEvidence').addEventListener('click',()=>saveText(qualityCSV(),'GCF_Quality_Evidence.csv','Quality evidence CSV'));
-$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v24'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v25'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('createDeviceSigner').addEventListener('click',async()=>{
+ const view=$('deviceSignerStatus');
+ if(!confirm('Create a reusable, non-exportable signing key in this browser? This replaces any previously stored GCF-400 signing key on this device. Old reports will still verify with their included public keys, but future signatures will use a new fingerprint.'))return;
+ view.textContent='Creating local signing key…';
+ try{const r=await GCFSecurity.createDeviceKey();view.textContent='Device signing key created and selected. Public SHA-256 fingerprint: '+r.fingerprint+'. Save this fingerprint through an independent trusted channel if reviewers need to verify key continuity. This does not establish your real-world identity.';}
+ catch(e){view.textContent='Could not create a device key: '+e.message;}
+});
+$('loadDeviceSigner').addEventListener('click',async()=>{
+ const view=$('deviceSignerStatus');view.textContent='Loading device key…';
+ try{const r=await GCFSecurity.useDeviceKey();view.textContent='Stored device signing key selected. Public SHA-256 fingerprint: '+r.fingerprint+'. Future exports from this tab will use this non-exportable key.';}
+ catch(e){view.textContent='No reusable signing key available: '+e.message;}
+});
+$('eraseDeviceSigner').addEventListener('click',async()=>{
+ if(!confirm('Permanently erase this browser-device signing key? You cannot sign new reports with the same key after erasing. Existing reports remain verifiable with their embedded public key.'))return;
+ const view=$('deviceSignerStatus');view.textContent='Erasing device signing key…';
+ try{await GCFSecurity.eraseDeviceKey();view.textContent='Device signing key erased. Subsequent exports will use a new temporary signing key unless you create another stored key.';}
+ catch(e){view.textContent='Could not erase device signing key: '+e.message;}
+});
 $('downloadSignedManifest').addEventListener('click',async()=>{
  const button=$('downloadSignedManifest');if(!rows.length&&!coverage.length)return status('Scan a document before signing its audit evidence.','warning');
  button.disabled=true;
  try{
   const missing=quality.filter(x=>!/^[a-f0-9]{64}$/.test(x.sha256||''));
   if(missing.length)throw Error('Cannot sign auditable evidence without verified source hashes: '+missing.map(x=>x.file).join(', '));
-  const evidence=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v24'});
+  const evidence=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v25'});
   const sealed=await GCFSecurity.seal(evidence);
   const proof=await GCFSecurity.verify(sealed);
   if(!proof.valid)throw Error('The generated signature failed independent local verification: '+proof.reason);
