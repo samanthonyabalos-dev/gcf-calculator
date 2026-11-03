@@ -37,6 +37,10 @@ jobs:
           assert.ok(html.includes("script-src 'self'"));
           assert.ok(!html.includes("script-src 'unsafe-inline'"));
           assert.ok(html.includes('./security-seal.js'));
+          assert.ok(html.includes('id="trustedKeyFingerprint"'));
+          assert.ok(html.includes('id="downloadSignedManifest"'));
+          assert.ok(html.includes('id="verifyEvidenceFile"'));
+          assert.ok(html.includes('id="verifySourceFile"'));
           assert.ok(html.indexOf('id="verifyEvidenceFile"')<html.indexOf('id="results"'),'Independent verifier must be available without scanning');
           const sw=fs.readFileSync('sw.js','utf8');
           assert.ok(sw.includes("'./security-seal.js'"));
