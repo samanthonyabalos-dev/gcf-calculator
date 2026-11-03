@@ -51,6 +51,46 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
 .security-box .quality-panel[data-state="invalid"]{border-color:#BA6A5E;background:#FFF2EF}
 .security-box .quality-panel[data-state="valid"]{border-color:#569B71;background:#F0FFF3}
 .security-box button:focus-visible,.security-box input:focus-visible{outline:3px solid #245D45;outline-offset:2px}
+/* Security UI: never let 64-character identifiers stretch cards or mobile viewports. */
+.security-box{min-width:0;max-width:100%;overflow:hidden;padding:clamp(12px,2.5vw,22px);background:#F8FBF8}
+.security-box *{min-width:0}
+.security-box .security-header{margin-bottom:18px}
+.security-box .security-header .sub{margin:4px 0 0;max-width:75ch}
+.security-step{min-width:0;max-width:100%;padding:clamp(12px,2vw,18px);margin:12px 0;border:1px solid #D6E5DA;border-radius:12px;background:#fff}
+.security-step-head{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:start}
+.security-step-head h3{margin:2px 0 2px}
+.security-number{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:#DDEDE1;color:#1B533D;font-weight:800;font-size:13px}
+.security-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:14px 0 0}
+.security-actions button{min-width:0;max-width:100%;white-space:normal;line-height:1.35;text-align:center}
+.security-actions .security-destructive{border-color:#D7A6A2;color:#8E3836}
+.security-feedback{min-width:0;max-width:100%;margin-top:13px}
+.security-message{font-size:12px;line-height:1.65;overflow-wrap:anywhere;word-break:normal;margin:0;padding:12px 14px;border:1px solid #CDDED1;background:#F3F8F4;border-radius:8px}
+.security-message[data-state="success"]{border-color:#80B696;background:#F0FAF3;color:#205637}
+.security-message[data-state="warning"]{border-color:#E3C17E;background:#FFFAF0;color:#73511E}
+.security-message[data-state="invalid"]{border-color:#DAA3A0;background:#FFF5F3;color:#8E3434}
+.security-fingerprint-panel{min-width:0;max-width:100%;overflow:hidden;margin-top:10px;padding:12px;border:1px solid #D6E5DA;border-radius:9px;background:#FCFDFC}
+.security-fingerprint-panel[hidden]{display:none!important}
+.security-label-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;margin-bottom:9px}
+.security-code-label{display:block;font-size:11px;font-weight:800;letter-spacing:.01em;color:#2B5540;margin:13px 0 7px;overflow-wrap:anywhere}
+.security-label-row .security-code-label{margin:0}
+.security-copy{font-size:11px;padding:7px 10px;min-width:0;max-width:100%}
+.security-hex{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap;hyphens:none;line-height:1.85;padding:12px;border:1px solid #DFE7E1;border-radius:7px;background:#F0F5F1;color:#143A2A;font:600 12px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.035em}
+.security-copy-status{font-size:11px;line-height:1.5;margin:6px 0 0;color:#2B5941}
+.security-copy-status:empty{display:none}
+.security-footnote{margin:12px 0 0;overflow-wrap:anywhere}
+.security-file-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.security-file-grid>div{min-width:0;max-width:100%}
+.security-file-grid input{display:block;box-sizing:border-box;min-width:0;width:100%}
+.security-field{max-width:100%;min-width:0}
+.security-field input{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;margin:7px 0;border:1px solid #A5C6AF;border-radius:8px;padding:11px;font:12px/1.5 ui-monospace,Consolas,monospace}
+.security-verify-message{margin-top:12px}
+.security-check-results{margin:12px 0 8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.security-check-results>div{min-width:0;border:1px solid #DFE7E1;border-radius:8px;padding:9px;background:#fff}
+.security-check-results dt{font-size:11px;color:#60736A}
+.security-check-results dd{margin:3px 0 0;font-size:12px;font-weight:750;overflow-wrap:anywhere}
+.security-disclaimer{font-size:12px;color:#73511E;line-height:1.65;border-left:3px solid #CDAA66;background:#FFF9ED;padding:11px 13px;margin:15px 0 0;border-radius:4px;overflow-wrap:anywhere}
+@media(max-width:640px){.security-file-grid,.security-check-results{grid-template-columns:minmax(0,1fr)}.security-actions{display:grid;grid-template-columns:minmax(0,1fr)}.security-actions button{width:100%}.security-hex{font-size:11px;padding:9px;letter-spacing:0}.security-step{padding:12px}}
+
 .offline-strip{padding:12px 14px;border-radius:10px;margin:10px 0 12px;border:1px solid #739C81;background:#1D4938;color:#F2FFF3}
 .offline-main{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:750}.offline-indicator{width:9px;height:9px;border-radius:50%;background:#E8C17B;flex:none}.offline-strip:has(#offlineStatus[data-state="success"]) .offline-indicator{background:#81E5A2}
 .offline-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.offline-button{min-width:0!important;border:1px solid #9AC3AC!important;background:#2B624A!important;color:white!important;padding:7px 11px!important;font-size:11px!important;cursor:pointer}
@@ -62,7 +102,7 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
 #resultSearch,#resultFilter{min-height:44px}#quickInput:focus-visible{outline:3px solid #245D45;outline-offset:2px}#quickResult[data-state='MATCH']{border-color:#6CB686}#quickResult[data-state='MISMATCH'],#quickResult[data-state='INVALID']{border-color:#C56565;background:#FFF7F5}.audit-record:focus-visible{outline:3px solid #946600;outline-offset:-3px}.pdf-mark:focus-visible{outline:3px solid #182F25!important;box-shadow:0 0 0 4px #FFF!important}@media(forced-colors:active){.legend-swatch{border:2px solid CanvasText}.pdf-mark{outline:2px solid Highlight!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 </style></head><body>
-<header><div class="inner"><div class="eyebrow">Gregorian Congruence Formula · GCF-400 · v25</div><h1>Date–weekday auditor</h1><p>Verify recorded weekdays in documents or spreadsheets, or calculate a date directly.</p>
+<header><div class="inner"><div class="eyebrow">Gregorian Congruence Formula · GCF-400 · v26</div><h1>Date–weekday auditor</h1><p>Verify recorded weekdays in documents or spreadsheets, or calculate a date directly.</p>
 <section class="offline-strip" aria-label="Offline application readiness">
  <div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Preparing offline calculator verification…</span></div>
  <div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline readiness</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div>
@@ -92,22 +132,57 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
  <div class="legend-item" role="listitem"><span class="legend-swatch legend-date-only" aria-hidden="true"></span><span><strong>DATE ONLY · Blue</strong>A standalone date; not a weekday error.</span></div>
  </div></aside>
  <div class="card"><section class="security-box" aria-labelledby="securityHeading">
- <h3 id="securityHeading">Audit integrity and independent verification</h3>
- <p class="fine">A signed audit contains a local SHA-256 digest, an ECDSA P-256 signature and a public verification key. No document, private key or source data is uploaded to GCF-400. Anyone can create a new signing key; this does <strong>not authenticate the signer's identity or validate a PRC schedule</strong>.</p>
- <div class="fieldgroup">
- <p class="fine">Optional device signing key — creates a stable public fingerprint across sessions on this browser. The private key is non-exportable and stored locally. Anyone with access to this browser profile may use this key; it is not proof of personal identity.</p>
- <div class="bar"><button type="button" class="secondary" id="createDeviceSigner">Create or replace device signing key</button><button type="button" class="secondary" id="loadDeviceSigner">Use existing device key</button><button type="button" class="secondary" id="eraseDeviceSigner">Erase device key</button></div>
- <div id="deviceSignerStatus" class="quality-panel" role="status" aria-live="polite">Using an ephemeral signing key unless a stored device key is explicitly selected.</div>
+ <div class="security-header">
+  <div class="eyeline">AUDIT SECURITY</div>
+  <h2 id="securityHeading">Signing keys and evidence verification</h2>
+  <p class="sub">Manage a device key, sign a finished audit, or check an audit someone shared with you. These tools work locally in your browser.</p>
  </div>
- <div class="fieldgroup two">
-  <div><label class="field" for="verifyEvidenceFile">Previously exported signed evidence (.json)</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"></div>
-  <div><label class="field" for="verifySourceFile">Original source file (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div>
- </div>
- <label class="field" for="trustedKeyFingerprint">Expected public-key fingerprint (optional; obtain independently from your trusted signer)</label>
- <input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64-character SHA-256 hex fingerprint" style="display:block;width:100%;margin:9px 0;border:1px solid #A5C6AF;border-radius:8px;padding:11px;font:12px ui-monospace,monospace">
- <div class="bar"><button type="button" id="verifyEvidence" class="secondary">Verify signature and source hash</button><button type="button" id="clearVerification" class="secondary">Clear verification files</button></div>
- <div id="verifyEvidenceStatus" class="quality-panel" aria-live="polite" role="status">Choose a signed audit evidence JSON to independently check its contents. You may also select the original document to compare its SHA-256 hash.</div>
- <p class="fine">The public key fingerprint only identifies the embedded key. Authenticity of a real person requires an independently trusted key, certificate, or signed identity system.</p>
+ <section class="security-step" aria-labelledby="signerHeading">
+  <div class="security-step-head"><span class="security-number" aria-hidden="true">1</span><div><h3 id="signerHeading">Your signing key</h3><p class="fine">A key produces a consistent fingerprint for signed audit reports. Create it once and select the saved key in later sessions.</p></div></div>
+  <div class="security-actions">
+   <button type="button" class="secondary" id="createDeviceSigner">Create or replace key</button>
+   <button type="button" class="secondary" id="loadDeviceSigner">Use saved key</button>
+   <button type="button" class="secondary security-destructive" id="eraseDeviceSigner">Erase saved key</button>
+  </div>
+  <div class="security-feedback" role="group" aria-label="Signing key details">
+   <p id="deviceSignerStatus" class="security-message" data-state="info" role="status" aria-live="polite">No saved key selected. You can create one, use an existing key, or export with a temporary key.</p>
+   <div id="deviceFingerprintPanel" class="security-fingerprint-panel" hidden>
+    <div class="security-label-row"><span class="security-code-label">Public-key fingerprint · SHA-256</span><button type="button" class="secondary security-copy" id="copyDeviceFingerprint" aria-label="Copy the full 64-character public key fingerprint">Copy fingerprint</button></div>
+    <code id="deviceFingerprintValue" class="security-hex" aria-label="Public-key fingerprint shown in groups of eight characters"></code>
+    <p class="fine">Displayed in groups for readability. Copy gives the original uninterrupted 64-character value.</p>
+    <p id="deviceCopyStatus" class="security-copy-status" role="status" aria-live="polite"></p>
+   </div>
+  </div>
+  <p class="fine security-footnote">Device keys stay in this browser profile; the private key is non-exportable. Anyone with access to the profile may use it. A matching key is not proof of a person's identity.</p>
+ </section>
+ <section class="security-step" aria-labelledby="sealHeading">
+  <div class="security-step-head"><span class="security-number" aria-hidden="true">2</span><div><h3 id="sealHeading">Sign a completed document audit</h3><p class="fine">First scan a document. Then choose <strong>Export signed audit evidence</strong> under Document Results to create a signed JSON containing the findings and source hashes.</p></div></div>
+ </section>
+ <section class="security-step" aria-labelledby="verifyHeading">
+  <div class="security-step-head"><span class="security-number" aria-hidden="true">3</span><div><h3 id="verifyHeading">Verify a signed audit</h3><p class="fine">Use a saved evidence JSON, optionally compare the original source file, and check a public-key fingerprint obtained independently from the signer.</p></div></div>
+  <div class="security-file-grid">
+   <div><label class="field" for="verifyEvidenceFile">Signed audit evidence · JSON</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"><p class="fine">Required</p></div>
+   <div><label class="field" for="verifySourceFile">Original PDF or DOCX</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"><p class="fine">Optional · verifies the source file hash</p></div>
+  </div>
+  <div class="security-field">
+   <label class="field" for="trustedKeyFingerprint">Trusted signing-key fingerprint</label>
+   <input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" inputmode="text" placeholder="64 hexadecimal characters · optional">
+   <p class="fine">Optional. Obtain this separately from someone whose signing key you trust. Never copy it from the report you're verifying.</p>
+  </div>
+  <div class="security-actions"><button type="button" id="verifyEvidence" class="secondary">Verify evidence</button><button type="button" id="clearVerification" class="secondary">Clear selected files</button></div>
+  <div id="verifyEvidenceStatus" class="security-message security-verify-message" data-state="info" role="status" aria-live="polite">Choose a signed audit JSON to begin. No file has been verified yet.</div>
+  <div id="verificationDetails" class="security-fingerprint-panel" hidden>
+   <dl class="security-check-results">
+    <div><dt>Original document</dt><dd id="verificationSourceValue">Not supplied</dd></div>
+    <div><dt>Independent signing key</dt><dd id="verificationTrustValue">No trusted key supplied</dd></div>
+   </dl>
+   <p class="security-code-label">Signing key fingerprint · SHA-256</p>
+   <code id="verificationFingerprintValue" class="security-hex"></code>
+   <p class="security-code-label">Signed evidence digest · SHA-256</p>
+   <code id="verificationHashValue" class="security-hex"></code>
+  </div>
+ </section>
+ <p class="security-disclaimer">A valid signature proves that evidence matches the supplied public key. It does not authenticate a person, certify a PRC document, or provide legal non-repudiation.</p>
  </section></div>
  <div class="card hide" id="results"><div class="row"><div><h2>Document results</h2><p class="sub">Only printed weekday–date pairs are judged as matches or mismatches. Standalone dates are informational.</p></div><div class="bar"><button type="button" id="downloadRecords" class="secondary">Findings CSV</button><button type="button" id="downloadCoverage" class="secondary">Page coverage CSV</button><button type="button" id="downloadEvidence" class="secondary">Evidence CSV</button><button type="button" id="downloadPdf">Download highlighted PDF</button><button type="button" id="downloadPackage" class="secondary">Annotated ZIP</button></div></div>
  <div class="bar"><button id="downloadManifest" type="button" class="secondary">Export evidence JSON</button><button id="downloadSignedManifest" type="button" class="secondary">Export signed audit evidence</button><span class="fine">Contains file hashes and coverage, not original file contents.</span></div>
@@ -277,5 +352,5 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
 </main>
 <footer>GCF-400 · Gregorian weekday consistency checking only · Source documents remain unchanged</footer>
 <script src="./jszip.min.js"></script><script src="./gcf-engine.js"></script><script src="./scan-core.js"></script><script src="./pdf-bridge.js"></script><script src="./document-bridge.js"></script><script src="./pdf-export.js"></script>
-<script src="./audit-utils.js"></script><script src="./security-seal.js"></script><script src="./audit-app.js"></script><script src="./quality-app.js"></script><script src="./sheet-app.js"></script><script src="./calc-app.js"></script><script src="./learn-app.js"></script><script src="./nav.js"></script><script src="./offline-app.js"></script><script src="./quick-verify.js"></script>
+<script src="./audit-utils.js"></script><script src="./security-seal.js"></script><script src="./security-ui.js"></script><script src="./audit-app.js"></script><script src="./quality-app.js"></script><script src="./sheet-app.js"></script><script src="./calc-app.js"></script><script src="./learn-app.js"></script><script src="./nav.js"></script><script src="./offline-app.js"></script><script src="./quick-verify.js"></script>
 </body></html>
