@@ -77,6 +77,10 @@ function classify(date,day,source,options={}){
  if(!date.valid){row.status='INVALID';row.note='Invalid Gregorian calendar date';return row;}
  if(date.ambiguous){row.status='REVIEW';row.note='Ambiguous numeric date order';return row;}
  const w=G.gcf400(date.y,date.m,date.d);row.expected=G.DAYS[w];
+ const utc=new Date(Date.UTC(2000,date.m-1,date.d));utc.setUTCFullYear(date.y);
+ if(!Number.isInteger(w)||utc.getUTCDay()!==w){
+  row.status='REVIEW';row.note='Independent UTC calendar cross-check disagreed with GCF-400; result withheld for manual review.';return row;
+ }
  if(!day){row.status=options.uncertain?'REVIEW':'DATE_ONLY';row.note=options.uncertain?(options.nearDay?'Detected '+options.nearDay.day+' near the date, but it does not meet the selected weekday–date reading rule; REVIEW required':'A weekday is nearby but cannot be paired unambiguously; verify the source'):'Date appears without a directly associated printed weekday; informational, not a weekday mismatch';if(options.uncertain&&options.nearDay)row.recorded=options.nearDay.day;return row;}
  row.status=day.weekday===w?'MATCH':'MISMATCH';
  row.note=options.association==='adjacent'?'Uniquely associated weekday from adjacent page fragment':options.association==='spatial'?'Paired by nearest unambiguous weekday in the same row':'Weekday and date appear on the same line';
