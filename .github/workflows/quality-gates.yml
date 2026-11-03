@@ -18,13 +18,32 @@ jobs:
           node-version: '22'
       - name: Validate JavaScript syntax
         run: |
-          for file in gcf-engine.js scan-core.js audit-utils.js pdf-bridge.js pdf-export.js document-bridge.js audit-app.js quality-app.js sheet-app.js calc-app.js nav.js offline-app.js quick-verify.js sw.js; do node --check "$file"; done
+          for file in gcf-engine.js scan-core.js audit-utils.js security-seal.js pdf-bridge.js pdf-export.js document-bridge.js audit-app.js quality-app.js sheet-app.js calc-app.js nav.js offline-app.js quick-verify.js sw.js; do node --check "$file"; done
       - name: Date and PRC regressions
         run: |
           node tests/regression.js
           node tests/prc-fixtures.js
       - name: Security and audit evidence
         run: node tests/hardening.js
+      - name: Signed evidence tamper and source integrity tests
+        run: node tests/security-seal.js
+      - name: Security policy, safe cache and verifier accessibility
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const html=fs.readFileSync('index.html','utf8');
+          assert.ok(html.includes('Content-Security-Policy'));
+          assert.ok(html.includes("object-src 'none'"));
+          assert.ok(html.includes("script-src 'self'"));
+          assert.ok(!html.includes("script-src 'unsafe-inline'"));
+          assert.ok(html.includes('./security-seal.js'));
+          assert.ok(html.indexOf('id="verifyEvidenceFile"')<html.indexOf('id="results"'),'Independent verifier must be available without scanning');
+          const sw=fs.readFileSync('sw.js','utf8');
+          assert.ok(sw.includes("'./security-seal.js'"));
+          assert.ok(sw.includes('if(url.origin!==self.location.origin)return'));
+          assert.ok(sw.includes('if(!isShell&&request.mode!=='));
+          console.log('Security policy and independent verifier accessibility PASS');
+          NODE
       - name: Document audit UI smoke
         run: node tests/ui-smoke.js
       - name: Offline calculator and private-request safety
