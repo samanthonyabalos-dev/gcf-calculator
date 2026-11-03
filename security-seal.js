@@ -1,7 +1,7 @@
 /* GCF-400 v24 · Browser-local cryptographic audit seals.
  * ECDSA P-256 signatures prove consistency with the INCLUDED public key,
  * not the real-world identity of whoever generated or possesses that key.
- * Keys are generated per session, kept in memory, and NEVER exported privately.
+ * Private keys are non-exportable. Optional device storage requires explicit user consent.
  * Web Crypto secure context required. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFSecurity=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
@@ -44,6 +44,55 @@ async function generateSessionKey(){
  return true;
 }
 function resetSession(){keyPair=null;}
+const KEY_DATABASE='gcf400-audit-signer-v1',KEY_STORE='keys',KEY_ID='device-signer';
+function openKeyStore(){
+ if(typeof indexedDB==='undefined')return Promise.reject(Error('Secure local key storage is unavailable in this browser'));
+ return new Promise((resolve,reject)=>{
+  const request=indexedDB.open(KEY_DATABASE,1);
+  request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(KEY_STORE))request.result.createObjectStore(KEY_STORE);};
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error||Error('Local key store could not be opened'));
+  request.onblocked=()=>reject(Error('Close other GCF-400 tabs and try again'));
+ });
+}
+async function transaction(mode,operation){
+ const db=await openKeyStore();
+ try{
+  return await new Promise((resolve,reject)=>{
+   const tx=db.transaction(KEY_STORE,mode),store=tx.objectStore(KEY_STORE);
+   const req=operation(store);
+   let result;
+   req.onsuccess=()=>{result=req.result;};
+   req.onerror=()=>reject(req.error||Error('Signing key storage request failed'));
+   tx.oncomplete=()=>resolve(result);
+   tx.onerror=()=>reject(tx.error||Error('Signing key transaction failed'));
+   tx.onabort=()=>reject(tx.error||Error('Signing key transaction aborted'));
+  });
+ }finally{db.close();}
+}
+async function publicFingerprint(pair){
+ const spki=new Uint8Array(await secureCrypto().subtle.exportKey('spki',pair.publicKey));
+ return hex(new Uint8Array(await secureCrypto().subtle.digest('SHA-256',spki)));
+}
+async function createDeviceKey(){
+ const crypto=secureCrypto();
+ const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},false,['sign','verify']);
+ await transaction('readwrite',store=>store.put({privateKey:pair.privateKey,publicKey:pair.publicKey},KEY_ID));
+ keyPair=pair;
+ return {fingerprint:await publicFingerprint(pair),storedOnDevice:true};
+}
+async function useDeviceKey(){
+ const pair=await transaction('readonly',store=>store.get(KEY_ID));
+ if(!pair?.privateKey||!pair?.publicKey)throw Error('No device signing key is stored; create one first');
+ keyPair=pair;
+ return {fingerprint:await publicFingerprint(pair),storedOnDevice:true};
+}
+async function eraseDeviceKey(){
+ await transaction('readwrite',store=>store.delete(KEY_ID));
+ keyPair=null;
+ return true;
+}
+
 async function seal(evidence){
  if(!evidence||evidence.schema!=='gcf400-audit-evidence-v1')throw Error('Expected GCF-400 evidence JSON');
  if(!keyPair)await generateSessionKey();
@@ -98,5 +147,5 @@ function parseEnvelope(raw){
  if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error('Expected a seal JSON object');
  return obj;
 }
-return {canonical,hashObject,generateSessionKey,resetSession,seal,verify,verifySourceFile,parseEnvelope};
+return {canonical,hashObject,generateSessionKey,resetSession,createDeviceKey,useDeviceKey,eraseDeviceKey,seal,verify,verifySourceFile,parseEnvelope};
 });
