@@ -18,6 +18,7 @@ assert.equal(U.summarize([],good).state,'NO CONFIRMED PAIRS');
 assert.equal(U.summarize([],[{page:1,status:'SKIPPED'}]).state,'INCOMPLETE');
 const item=U.manifest({rows,coverage:good,quality:[{file:'exam.pdf',bytes:10,sha256:'abc',pages:1,processed:1}],settings:{reading:'auto'}});
 assert.equal(item.files[0].sha256,'abc');assert.equal(item.summary.missingHighlightPositions,1);
+assert.equal(item.findings.length,2,'Manifest must include individual findings for meaningful integrity verification');
 assert.ok(item.caveats.some(x=>x.includes('NOT a signed')));
 console.log('GCF-400 hardening: 11 checks passed.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
