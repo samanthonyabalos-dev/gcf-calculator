@@ -6,7 +6,7 @@ const nodes=new Map();
 const node=id=>{if(!nodes.has(id))nodes.set(id,{id,hidden:false,textContent:'',dataset:{},disabled:false});return nodes.get(id);};
 globalThis.document={getElementById:node};
 let clipboard='';
-globalThis.navigator={clipboard:{writeText:async t=>{clipboard=t;}}};
+Object.defineProperty(globalThis,'navigator',{value:{clipboard:{writeText:async t=>{clipboard=t;}}},configurable:true});
 const UI=require('../security-ui.js');
 assert.equal(UI.formatFingerprint(FP),Array(8).fill('ab12cd34').join(' '));
 assert.equal(UI.formatFingerprint('bad'),'');
