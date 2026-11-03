@@ -7,7 +7,7 @@ const S=require('../security-seal.js');
 const evidence={
  schema:'gcf400-audit-evidence-v1',
  files:[{file:'exam.pdf',bytes:9,sha256:crypto.createHash('sha256').update(Buffer.from('exam-data')).digest('hex')}],
- settings:{reading:'auto',recognition:'off'},summary:{state:'PAIRS CHECKED',paired:1}
+ settings:{reading:'auto',recognition:'off'},summary:{state:'PAIRS CHECKED',paired:1},findings:[{status:'MATCH',recordedWeekday:'Monday',expectedWeekday:'Monday',normalizedDate:'2026-05-04'}]
 };
 const sourceBytes=Buffer.from('exam-data');
 const file={name:'exam.pdf',size:sourceBytes.length,arrayBuffer:async()=>sourceBytes};
@@ -20,6 +20,8 @@ const file={name:'exam.pdf',size:sourceBytes.length,arrayBuffer:async()=>sourceB
  assert.equal((await S.verifySourceFile(sealed,file)).sourceMatch,true,'Source hash should match');
  const altered=JSON.parse(JSON.stringify(sealed));altered.evidence.summary.paired=100;
  assert.equal((await S.verify(altered)).valid,false,'Tampering with the evidence must invalidate signature');
+ const alteredFinding=JSON.parse(JSON.stringify(sealed));alteredFinding.evidence.findings[0].expectedWeekday='Tuesday';
+ assert.equal((await S.verify(alteredFinding)).valid,false,'A changed individual finding must invalidate the seal');
  const changedSig=JSON.parse(JSON.stringify(sealed));changedSig.signature=changedSig.signature.replace(/^./,changedSig.signature[0]==='A'?'B':'A');
  assert.equal((await S.verify(changedSig)).valid,false,'Signature changes must fail');
  const fakeFp=JSON.parse(JSON.stringify(sealed));fakeFp.publicKeyFingerprint='f'.repeat(64);
