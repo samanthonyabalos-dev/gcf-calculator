@@ -30,13 +30,14 @@ function updateQualityPanel(){
  const scanned=coverage.filter(c=>c.status==='READABLE'||c.status==='BLANK');
  const errors=rows.filter(r=>r.status==='MISMATCH'||r.status==='INVALID').length;
  const reviews=rows.filter(r=>r.status==='REVIEW').length;
+ const conflictingPages=coverage.filter(c=>c.disagreement).length;
  const pairCount=rows.filter(r=>r.status==='MATCH'||r.status==='MISMATCH').length;
  const ocrPages=coverage.filter(c=>c.ocrAttempted).length;
  const durations=coverage.reduce((n,c)=>n+(Number(c.durationMs)||0),0);
  const missingPositions=rows.filter(r=>/\.pdf$/i.test(r.file||'')&&(!r.hasDatePosition||(['MATCH','MISMATCH'].includes(r.status)&&!r.hasDayPosition))).length;
  const state=GCFAuditUtils.summarize(rows,coverage).state;
  const node=$('scanQuality');node.className='quality-panel'+(unreadable.length||reviews||!pairCount||missingPositions?' warning':'');
- node.textContent='Overall audit state: '+state+'\nPage coverage: '+scanned.length+'/'+coverage.length+' readable or verified blank · '+unreadable.length+' incomplete\nPrinted weekday/date pairs: '+pairCount+' · errors: '+errors+' · review: '+reviews+' · date-only: '+rows.filter(r=>r.status==='DATE_ONLY').length+'\nFindings with incomplete PDF highlight positions: '+missingPositions+'\nOCR attempted on '+ocrPages+' page(s) · page processing: '+(durations/1000).toFixed(2)+' seconds (excludes previews/exports)\n'+(unreadable.length?'Incomplete pages require retry or manual verification.':!pairCount?'No paired weekdays confirmed; inspect extraction diagnostics.':'All pages processed, but undetected text remains possible.')+' This report is not a certification of the source document.';
+ node.textContent='Overall audit state: '+state+'\nPage coverage: '+scanned.length+'/'+coverage.length+' readable or verified blank · '+unreadable.length+' incomplete\nPrinted weekday/date pairs: '+pairCount+' · errors: '+errors+' · review: '+reviews+' · date-only: '+rows.filter(r=>r.status==='DATE_ONLY').length+'\nPages with conflicting text/OCR evidence: '+conflictingPages+' (manual review)\nFindings with incomplete PDF highlight positions: '+missingPositions+'\nOCR attempted on '+ocrPages+' page(s) · page processing: '+(durations/1000).toFixed(2)+' seconds (excludes previews/exports)\n'+(unreadable.length?'Incomplete pages require retry or manual verification.':!pairCount?'No paired weekdays confirmed; inspect extraction diagnostics.':'All pages processed, but undetected text remains possible.')+' This report is not a certification of the source document.';
  $('retryPages').classList.toggle('hide',!docs.some(d=>/\.pdf$/i.test(d.fileObj.name)&&d.coverage.some(c=>c.status==='UNREADABLE'||c.status==='SKIPPED')));
 }
 const previewColors={MATCH:'rgba(47,190,76,.30)',MISMATCH:'rgba(232,58,65,.32)',REVIEW:'rgba(252,182,37,.32)',INVALID:'rgba(255,118,38,.34)',DATE_ONLY:'rgba(87,158,235,.28)'};
@@ -97,6 +98,11 @@ async function scan(){if(running)return;const files=[...$('files').files];if(!fi
    }else if(/\.docx$/i.test(file.name)){document=await GCFWord.read(file);}else throw Error('Only PDF and DOCX files are supported');
    if(stopRequested&&!document.stopped)throw Error('Scan canceled.');
    const scanned=GCFScanner.scanDocument([document],{order:$('order').value,reading:$('reading').value});
+   const conflictPages=new Set(document.coverage.filter(c=>c.disagreement).map(c=>c.page));
+   for(const rec of scanned.records)if(conflictPages.has(rec.page)&&rec.status!=='INVALID'){
+    scanned.counts[rec.status]--;scanned.counts.REVIEW++;rec.status='REVIEW';
+    rec.note=(rec.note||'')+'; PDF text and OCR disagree on this page. Manually inspect original.';
+   }
    docs.push({...document,fileObj:file});coverage.push(...document.coverage.map(p=>({nativeLines:p.nativeLines??0,ocrAttempted:p.ocrAttempted??false,ocrLines:p.ocrLines??0,ocrConfidence:p.ocrConfidence??'',note:p.note||'',...p})));
    rows.push(...scanned.records);
    const processed=document.coverage.filter(x=>x.status==='READABLE'||x.status==='BLANK').length;
@@ -143,7 +149,7 @@ async function downloadHighlightedPDF(){
  }catch(e){status('PDF export unavailable: '+e.message,'error');}
  finally{button.disabled=false;}
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v20\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v20'}),null,2));const issues=[];let files=0;
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v20\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v23'}),null,2));const issues=[];let files=0;
  for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);direct(a.blob,`${stem}_Annotated.pdf`,`Open/download highlighted ${doc.fileObj.name}`);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
@@ -169,6 +175,11 @@ async function retryIncomplete(){
    doc.coverage=doc.coverage.filter(c=>!touched.has(c.page)).concat(delta.coverage).sort((a,b)=>a.page-b.page);
    doc.unchecked=doc.coverage.filter(c=>c.status==='UNREADABLE'||c.status==='SKIPPED');doc.complete=!doc.unchecked.length&&doc.coverage.length===doc.pageCount;
    const rerun=GCFScanner.scanDocument([doc],{reading:lastSettings?.reading||'auto',order:lastSettings?.order||'auto'});
+   const conflictPages=new Set(doc.coverage.filter(c=>c.disagreement).map(c=>c.page));
+   for(const rec of rerun.records)if(conflictPages.has(rec.page)&&rec.status!=='INVALID'){
+    rerun.counts[rec.status]--;rerun.counts.REVIEW++;rec.status='REVIEW';
+    rec.note=(rec.note||'')+'; PDF text and OCR disagree; manually inspect original.';
+   }
    rows=rows.filter(r=>r.file!==doc.file).concat(rerun.records);
    const q=quality.find(x=>x.file===doc.file);if(q){q.processed=doc.coverage.length-doc.unchecked.length;q.unchecked=doc.unchecked.length;q.dates=rerun.records.length;q.matches=rerun.counts.MATCH;q.mismatches=rerun.counts.MISMATCH;q.review=rerun.counts.REVIEW;q.elapsedMs+=delta.coverage.reduce((n,c)=>n+(c.durationMs||0),0);q.outcome=doc.complete?'PAGES PROCESSED, DATE EXTRACTION NOT CERTIFIED':'INCOMPLETE';}
   }catch(e){problems.push(doc.file+': '+e.message);}
@@ -181,6 +192,6 @@ $('retryPages').addEventListener('click',retryIncomplete);
 $('scan').addEventListener('click',scan);$('cancel').addEventListener('click',()=>{stopRequested=true;status('Cancel requested. The current PDF/OCR operation may finish before it can stop.','warning');});$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'GCF_Findings.csv','Findings CSV'));
 $('downloadCoverage').addEventListener('click',()=>saveText(coverageCSV(),'GCF_Page_Coverage.csv','Page coverage CSV'));
 $('downloadEvidence').addEventListener('click',()=>saveText(qualityCSV(),'GCF_Quality_Evidence.csv','Quality evidence CSV'));
-$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v20'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v23'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
 $('downloadPdf').addEventListener('click',downloadHighlightedPDF);$('downloadPackage').addEventListener('click',downloadPackage);
 })();
