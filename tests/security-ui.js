@@ -1,4 +1,4 @@
-/* GCF-400 v26 — prevents cryptographic fingerprints overflowing security UI. */
+/* GCF-400 v27 — layout, copy and responsive security verification. */
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const FP='ab12cd34'.repeat(8);
@@ -33,14 +33,24 @@ assert.equal(node('copyDeviceFingerprint').dataset.value,FP);
  UI.verificationStatus({message:'Selection cleared'});
  assert.equal(node('verificationDetails').hidden,true);
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
- const css=html.slice(html.indexOf('/* Security UI:'));
+ const css=html.slice(html.indexOf('/* Compact audit-security layout'));
  assert.ok(css.includes('overflow-wrap:anywhere'),'Long fingerprints must wrap inside the card');
  assert.ok(css.includes('.security-hex'),'Monospace fingerprint styling must be present');
- assert.ok(css.includes('@media(max-width:640px)'),'Mobile layout must be supported');
+ assert.ok(css.includes('@media(max-width:750px)')&&css.includes('@media(max-width:440px)'),'Mobile layout must be supported');
  assert.ok(html.includes('id="deviceFingerprintValue"'));
  assert.ok(html.includes('id="copyDeviceFingerprint"'));
  assert.ok(html.includes('id="verificationFingerprintValue"'));
  assert.ok(html.includes('id="verificationHashValue"'));
+ assert.ok(html.includes('class="card audit-security"'),'Compact audit security card must exist');
+ assert.ok(html.includes('class="audit-verify"'),'Verifier must be collapsible');
+ assert.ok(html.includes('class="audit-advanced"'),'Advanced trust control must be collapsible');
+ assert.ok(html.indexOf('id="verifyEvidenceFile"')<html.indexOf('id="results"'),'Verifier should be available without a scan');
+ assert.ok(html.includes('id="offlineApplyUpdate"'),'Update ready button is required');
+ const currentMarkup=html.slice(html.indexOf('<section class="card audit-security"'),html.indexOf('id="results"'));
+ assert.ok(!currentMarkup.includes('Public SHA-256 fingerprint:'),'Old overflowing text must not appear in markup');
+ assert.equal((html.match(/id="deviceSignerStatus"/g)||[]).length,1);
+ assert.equal((html.match(/id="deviceFingerprintValue"/g)||[]).length,1);
+ assert.equal((html.match(/id="verifyEvidenceStatus"/g)||[]).length,1);
  const app=fs.readFileSync(path.join(__dirname,'../audit-app.js'),'utf8');
  assert.ok(app.includes('GCFSecurityUI.keyStatus'));
  assert.ok(app.includes('GCFSecurityUI.verificationStatus'));
