@@ -45,7 +45,9 @@ if(checkButton)checkButton.addEventListener('click',()=>checkOffline());
 window.addEventListener('online',()=>show(ready?'Offline calculator installed and verified.':'Connected — verify offline installation.',ready?'success':'info'));
 window.addEventListener('offline',()=>show(ready?'Offline mode active — calculator ready.':'Offline; caching was not verified.',ready?'success':'warning'));
 if('serviceWorker' in navigator){
+ let alreadyControlled=Boolean(navigator.serviceWorker.controller);
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  if(!alreadyControlled){alreadyControlled=true;return;}
   show('A newer GCF-400 version is ready. Choose “Load updated app” to use the latest page.','warning');
   if(updateButton)updateButton.hidden=false;
  });
