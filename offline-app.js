@@ -2,7 +2,7 @@
 (function(){'use strict';
 const status=document.getElementById('offlineStatus'),details=document.getElementById('offlineDetails'),checkButton=document.getElementById('offlineCheck'),installButton=document.getElementById('offlineInstall');
 const essentials=['./index.html','./gcf-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
-const cacheName='gcf400-offline-v24-20261103';
+const cacheName='gcf400-offline-v25-20261103';
 let ready=false,promptEvent=null,checking=false;
 function show(message,kind='info'){
  if(status){status.textContent=message;status.dataset.state=kind;}
