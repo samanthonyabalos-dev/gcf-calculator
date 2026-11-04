@@ -18,7 +18,8 @@ if(typeof document!=='undefined'){
  const input=document.getElementById('quickInput'),button=document.getElementById('quickCheck'),result=document.getElementById('quickResult'),example=document.getElementById('quickExample');
  const show=()=>{
   const r=check(input.value);
-  result.textContent='Status: '+r.status+'\n'+(r.sourceDate?'Date: '+r.sourceDate+'\n':'')+(r.recorded?'Printed weekday: '+r.recorded+'\n':'')+(r.expected?'Calculated weekday: '+r.expected+'\n':'')+r.message+'\nThis verifies weekday consistency, not the authenticity of a schedule.';
+  const headline=r.status==='MATCH'?'Match':r.status==='MISMATCH'?'Mismatch':r.status==='DATE_ONLY'?'Date only':r.status==='INVALID'?'Invalid date':r.status==='REVIEW'?'Needs review':r.status;
+  result.textContent=headline+'\n'+(r.sourceDate?'Date: '+r.sourceDate+'\n':'')+(r.recorded&&r.recorded!=='Not printed'?'Printed: '+r.recorded+'\n':'')+(r.expected&&r.expected!=='Not available'?'Expected: '+r.expected+'\n':'')+r.message;
   result.dataset.state=r.status;result.hidden=false;
  };
  button?.addEventListener('click',show);
