@@ -62,6 +62,8 @@ jobs:
         run: node tests/ui-smoke.js
       - name: Simplified end-user workflow and markup
         run: node tests/simplified-ui.js
+      - name: Mobile and desktop layout check
+        run: node tests/browser-layout.js
       - name: Offline calculator and private-request safety
         run: node tests/offline.js
       - name: One-line verification and ambiguity tests
