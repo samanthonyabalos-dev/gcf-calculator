@@ -60,6 +60,8 @@ jobs:
           NODE
       - name: Document audit UI smoke
         run: node tests/ui-smoke.js
+      - name: Simplified end-user workflow and markup
+        run: node tests/simplified-ui.js
       - name: Offline calculator and private-request safety
         run: node tests/offline.js
       - name: One-line verification and ambiguity tests
