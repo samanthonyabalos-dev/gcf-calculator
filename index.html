@@ -139,6 +139,14 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 .calc-breakdown{background:#FAFCFA;margin-top:13px}.calc-breakdown h3{margin-top:12px}#calcResult .weekday{font-size:clamp(32px,5vw,46px)}
 #quickVerifyCard h2{font-size:19px}#quickVerifyCard .sub{margin-bottom:12px}
 @media(max-width:720px){header .inner{padding:17px 15px 13px}main{padding:14px 11px 36px}.card{padding:17px}.tool-drawer>summary{padding:14px 16px}.tool-drawer-body{padding:0 16px 15px}.key-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.results-head .results-actions{width:100%;display:grid;grid-template-columns:1fr}.results-head .results-actions button{width:100%}}
+
+.audit-headline.warning{background:#FFF6E8;color:#81571D}.audit-headline.danger{background:#FFF0ED;color:#943B36}
+.tool-drawer .audit-verify>summary{font-size:12px}
+.tool-drawer .security-actions{display:flex;flex-wrap:wrap;gap:9px}.tool-drawer .security-actions button{white-space:normal}
+.tool-drawer .security-fingerprint-panel{overflow:hidden;max-width:100%}
+.tool-drawer .security-file-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tool-drawer .security-file-grid input[type=file]{width:100%;max-width:100%}
+@media(max-width:720px){.tool-drawer .security-file-grid{grid-template-columns:minmax(0,1fr)}}
 </style></head><body>
 <header><div class="inner"><div class="eyebrow">GCF-400 · v28</div><h1>Check dates and weekdays</h1><p class="header-subtitle">Upload a file or check a date in seconds.</p>
 <div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
