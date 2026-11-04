@@ -108,108 +108,45 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
 #resultSearch,#resultFilter{min-height:44px}#quickInput:focus-visible{outline:3px solid #245D45;outline-offset:2px}#quickResult[data-state='MATCH']{border-color:#6CB686}#quickResult[data-state='MISMATCH'],#quickResult[data-state='INVALID']{border-color:#C56565;background:#FFF7F5}.audit-record:focus-visible{outline:3px solid #946600;outline-offset:-3px}.pdf-mark:focus-visible{outline:3px solid #182F25!important;box-shadow:0 0 0 4px #FFF!important}@media(forced-colors:active){.legend-swatch{border:2px solid CanvasText}.pdf-mark{outline:2px solid Highlight!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 </style></head><body>
-<header><div class="inner"><div class="eyebrow">Gregorian Congruence Formula · GCF-400 · v27</div><h1>Date–weekday auditor</h1><p>Verify recorded weekdays in documents or spreadsheets, or calculate a date directly.</p>
-<section class="offline-strip" aria-label="Offline application readiness">
- <div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Preparing offline calculator verification…</span></div>
- <div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline readiness</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load updated app</button></div>
- <p id="offlineDetails" class="offline-detail">The calculator and learning center work without a network once core files are cached. PDF OCR may require an internet connection or previously installed libraries.</p>
- </section>
- <nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Document Audit</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheet Audit</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
+<header><div class="inner"><div class="eyebrow">GCF-400 · v28</div><h1>Check dates and weekdays</h1><p class="header-subtitle">Upload a file or check a date in seconds.</p>
+<div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
+<details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load updated app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details></div>
+<nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Documents</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheets</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
 <main>
 <section id="document" class="panel" role="tabpanel" aria-labelledby="tab-document">
- <div class="card"><div class="eyeline">01 / Document Audit</div><h2>Check a document</h2><p class="sub">Upload PDF or Word schedules and compare recorded weekdays with calculated weekdays.</p>
- <div class="pick"><input id="files" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple aria-label="Choose documents"><p class="fine">PDF or DOCX · up to 10 files · maximum 15 MB each · up to 180 PDF pages</p></div>
- <div class="why-box" style="margin-top:14px"><label for="reading"><b>Weekday–date reading rule</b></label><select id="reading" aria-describedby="readingHelp" style="display:block;max-width:430px;width:100%;margin-top:8px"><option value="auto" selected>Auto-detect both (recommended)</option><option value="DAY_DATE">Day, Date — Thursday, May 7, 2026</option><option value="DATE_DAY">Date, Day — May 7, 2026, Thursday</option></select><p class="fine" id="readingHelp">Both Day–Date and Date–Day are recognized. Visually adjacent fragments are paired only when geometry supports one unambiguous association. Standalone dates are reported separately, not labeled weekday errors.</p></div>
- <details><summary>Additional scan settings</summary><div class="settings"><label>PDF recognition<select id="ocr"><option value="auto" selected>Smart hybrid: text first, OCR only when necessary</option><option value="all">OCR every PDF page (slower)</option><option value="off">Searchable text only (fastest)</option></select></label><label>Numeric date order (separate setting)<select id="order"><option value="auto">Automatic · flag ambiguous</option><option value="DMY">Day / Month / Year</option><option value="MDY">Month / Day / Year</option></select></label></div><p class="fine">Smart hybrid scanning uses searchable PDF text before requesting OCR. PDF text and OCR may still contain recognition mistakes. Review uncertain findings before trusting them.</p></details>
- <div class="bar"><button type="button" id="scan">Scan files</button><button type="button" id="cancel" class="secondary hide">Cancel</button><button type="button" id="reset" class="secondary">Clear</button><button type="button" id="retryPages" class="secondary hide">Retry incomplete pages</button></div>
+ <div class="card primary-task"><h2>Check a document</h2><p class="sub">Choose a PDF or Word file, then scan it.</p>
+ <div class="pick"><input id="files" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple aria-label="Choose documents"><p class="fine">PDF or Word (DOCX) · Up to 10 files</p></div>
+ <details class="scan-options"><summary>Scan options</summary>
+<div class="fieldgroup two">
+ <div><label class="field" for="reading">Weekday order</label><select id="reading"><option value="auto" selected>Automatic (recommended)</option><option value="DAY_DATE">Weekday, Date</option><option value="DATE_DAY">Date, Weekday</option></select></div>
+ <div><label class="field" for="ocr">PDF recognition</label><select id="ocr"><option value="auto" selected>Automatic (recommended)</option><option value="all">OCR every page</option><option value="off">Text only</option></select></div>
+ <div><label class="field" for="order">Numeric date format</label><select id="order"><option value="auto">Automatic</option><option value="DMY">Day / Month / Year</option><option value="MDY">Month / Day / Year</option></select></div>
+</div><p class="fine">Change these only if automatic detection is incorrect.</p></details>
+<div class="bar"><button type="button" id="scan">Scan files</button><button type="button" id="cancel" class="secondary hide">Cancel</button><button type="button" id="reset" class="secondary">Clear</button><button type="button" id="retryPages" class="secondary hide">Retry incomplete pages</button></div>
  <div id="scanProgress" class="scan-progress hide" aria-label="Current document scan progress" role="status" aria-live="polite"><span id="progressText">Preparing scan…</span><progress id="scanProgressBar" value="0" max="100">0%</progress></div>
- <div id="engine" class="engine" role="status">PDF processing runs in your browser. For consistent results, install the supplied local PDF/OCR libraries before deploying.</div>
- <div id="status" class="status" role="status" aria-live="polite">Choose a document to begin.</div><p class="fine"><strong>Privacy:</strong> File analysis runs in your browser; uploaded file contents are not sent to a GCF-400 server. External library downloads may occur when a local copy is unavailable. Results are not a certification of document authenticity.</p>
+ <div id="engine" class="engine hide" role="status">PDF tools ready when needed.</div>
+ <div id="status" class="status hide" role="status" aria-live="polite">Choose a document to begin.</div><p class="fine privacy-note">Files are processed in your browser.</p>
  </div>
- <section class="card qa-panel" aria-labelledby="qaHeading"><div class="row"><div><h3 id="qaHeading">Built-in verification checks</h3><p class="fine">Run 298 logic checks, including 47 PRC schedule lines from 19 document groups. This does not certify full PDF/OCR extraction.</p></div><button type="button" id="runSelfChecks" class="secondary">Run self-checks</button></div><div id="selfCheckResults" role="status" aria-live="polite" class="fine">Not run.</div></section>
- <aside class="card audit-legend" aria-labelledby="auditLegendTitle">
- <h3 id="auditLegendTitle">Status legend — annotation colors</h3>
- <p class="fine">These colors apply to highlighted dates in the PDF preview and exported annotated PDF. A color indicates what the auditor found, not whether the entire document is authentic.</p>
- <div class="legend-items" role="list">
- <div class="legend-item" role="listitem"><span class="legend-swatch legend-match" aria-hidden="true"></span><span><strong>MATCH · Green</strong>Printed weekday agrees with the calculated weekday.</span></div>
- <div class="legend-item" role="listitem"><span class="legend-swatch legend-mismatch" aria-hidden="true"></span><span><strong>MISMATCH · Red</strong>Printed weekday differs from the calculated weekday.</span></div>
- <div class="legend-item" role="listitem"><span class="legend-swatch legend-review" aria-hidden="true"></span><span><strong>REVIEW · Yellow</strong>Ambiguous extraction or pairing; needs manual inspection.</span></div>
- <div class="legend-item" role="listitem"><span class="legend-swatch legend-invalid" aria-hidden="true"></span><span><strong>INVALID · Orange</strong>Date is not valid under the Gregorian calendar.</span></div>
- <div class="legend-item" role="listitem"><span class="legend-swatch legend-date-only" aria-hidden="true"></span><span><strong>DATE ONLY · Blue</strong>A standalone date; not a weekday error.</span></div>
- </div></aside>
- <section class="card audit-security" aria-labelledby="securityHeading">
- <div class="eyeline">AUDIT SECURITY</div>
- <div class="audit-security-head">
-  <h2 id="securityHeading">Signing and verification</h2>
-  <p class="sub">Create a signing key, export a signed audit, or verify a report you received.</p>
- </div>
- <div class="audit-security-main">
-  <div class="audit-key-block">
-   <h3>Your signing key</h3>
-   <p class="fine">Use a saved key for a consistent fingerprint across reports, or export with a temporary key.</p>
-   <div class="security-actions">
-    <button type="button" class="secondary" id="createDeviceSigner">Create key</button>
-    <button type="button" class="secondary" id="loadDeviceSigner">Use saved key</button>
-    <button type="button" class="secondary security-destructive" id="eraseDeviceSigner">Erase key</button>
-   </div>
-   <p id="deviceSignerStatus" class="security-message" data-state="info" role="status" aria-live="polite">No saved key selected.</p>
-   <div id="deviceFingerprintPanel" class="security-fingerprint-panel" hidden>
-    <div class="security-label-row">
-     <span class="security-code-label">Public-key fingerprint · SHA-256</span>
-     <button type="button" class="secondary security-copy" id="copyDeviceFingerprint" aria-label="Copy full fingerprint">Copy</button>
-    </div>
-    <code id="deviceFingerprintValue" class="security-hex" aria-label="Fingerprint grouped for readability"></code>
-    <p id="deviceCopyStatus" class="security-copy-status" role="status" aria-live="polite"></p>
-   </div>
-  </div>
-  <aside class="audit-sign-help" aria-labelledby="signHelpTitle">
-   <h3 id="signHelpTitle">How to sign a report</h3>
-   <p><span class="audit-step-num">1</span> Scan a PDF or DOCX above.</p>
-   <p><span class="audit-step-num">2</span> Under <strong>Document results</strong>, choose <strong>Export signed audit evidence</strong>.</p>
-   <p class="fine">The saved JSON includes the findings and source-file hashes.</p>
-  </aside>
- </div>
- <details class="audit-verify" id="auditVerifyPanel">
-  <summary><span><strong>Verify a signed report</strong><small>Open to check a signed JSON and optional original file</small></span></summary>
-  <div class="audit-verify-body">
-   <div class="security-file-grid">
-    <div><label class="field" for="verifyEvidenceFile">Signed audit JSON <span class="audit-required">Required</span></label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"></div>
-    <div><label class="field" for="verifySourceFile">Original PDF or DOCX <span class="audit-optional">Optional</span></label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div>
-   </div>
-   <details class="audit-advanced">
-    <summary>Advanced: compare a trusted signing key</summary>
-    <div class="security-field">
-     <label class="field" for="trustedKeyFingerprint">Public-key fingerprint obtained independently</label>
-     <input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64 hexadecimal characters">
-     <p class="fine">Only use a fingerprint supplied through a trusted channel, not copied from the report.</p>
-    </div>
-   </details>
-   <div class="security-actions">
-    <button type="button" id="verifyEvidence">Verify evidence</button>
-    <button type="button" class="secondary" id="clearVerification">Clear selection</button>
-   </div>
-   <p id="verifyEvidenceStatus" class="security-message" data-state="info" role="status" aria-live="polite">Select the signed JSON to begin verification.</p>
-   <div id="verificationDetails" class="security-fingerprint-panel" hidden>
-    <dl class="security-check-results">
-     <div><dt>Original source</dt><dd id="verificationSourceValue">Not supplied</dd></div>
-     <div><dt>Trusted key</dt><dd id="verificationTrustValue">Not supplied</dd></div>
-    </dl>
-    <p class="security-code-label">Signing-key fingerprint</p>
-    <code id="verificationFingerprintValue" class="security-hex"></code>
-    <p class="security-code-label">Evidence digest · SHA-256</p>
-    <code id="verificationHashValue" class="security-hex"></code>
-   </div>
-  </div>
- </details>
- <p class="security-disclaimer">A valid signature detects changes to signed evidence; it does not prove the signer's identity or certify an official schedule.</p>
-</section>
- <div class="card hide" id="results"><div class="row"><div><h2>Document results</h2><p class="sub">Only printed weekday–date pairs are judged as matches or mismatches. Standalone dates are informational.</p></div><div class="bar"><button type="button" id="downloadRecords" class="secondary">Findings CSV</button><button type="button" id="downloadCoverage" class="secondary">Page coverage CSV</button><button type="button" id="downloadEvidence" class="secondary">Evidence CSV</button><button type="button" id="downloadPdf">Download highlighted PDF</button><button type="button" id="downloadPackage" class="secondary">Annotated ZIP</button></div></div>
+ <details class="card tool-drawer" id="securityDrawer"><summary>Security tools <span>Sign or verify reports</span></summary><div class="tool-drawer-body">
+<h3>Signing key</h3>
+<div class="security-actions"><button type="button" class="secondary" id="createDeviceSigner">Create key</button><button type="button" class="secondary" id="loadDeviceSigner">Use saved key</button><button type="button" class="secondary security-destructive" id="eraseDeviceSigner">Erase key</button></div>
+<p id="deviceSignerStatus" class="security-message" role="status" aria-live="polite" data-state="info">No saved key selected.</p>
+<div id="deviceFingerprintPanel" class="security-fingerprint-panel" hidden><div class="security-label-row"><span class="security-code-label">Public-key fingerprint</span><button type="button" class="secondary security-copy" id="copyDeviceFingerprint">Copy</button></div><code id="deviceFingerprintValue" class="security-hex"></code><p id="deviceCopyStatus" class="security-copy-status" role="status" aria-live="polite"></p></div>
+<details class="audit-verify" id="auditVerifyPanel"><summary>Verify a signed report</summary><div class="audit-verify-body">
+<div class="security-file-grid"><div><label class="field" for="verifyEvidenceFile">Signed JSON</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"></div><div><label class="field" for="verifySourceFile">Original PDF / DOCX (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div></div>
+<details class="audit-advanced"><summary>Compare a trusted key (optional)</summary><div class="security-field"><label class="field" for="trustedKeyFingerprint">Trusted key fingerprint</label><input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64 hexadecimal characters"><p class="fine">Use a fingerprint provided separately by the signer.</p></div></details>
+<div class="security-actions"><button type="button" id="verifyEvidence">Verify report</button><button type="button" class="secondary" id="clearVerification">Clear</button></div>
+<p id="verifyEvidenceStatus" class="security-message" role="status" aria-live="polite">Choose signed JSON to verify.</p>
+<div id="verificationDetails" class="security-fingerprint-panel" hidden><dl class="security-check-results"><div><dt>Source file</dt><dd id="verificationSourceValue">Not supplied</dd></div><div><dt>Trusted key</dt><dd id="verificationTrustValue">Not supplied</dd></div></dl><p class="security-code-label">Signing key</p><code id="verificationFingerprintValue" class="security-hex"></code><p class="security-code-label">Evidence hash</p><code id="verificationHashValue" class="security-hex"></code></div>
+</div></details><p class="fine">Signatures detect report changes; they don't verify anyone's identity.</p></div></details>
+<div class="card hide" id="results"><div class="row"><div><h2>Document results</h2><p class="sub">Only printed weekday–date pairs are judged as matches or mismatches. Standalone dates are informational.</p></div><div class="bar"><button type="button" id="downloadRecords" class="secondary">Findings CSV</button><button type="button" id="downloadCoverage" class="secondary">Page coverage CSV</button><button type="button" id="downloadEvidence" class="secondary">Evidence CSV</button><button type="button" id="downloadPdf">Download highlighted PDF</button><button type="button" id="downloadPackage" class="secondary">Annotated ZIP</button></div></div>
  <div class="bar"><button id="downloadManifest" type="button" class="secondary">Export evidence JSON</button><button id="downloadSignedManifest" type="button" class="secondary">Export signed audit evidence</button><span class="fine">Contains file hashes and coverage, not original file contents.</span></div>
  <div class="stats"><div class="stat"><span>Date expressions</span><strong id="statDates">0</strong></div><div class="stat"><span>Matches</span><strong id="statMatches">0</strong></div><div class="stat"><span>Mismatches</span><strong id="statMismatch">0</strong></div><div class="stat"><span>Review / uncertain</span><strong id="statReview">0</strong></div><div class="stat"><span>Date-only mentions</span><strong id="statDateOnly">0</strong></div><div class="stat"><span>Page/unit entries</span><strong id="statPages">0</strong></div></div>
  <div id="scanQuality" class="quality-panel" role="status" aria-live="polite">Quality summary appears after scanning.</div><div class="fieldgroup two" style="margin:10px 0"><div><label class="field" for="resultFilter">Filter findings</label><select id="resultFilter"><option value="ALL">All findings</option><option value="MISMATCH">Mismatches</option><option value="REVIEW">Needs review</option><option value="INVALID">Invalid dates</option><option value="MATCH">Matches</option><option value="DATE_ONLY">Standalone dates</option></select></div><div><label class="field" for="resultSearch">Search findings</label><input id="resultSearch" type="search" placeholder="Date, weekday, filename or text"></div></div><div class="scroller"><table aria-label="Date audit findings"><thead><tr><th scope="col">Document</th><th scope="col">Page</th><th scope="col">Recorded date</th><th>Recorded weekday</th><th>Calculated weekday</th><th>Result</th></tr></thead><tbody id="recordRows"></tbody></table></div><p id="previewNote" class="fine"></p>
  <div id="pdfPreviewCard" class="pdf-review hide"><div class="row"><div><h3>Source document preview</h3><p class="fine">Highlights appear as soon as scanning finishes. Hover, tap or keyboard-focus a highlighted date to see the recorded date, status and expected weekday. Select a finding from the table to open its page.</p></div></div><div id="pdfPreviewStatus" class="fine" role="status">Preparing preview…</div><div class="pdf-scroll"><div id="pdfPreviewStage" class="pdf-stage"><canvas id="pdfPreviewCanvas" aria-label="Original PDF page with overlaid audit highlights"></canvas><div id="pdfPreviewOverlays" class="pdf-overlays" aria-label="Interactive date annotations"></div></div></div><div id="annotationDetails" class="annotation-details" role="status" aria-live="polite">Hover, tap, or keyboard-focus a colored date to see its status, recorded weekday, and expected weekday.</div><p class="fine">PDF viewer hover popups depend on the PDF reader; in-app annotations include an interactive tooltip. Unlocated findings are included in CSV and listed as unresolved in the exported PDF.</p></div>
  <details id="textDiagnostics"><summary>Extraction diagnostics — what text did the scanner actually read?</summary><p class="fine">If a result misses a weekday, compare these exact extracted lines with the printed PDF. These lines come from PDF text or OCR, not assumptions.</p><pre id="extractionDiagnostics" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:400px;overflow:auto;background:#F4F7F4;border:1px solid #DCE5DE;border-radius:8px;padding:12px;font-size:12px"></pre></details><details><summary>Page and content coverage</summary><div class="scroller"><table><thead><tr><th>Document</th><th>Page</th><th>Method</th><th>Coverage</th><th>Confidence</th><th>Processing time</th><th>Notes</th></tr></thead><tbody id="coverageRows"></tbody></table></div></details><div class="downloads" id="links"></div></div>
  <details class="card"><summary>What do these results mean?</summary><p class="fine">Matching and mismatching statuses apply only to an explicitly printed weekday next to a date. DATE ONLY is informational and never proof of a missing weekday. REVIEW means the wording or extraction does not support a confident match. The auditor checks dates against the Gregorian calendar. An OCR attempt does not guarantee that every printed date was recognized. Incomplete page coverage or ambiguous text requires human review. Source files are never overwritten.</p></details>
+<details class="card tool-drawer" id="developerChecks"><summary>Testing and diagnostics <span>Optional</span></summary><div class="tool-drawer-body qa-panel"><p class="fine">Checks date logic, not full PDF/OCR accuracy.</p><button type="button" id="runSelfChecks" class="secondary">Run self-checks</button><div id="selfCheckResults" role="status" aria-live="polite" class="fine">Not run.</div></div></details>
 </section>
 <section id="spreadsheet" class="panel" role="tabpanel" aria-labelledby="tab-spreadsheet" hidden>
  <div class="card"><div class="eyeline">02 / Spreadsheet Audit</div><h2>Check spreadsheet records</h2><p class="sub">Upload an XLSX, CSV or TSV file, or paste two columns headed <b>Date</b> and <b>Recorded Weekday</b>.</p>
