@@ -14,7 +14,7 @@ function status(text,kind='normal'){$('status').textContent=text;$('status').cla
 function linksClear(){urls.forEach(x=>URL.revokeObjectURL(x));urls=[];$('links').replaceChildren();}
 async function fingerprint(file){if(!globalThis.crypto?.subtle)return '';const h=await crypto.subtle.digest('SHA-256',await file.arrayBuffer());return [...new Uint8Array(h)].map(n=>n.toString(16).padStart(2,'0')).join('');}
 function direct(blob,name,label){const url=URL.createObjectURL(blob);urls.push(url);const link=document.createElement('a');link.className='download';link.href=url;link.download=name;link.textContent=label||name;$('links').appendChild(link);return link;}
-function reset(){lastSettings=null;$('scanProgress').classList.add('hide');$('extractionDiagnostics').textContent='';if(running)return status('Finish or cancel the current scan before clearing.','warning');docs=[];rows=[];coverage=[];quality=[];displayRows=[];previewSeq++;previewKey='';previewViewport=null;linksClear();$('files').value='';$('results').classList.add('hide');$('pdfPreviewCard').classList.add('hide');$('retryPages').classList.add('hide');$('scanQuality').textContent='Quality summary appears after scanning.';$('scanQuality').className='quality-panel';status('Choose a document to begin.');GCFPDF.closePreview().catch(()=>{});}
+function reset(){lastSettings=null;$('scanProgress').classList.add('hide');$('extractionDiagnostics').textContent='';if(running)return status('Finish or cancel the current scan before clearing.','warning');docs=[];rows=[];coverage=[];quality=[];displayRows=[];previewSeq++;previewKey='';previewViewport=null;linksClear();$('files').value='';$('results').classList.add('hide');$('pdfPreviewCard').classList.add('hide');$('retryPages').classList.add('hide');$('scanQuality').textContent='Quality summary appears after scanning.';$('scanQuality').className='quality-panel';$('status').textContent='';$('status').className='status hide';GCFPDF.closePreview().catch(()=>{});}
 function summarize(){let c=Object.fromEntries(['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].map(s=>[s,0]));rows.forEach(r=>c[r.status]=(c[r.status]||0)+1);$('statDates').textContent=rows.length.toLocaleString();$('statMatches').textContent=c.MATCH.toLocaleString();$('statMismatch').textContent=c.MISMATCH.toLocaleString();$('statReview').textContent=c.REVIEW.toLocaleString();$('statDateOnly').textContent=c.DATE_ONLY.toLocaleString();$('statPages').textContent=coverage.length.toLocaleString();
  const filter=$('resultFilter').value,search=$('resultSearch').value.trim().toLowerCase();
  const filtered=rows.filter(r=>(filter==='ALL'||r.status===filter)&&(!search||[r.file,r.sourceDate,r.date,r.recorded,r.expected,r.sourceText,r.note].some(v=>String(v??'').toLowerCase().includes(search))));
@@ -38,6 +38,15 @@ function updateQualityPanel(){
  const state=GCFAuditUtils.summarize(rows,coverage).state;
  const node=$('scanQuality');node.className='quality-panel'+(unreadable.length||reviews||!pairCount||missingPositions?' warning':'');
  node.textContent='Overall audit state: '+state+'\nPage coverage: '+scanned.length+'/'+coverage.length+' readable or verified blank · '+unreadable.length+' incomplete\nPrinted weekday/date pairs: '+pairCount+' · errors: '+errors+' · review: '+reviews+' · date-only: '+rows.filter(r=>r.status==='DATE_ONLY').length+'\nPages with conflicting text/OCR evidence: '+conflictingPages+' (manual review)\nFindings with incomplete PDF highlight positions: '+missingPositions+'\nOCR attempted on '+ocrPages+' page(s) · page processing: '+(durations/1000).toFixed(2)+' seconds (excludes previews/exports)\n'+(unreadable.length?'Incomplete pages require retry or manual verification.':!pairCount?'No paired weekdays confirmed; inspect extraction diagnostics.':'All pages processed, but undetected text remains possible.')+' This report is not a certification of the source document.';
+ const headline=$('auditHeadline');
+ if(headline){
+  headline.className='audit-headline'+(unreadable.length||errors?' danger':reviews||!pairCount?' warning':'');
+  headline.textContent=unreadable.length?'Some pages could not be checked. Review or retry the incomplete pages.':
+   errors?`${errors} possible date ${errors===1?'problem':'problems'} found. Check the flagged rows below.`:
+   reviews?`${reviews} ${reviews===1?'finding needs':'findings need'} manual review. Check the yellow rows.`:
+   !pairCount?'No weekday–date pairs were confirmed. See Scan details below.':
+   `Scan finished. ${pairCount} weekday–date ${pairCount===1?'pair':'pairs'} checked.`;
+ }
  $('retryPages').classList.toggle('hide',!docs.some(d=>/\.pdf$/i.test(d.fileObj.name)&&d.coverage.some(c=>c.status==='UNREADABLE'||c.status==='SKIPPED')));
 }
 const previewColors={MATCH:'rgba(47,190,76,.30)',MISMATCH:'rgba(232,58,65,.32)',REVIEW:'rgba(252,182,37,.32)',INVALID:'rgba(255,118,38,.34)',DATE_ONLY:'rgba(87,158,235,.28)'};
@@ -121,9 +130,10 @@ async function scan(){if(running)return;const files=[...$('files').files];if(!fi
   }
   $('extractionDiagnostics').textContent=diagnostic.join('\n')||'No extracted lines. Check the page coverage and error report.';
   summarize();const passed=coverage.filter(c=>c.status==='READABLE'||c.status==='BLANK').length,total=coverage.filter(c=>Number.isInteger(c.page)).length;const bad=coverage.filter(c=>c.status==='UNREADABLE'||c.status==='FAILED'||c.status==='PARTIAL').length;const weekdayWords=docs.reduce((n,d)=>n+(d.lines||[]).reduce((t,l)=>t+GCFScanner.dayMatches(l.text).length,0),0),paired=rows.filter(r=>r.status==='MATCH'||r.status==='MISMATCH').length,unpaired=rows.filter(r=>r.status==='DATE_ONLY').length;
-  if(problems.length||bad)status(`${passed}/${total} pages were readable or verified blank. ${bad} unreadable/failed page entries. Document NOT fully verified.\n${problems.join('\n')}`,'warning');
-  else if(!paired && unpaired)status(`${total}/${total} pages processed, but NO weekday–date pair was recognized. Open Extraction diagnostics to compare the extracted text with the printed PDF before trusting these findings.`, 'warning');
-  else status(`${total} of ${total} pages processed with no unreadable pages. Found ${rows.length} date expressions: ${rows.filter(r=>r.status==='MATCH').length} weekday matches, ${rows.filter(r=>r.status==='MISMATCH').length} mismatches, ${rows.filter(r=>r.status==='REVIEW').length} reviews, and ${rows.filter(r=>r.status==='DATE_ONLY').length} standalone date mentions (not errors). Page coverage does not guarantee that OCR recognized every printed date.`);
+  if(problems.length||bad)status('Scan finished with incomplete pages. See results for details.','warning');
+  else if(!paired)status('Scan finished. No weekday–date pairs confirmed. Check scan details.','warning');
+  else status('Scan complete. Review the findings below.');
+  $('results').scrollIntoView?.({behavior:'smooth',block:'start'});
  }finally{running=false;$('scanProgressBar').value=100;$('progressText').textContent=stopRequested?'Scan stopped. Review coverage and errors.':'Scan finished. Review findings and coverage.';$('scan').disabled=false;$('reset').disabled=false;$('cancel').classList.add('hide');try{await GCFPDF.closeOCR();}catch(e){}}}
 function saveText(content,name,label){const link=direct(new Blob([content],{type:'text/csv;charset=utf-8'}),name,label);link.click();}
 async function annotatedPDF(doc,selected){await GCFPDF.load('write');return GCFPdfExport.create(doc.fileObj,selected);}
