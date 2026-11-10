@@ -31,6 +31,8 @@ jobs:
         run: node tests/persistent-key.js
       - name: Automatic signed report ZIP and direct ZIP verification
         run: node tests/automatic-proof.js
+      - name: Real Chromium upload, report ZIP and tamper verification
+        run: node tests/browser-e2e-proof.js
       - name: Security UI fingerprint wrapping and copy
         run: node tests/security-ui.js
       - name: Security policy, safe cache and verifier accessibility
