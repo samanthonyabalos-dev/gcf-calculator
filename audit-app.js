@@ -159,7 +159,36 @@ async function downloadHighlightedPDF(){
  }catch(e){status('PDF export unavailable: '+e.message,'error');}
  finally{button.disabled=false;}
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v28\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v28'}),null,2));const issues=[];let files=0;
+// Automatically generate a signed audit proof for exported reports.
+async function createSignedEvidence(){
+ const missing=quality.filter(x=>!/^[a-f0-9]{64}$/.test(x.sha256||''));
+ if(missing.length)throw Error('Source file checksums are unavailable: '+missing.map(x=>x.file).join(', '));
+ // Reuse an explicitly saved device key if present, without making key setup a requirement.
+ if(selectedSigner!=='stored'){
+  try{
+   const saved=await GCFSecurity.useDeviceKey();
+   selectedSigner='stored';
+   showSigner('Previously saved signing key selected automatically.',saved.fingerprint,'success');
+  }catch(_){/* No saved key: GCFSecurity creates a temporary, non-exportable key automatically. */}
+ }
+ const evidence=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v29'});
+ const sealed=await GCFSecurity.seal(evidence);
+ const verification=await GCFSecurity.verify(sealed);
+ if(!verification.valid)throw Error('Automatic integrity verification failed: '+verification.reason);
+ return sealed;
+}
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('GCF_Audit_Settings.txt',`GCF-400 v29\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('GCF_Findings.csv',recordCSV());zip.file('GCF_Page_Coverage.csv',coverageCSV());zip.file('GCF_Quality_Evidence.csv',qualityCSV());zip.file('GCF_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v29'}),null,2));
+const issues=[];let files=0;let proofIncluded=false;
+try{
+ const signed=await createSignedEvidence();
+ zip.file('Verification/GCF400_Signed_Evidence.json',JSON.stringify(signed,null,2));
+ zip.file('Verification/ABOUT_THE_PROOF.txt','This report includes an automatically signed record of the audit findings and original source-file hashes.\r\nTo check it, open GCF-400 > Verify a saved report and select this ZIP. You do not need to open or edit the JSON file.\r\nA valid signature only shows that the signed audit evidence has not changed relative to the included public key. It does NOT verify the signer identity, guarantee the correctness of findings, or authenticate PRC documents. The signature does not protect other files in this ZIP independently.\r\n');
+ proofIncluded=true;
+}catch(e){
+ issues.push('Automatic audit proof not available: '+e.message);
+ zip.file('Verification/PROOF_UNAVAILABLE.txt','The report could not be signed automatically: '+e.message+'\r\nThese findings and exports are NOT cryptographically signed. Do not represent them as signed evidence.\r\n');
+}
+
  for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);direct(a.blob,`${stem}_Annotated.pdf`,`Open/download highlighted ${doc.fileObj.name}`);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
@@ -167,7 +196,7 @@ async function downloadPackage(){if(!docs.length&&!coverage.length)return status
   catch(e){issues.push(doc.fileObj.name+': annotation export unavailable ('+e.message+')');}
  }
  zip.file('Annotation_Notes.txt',`Generated annotated files: ${files}\r\nUnresolved locations or issues:\r\n${issues.length?issues.join('\r\n'):'None identified'}\r\n\r\nOriginal uploads were never overwritten. A missing annotation must not be interpreted as a correct record.\r\n`);
- const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});const link=direct(blob,'GCF400_Audit_Reports.zip','Save ZIP of findings, coverage, and annotated copies');link.click();status(`Report ZIP prepared with ${files} annotated document(s). ${issues.length} annotation notes. The downloadable ZIP contains findings and page coverage even when an annotated copy could not be made.`,issues.length?'warning':'normal');
+ const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});const link=direct(blob,'GCF400_Audit_Reports.zip','Save ZIP of findings, coverage, and annotated copies');link.click();status(`Report ZIP prepared with ${files} annotated document(s). ${proofIncluded?'Signed audit proof was added automatically.':'Warning: signed audit proof could not be created.'} ${issues.length} export notes. Original documents were not overwritten.`,issues.length?'warning':'normal');
  }catch(e){status('Export failed: '+e.message,'error');}finally{$('downloadPackage').disabled=false;}}
 async function retryIncomplete(){
  if(running)return;
@@ -202,7 +231,7 @@ $('retryPages').addEventListener('click',retryIncomplete);
 $('scan').addEventListener('click',scan);$('cancel').addEventListener('click',()=>{stopRequested=true;status('Cancel requested. The current PDF/OCR operation may finish before it can stop.','warning');});$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'GCF_Findings.csv','Findings CSV'));
 $('downloadCoverage').addEventListener('click',()=>saveText(coverageCSV(),'GCF_Page_Coverage.csv','Page coverage CSV'));
 $('downloadEvidence').addEventListener('click',()=>saveText(qualityCSV(),'GCF_Quality_Evidence.csv','Quality evidence CSV'));
-$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v28'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v29'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'GCF400_Audit_Evidence.json','Save structured audit evidence');link.click();});
 let selectedSigner='temporary';
 function showSigner(message,fingerprint='',state='info'){
  GCFSecurityUI.keyStatus({message,fingerprint,state});
@@ -227,35 +256,40 @@ $('eraseDeviceSigner').addEventListener('click',async()=>{
  catch(e){showSigner('Could not erase saved key: '+e.message,'','invalid');}
 });
 $('downloadSignedManifest').addEventListener('click',async()=>{
- const button=$('downloadSignedManifest');if(!rows.length&&!coverage.length)return status('Scan a document before signing its audit evidence.','warning');
+ const button=$('downloadSignedManifest');if(!rows.length&&!coverage.length)return status('Scan a document before exporting audit proof.','warning');
  button.disabled=true;
  try{
-  const missing=quality.filter(x=>!/^[a-f0-9]{64}$/.test(x.sha256||''));
-  if(missing.length)throw Error('Cannot sign auditable evidence without verified source hashes: '+missing.map(x=>x.file).join(', '));
-  const evidence=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v28'});
-  const sealed=await GCFSecurity.seal(evidence);
-  const proof=await GCFSecurity.verify(sealed);
-  if(!proof.valid)throw Error('The generated signature failed independent local verification: '+proof.reason);
-  direct(new Blob([JSON.stringify(sealed,null,2)],{type:'application/json'}),'GCF400_Signed_Evidence.json','Save signed audit evidence JSON').click();
-  showSigner('Audit signed successfully with the '+(selectedSigner==='stored'?'saved device key':'temporary key')+'. The fingerprint is shown separately below; it does not authenticate the signer’s real-world identity.',sealed.publicKeyFingerprint,'success');
-  status('Signed audit created and verified locally. Key information is shown in the Audit Security section.');
- }catch(e){status('Signing unavailable: '+e.message,'error');}
+  const sealed=await createSignedEvidence();
+  direct(new Blob([JSON.stringify(sealed,null,2)],{type:'application/json'}),'GCF400_Signed_Evidence.json','Save audit proof JSON').click();
+  status('Audit proof saved. You can also download the complete report ZIP, which includes this proof automatically.');
+ }catch(e){status('Audit proof unavailable: '+e.message,'error');}
  finally{button.disabled=false;}
 });
 $('verifyEvidence').addEventListener('click',async()=>{
  const file=$('verifyEvidenceFile').files[0],source=$('verifySourceFile').files[0],button=$('verifyEvidence');
- if(!file){GCFSecurityUI.verificationStatus({message:'Choose signed audit evidence JSON to verify.',state:'warning'});return;}
- if(file.size>4*1024*1024){GCFSecurityUI.verificationStatus({message:'The audit JSON exceeds the 4 MB limit.',state:'invalid'});return;}
- button.disabled=true;GCFSecurityUI.verificationStatus({message:'Checking signature and supplied files…'});
+ if(!file){GCFSecurityUI.verificationStatus({message:'Choose a report ZIP or audit proof JSON to check.',state:'warning'});return;}
+ const zipped=/\\.zip$/i.test(file.name),maxBytes=zipped?180*1024*1024:4*1024*1024;
+ if(file.size>maxBytes){GCFSecurityUI.verificationStatus({message:zipped?'Report ZIP exceeds the 180 MB verification limit.':'Audit proof JSON exceeds 4 MB.',state:'invalid'});return;}
+ button.disabled=true;GCFSecurityUI.verificationStatus({message:'Checking whether the audit results have changed…'});
  try{
-  const envelope=GCFSecurity.parseEnvelope(await file.text());
+  let raw;
+  if(zipped){
+   const zip=await JSZip.loadAsync(file);
+   const entry=zip.file('Verification/GCF400_Signed_Evidence.json');
+   if(!entry)throw Error('This ZIP has no signed audit proof. Download a new report ZIP from GCF-400.');
+   if(Number.isFinite(entry._data?.uncompressedSize)&&entry._data.uncompressedSize>4*1024*1024)throw Error('The audit proof in this ZIP exceeds the 4 MB limit.');
+   raw=await entry.async('string');
+  }else if(/\\.json$/i.test(file.name)){raw=await file.text();}
+  else throw Error('Choose a GCF-400 report ZIP or signed audit proof JSON.');
+  if(raw.length>4*1024*1024)throw Error('The audit proof exceeds the 4 MB limit.');
+  const envelope=GCFSecurity.parseEnvelope(raw);
   const result=source?await GCFSecurity.verifySourceFile(envelope,source):await GCFSecurity.verify(envelope);
   const trusted=$('trustedKeyFingerprint').value.trim().toLowerCase();
   if(trusted&&!/^[a-f0-9]{64}$/.test(trusted))throw Error('Enter exactly 64 hexadecimal characters for the trusted key.');
   const matchesKey=trusted?result.fingerprint===trusted:null;
   const valid=result.valid&&(!source||result.sourceMatch)&&matchesKey!==false;
   GCFSecurityUI.verificationStatus({
-   message:(valid?'Signature validated. ':'Verification did not pass. ')+result.reason+' Signer identity and authority are not independently authenticated.',
+   message:(valid?'Audit proof is intact. ':'Audit proof could not be verified. ')+result.reason+' This does not authenticate the signer or certify the original document.',
    state:valid?'success':'invalid',fingerprint:result.fingerprint||'',digest:result.hash||'',
    sourceResult:source?(result.sourceMatch?'Source file hash matches':'Source file hash does not match'):'Not supplied',
    trustResult:trusted?(matchesKey?'Trusted fingerprint matches':'Trusted fingerprint differs'):'No independent trusted key supplied'
@@ -265,7 +299,7 @@ $('verifyEvidence').addEventListener('click',async()=>{
 });
 $('clearVerification').addEventListener('click',()=>{
  $('verifyEvidenceFile').value='';$('verifySourceFile').value='';$('trustedKeyFingerprint').value='';
- GCFSecurityUI.verificationStatus({message:'Verification selection cleared. Signing keys and scan results remain in this browser tab.'});
+ GCFSecurityUI.verificationStatus({message:'Selection cleared. You can check another report ZIP.'});
 });
 $('downloadPdf').addEventListener('click',downloadHighlightedPDF);$('downloadPackage').addEventListener('click',downloadPackage);
 })();
