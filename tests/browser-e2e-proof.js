@@ -73,7 +73,9 @@ async function eventually(fn,label,tries=140){
   };
   await send('Page.enable');await send('Runtime.enable');await send('DOM.enable');
   await send('Page.setDownloadBehavior',{behavior:'allow',downloadPath:downloadDir});
-  await send('Page.navigate',{url:'http://127.0.0.1:'+server.address().port+'/index.html'});
+  const targetURL=process.env.GCF_TARGET_URL||('http://127.0.0.1:'+server.address().port+'/index.html');
+  console.log('Testing site:',targetURL);
+  await send('Page.navigate',{url:targetURL});
   await eventually(()=>evaluate("document.readyState==='complete' && !!window.GCFSecurity && !!window.GCFWord && !!window.JSZip"),'app scripts');
   assert.ok(await evaluate("document.querySelector('header').textContent.includes('v29')"),'Must test v29 UI');
   await setFile('#files',docxPath);
