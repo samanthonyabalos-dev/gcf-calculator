@@ -29,6 +29,8 @@ jobs:
         run: node tests/security-seal.js
       - name: Persistent non-exportable signing keys
         run: node tests/persistent-key.js
+      - name: Automatic signed report ZIP and direct ZIP verification
+        run: node tests/automatic-proof.js
       - name: Security UI fingerprint wrapping and copy
         run: node tests/security-ui.js
       - name: Security policy, safe cache and verifier accessibility
