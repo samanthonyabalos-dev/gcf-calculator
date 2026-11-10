@@ -171,7 +171,7 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 <main>
 <section id="document" class="panel" role="tabpanel" aria-labelledby="tab-document">
  <div class="card primary-task"><h2>Check a document</h2><p class="sub">Choose a PDF or Word file, then scan it.</p>
- <div class="pick"><input id="files" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple aria-label="Choose documents"><p class="fine">PDF or Word (DOCX) · Up to 10 files</p></div>
+ <div class="pick"><input id="files" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple aria-label="Choose documents"><p class="fine">PDF or Word (DOCX) · Up to 10 files · 15 MB per file · Up to 180 pages per PDF</p></div>
  <details class="scan-options"><summary>Scan options</summary>
 <div class="fieldgroup two">
  <div><label class="field" for="reading">Weekday order</label><select id="reading"><option value="auto" selected>Automatic (recommended)</option><option value="DAY_DATE">Weekday, Date</option><option value="DATE_DAY">Date, Weekday</option></select></div>
@@ -189,7 +189,7 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 <p id="deviceSignerStatus" class="security-message" role="status" aria-live="polite" data-state="info">No saved key selected.</p>
 <div id="deviceFingerprintPanel" class="security-fingerprint-panel" hidden><div class="security-label-row"><span class="security-code-label">Public-key fingerprint</span><button type="button" class="secondary security-copy" id="copyDeviceFingerprint">Copy</button></div><code id="deviceFingerprintValue" class="security-hex"></code><p id="deviceCopyStatus" class="security-copy-status" role="status" aria-live="polite"></p></div>
 <details class="audit-verify" id="auditVerifyPanel"><summary>Verify a signed report</summary><div class="audit-verify-body">
-<div class="security-file-grid"><div><label class="field" for="verifyEvidenceFile">Signed JSON</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"></div><div><label class="field" for="verifySourceFile">Original PDF / DOCX (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div></div>
+<div class="security-file-grid"><div><label class="field" for="verifyEvidenceFile">Signed JSON</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"><p class="fine">Signed audit JSON: 4 MB maximum</p></div><div><label class="field" for="verifySourceFile">Original PDF / DOCX (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div></div>
 <details class="audit-advanced"><summary>Compare a trusted key (optional)</summary><div class="security-field"><label class="field" for="trustedKeyFingerprint">Trusted key fingerprint</label><input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64 hexadecimal characters"><p class="fine">Use a fingerprint provided separately by the signer.</p></div></details>
 <div class="security-actions"><button type="button" id="verifyEvidence">Verify report</button><button type="button" class="secondary" id="clearVerification">Clear</button></div>
 <p id="verifyEvidenceStatus" class="security-message" role="status" aria-live="polite">Choose signed JSON to verify.</p>
@@ -218,7 +218,7 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 </section>
 <section id="spreadsheet" class="panel" role="tabpanel" aria-labelledby="tab-spreadsheet" hidden>
  <div class="card primary-task"><h2>Check a spreadsheet</h2><p class="sub">Choose an Excel or CSV file, then validate it.</p>
- <div class="pick"><input id="sheetFile" type="file" accept=".xlsx,.csv,.tsv,.txt" aria-label="Choose spreadsheet"><p class="fine">Excel (XLSX), CSV, or TSV</p></div>
+ <div class="pick"><input id="sheetFile" type="file" accept=".xlsx,.csv,.tsv,.txt" aria-label="Choose spreadsheet"><p class="fine">Excel (XLSX), CSV, or TSV · 15 MB per file · XLSX: up to 100,000 data rows</p></div>
  <details><summary>Or paste your records</summary><label class="field" for="sheetPaste">Paste data (tab-separated or comma-separated)</label><textarea id="sheetPaste" spellcheck="false" placeholder="Date&#9;Recorded Weekday&#10;2026-12-01&#9;Tuesday&#10;2026-12-02&#9;Monday"></textarea></details>
  <details class="scan-options"><summary>Options and sample data</summary><div class="fieldgroup two">
 <div><label class="field" for="sheetOrder">Numeric date order</label><select id="sheetOrder"><option value="auto">Automatic</option><option value="MDY">Month / Day / Year</option><option value="DMY">Day / Month / Year</option></select></div>
