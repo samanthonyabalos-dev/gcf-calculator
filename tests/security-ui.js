@@ -33,7 +33,7 @@ assert.equal(node('copyDeviceFingerprint').dataset.value,FP);
  UI.verificationStatus({message:'Selection cleared'});
  assert.equal(node('verificationDetails').hidden,true);
  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
- const css=html.slice(html.indexOf('/* v28 simplified task-centered layout'));
+ const css=html.slice(html.indexOf('/* v29 simplified task-centered layout'));
  assert.ok(css.includes('overflow-wrap:anywhere'),'Long fingerprints must wrap inside the card');
  assert.ok(css.includes('.security-hex'),'Monospace fingerprint styling must be present');
  assert.ok(css.includes('@media(max-width:720px)')&&css.includes('@media(max-width:640px)'),'Mobile layout must be supported');
