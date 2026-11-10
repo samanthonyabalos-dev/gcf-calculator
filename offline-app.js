@@ -3,7 +3,7 @@
 const status=document.getElementById('offlineStatus'),details=document.getElementById('offlineDetails'),checkButton=document.getElementById('offlineCheck'),installButton=document.getElementById('offlineInstall');
 const essentials=['./index.html','./gcf-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
 const updateButton=document.getElementById('offlineApplyUpdate');
-const cacheName='gcf400-offline-v28-20261104';
+const cacheName='gcf400-offline-v29-20261110';
 let ready=false,promptEvent=null,checking=false;
 function show(message,kind='info'){
  if(status){status.textContent=message;status.dataset.state=kind;}
