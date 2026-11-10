@@ -108,7 +108,7 @@ button,.download{background:var(--forest2);color:white;border:1px solid var(--fo
 #resultSearch,#resultFilter{min-height:44px}#quickInput:focus-visible{outline:3px solid #245D45;outline-offset:2px}#quickResult[data-state='MATCH']{border-color:#6CB686}#quickResult[data-state='MISMATCH'],#quickResult[data-state='INVALID']{border-color:#C56565;background:#FFF7F5}.audit-record:focus-visible{outline:3px solid #946600;outline-offset:-3px}.pdf-mark:focus-visible{outline:3px solid #182F25!important;box-shadow:0 0 0 4px #FFF!important}@media(forced-colors:active){.legend-swatch{border:2px solid CanvasText}.pdf-mark{outline:2px solid Highlight!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 
-/* v28 simplified task-centered layout */
+/* v29 simplified task-centered layout */
 header .inner{padding:19px 23px 14px}header h1{font-size:clamp(25px,3.6vw,32px);margin:4px 0 3px}header .eyebrow{color:#B1D2BF}header .header-subtitle{margin:2px 0 12px;font-size:12px}
 .offline-strip{display:flex!important;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:7px 11px!important;margin:8px 0 11px!important;background:#1C4938;border-color:#52715F;border-radius:8px}
 .offline-main{font-weight:550;font-size:11px}.offline-settings{border:0!important;padding:0!important;margin:0!important;position:relative;background:transparent}.offline-settings>summary{font-size:11px;color:#E5F1E9;padding:4px 6px}
@@ -164,7 +164,7 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 .tool-drawer .security-check-results dt{font-size:11px;color:#6D8274}.tool-drawer .security-check-results dd{margin:2px 0;font-size:12px;font-weight:700}
 @media(max-width:640px){.tool-drawer .security-check-results{grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions{display:grid;grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions button{width:100%}}
 </style></head><body>
-<header><div class="inner"><div class="eyebrow">GCF-400 · v28</div><h1>Check dates and weekdays</h1><p class="header-subtitle">Upload a file or check a date in seconds.</p>
+<header><div class="inner"><div class="eyebrow">GCF-400 · v29</div><h1>Check dates and weekdays</h1><p class="header-subtitle">Upload a file or check a date in seconds.</p>
 <div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
 <details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div>
 <nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Documents</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheets</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
@@ -183,24 +183,30 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
  <div id="engine" class="engine hide" role="status">PDF tools ready when needed.</div>
  <div id="status" class="status hide" role="status" aria-live="polite">Choose a document to begin.</div><p class="fine privacy-note">Files are processed in your browser.</p>
  </div>
- <details class="card tool-drawer" id="securityDrawer"><summary>Security tools <span>Sign or verify reports</span></summary><div class="tool-drawer-body">
-<h3>Signing key</h3>
-<div class="security-actions"><button type="button" class="secondary" id="createDeviceSigner">Create key</button><button type="button" class="secondary" id="loadDeviceSigner">Use saved key</button><button type="button" class="secondary security-destructive" id="eraseDeviceSigner">Erase key</button></div>
-<p id="deviceSignerStatus" class="security-message" role="status" aria-live="polite" data-state="info">No saved key selected.</p>
+ <details class="card tool-drawer" id="securityDrawer"><summary>Verify a saved report <span>Optional integrity check</span></summary><div class="tool-drawer-body">
+<p class="fine">Downloaded report ZIPs include a signed audit proof automatically, when signing is available. You do not need to create or manage a key to check a document.</p>
+<details class="audit-verify" id="auditVerifyPanel" open><summary>Check whether audit results were changed</summary><div class="audit-verify-body">
+<div class="security-file-grid"><div><label class="field" for="verifyEvidenceFile">Saved report ZIP or audit proof (JSON)</label><input type="file" id="verifyEvidenceFile" accept=".zip,.json,application/zip,application/json"><p class="fine">Choose the downloaded report ZIP directly. Individual JSON proof files have a 4 MB limit.</p></div><div><label class="field" for="verifySourceFile">Original PDF / DOCX (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"><p class="fine">Add the original file to check whether it matches the audited source.</p></div></div>
+<div class="security-actions"><button type="button" id="verifyEvidence">Check report</button><button type="button" class="secondary" id="clearVerification">Clear</button></div>
+<p id="verifyEvidenceStatus" class="security-message" role="status" aria-live="polite">Select a saved report ZIP to check its audit proof.</p>
+<div id="verificationDetails" class="security-fingerprint-panel" hidden><dl class="security-check-results"><div><dt>Original document</dt><dd id="verificationSourceValue">Not supplied</dd></div><div><dt>Trusted signing key</dt><dd id="verificationTrustValue">Not supplied</dd></div></dl><details class="audit-advanced"><summary>Technical verification details</summary><p class="security-code-label">Public-key fingerprint</p><code id="verificationFingerprintValue" class="security-hex"></code><p class="security-code-label">Evidence hash</p><code id="verificationHashValue" class="security-hex"></code></details></div>
+</div></details>
+<details class="audit-advanced"><summary>Advanced security settings (optional)</summary>
+<p class="fine">Reports use an automatic temporary signing key unless you choose to reuse a saved device key. These settings are not needed for ordinary document checks.</p>
+<h3>Reusable signing key</h3>
+<div class="security-actions"><button type="button" class="secondary" id="createDeviceSigner">Create reusable key</button><button type="button" class="secondary" id="loadDeviceSigner">Use saved key</button><button type="button" class="secondary security-destructive" id="eraseDeviceSigner">Erase saved key</button></div>
+<p id="deviceSignerStatus" class="security-message" role="status" aria-live="polite" data-state="info">Automatic signing is available. No saved key selected.</p>
 <div id="deviceFingerprintPanel" class="security-fingerprint-panel" hidden><div class="security-label-row"><span class="security-code-label">Public-key fingerprint</span><button type="button" class="secondary security-copy" id="copyDeviceFingerprint">Copy</button></div><code id="deviceFingerprintValue" class="security-hex"></code><p id="deviceCopyStatus" class="security-copy-status" role="status" aria-live="polite"></p></div>
-<details class="audit-verify" id="auditVerifyPanel"><summary>Verify a signed report</summary><div class="audit-verify-body">
-<div class="security-file-grid"><div><label class="field" for="verifyEvidenceFile">Signed JSON</label><input type="file" id="verifyEvidenceFile" accept=".json,application/json"><p class="fine">Signed audit JSON: 4 MB maximum</p></div><div><label class="field" for="verifySourceFile">Original PDF / DOCX (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"></div></div>
-<details class="audit-advanced"><summary>Compare a trusted key (optional)</summary><div class="security-field"><label class="field" for="trustedKeyFingerprint">Trusted key fingerprint</label><input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64 hexadecimal characters"><p class="fine">Use a fingerprint provided separately by the signer.</p></div></details>
-<div class="security-actions"><button type="button" id="verifyEvidence">Verify report</button><button type="button" class="secondary" id="clearVerification">Clear</button></div>
-<p id="verifyEvidenceStatus" class="security-message" role="status" aria-live="polite">Choose signed JSON to verify.</p>
-<div id="verificationDetails" class="security-fingerprint-panel" hidden><dl class="security-check-results"><div><dt>Source file</dt><dd id="verificationSourceValue">Not supplied</dd></div><div><dt>Trusted key</dt><dd id="verificationTrustValue">Not supplied</dd></div></dl><p class="security-code-label">Signing key</p><code id="verificationFingerprintValue" class="security-hex"></code><p class="security-code-label">Evidence hash</p><code id="verificationHashValue" class="security-hex"></code></div>
-</div></details><p class="fine">Signatures detect report changes; they don't verify anyone's identity.</p></div></details>
+<div class="security-field"><label class="field" for="trustedKeyFingerprint">Trusted key fingerprint (optional)</label><input type="text" id="trustedKeyFingerprint" maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" autocomplete="off" placeholder="64 hexadecimal characters"><p class="fine">Only use a fingerprint provided independently by the original signer.</p></div>
+</details>
+<p class="fine">A valid signature detects changes to signed audit evidence; it does not prove who created the report or certify the source document.</p>
+</div></details>
 <div class="card hide" id="results">
 <div class="results-head"><div><h2>Scan results</h2><p class="sub">Review mismatches and uncertain dates first.</p></div>
-<div class="bar results-actions"><button type="button" id="downloadPdf">Download highlighted PDF</button><button type="button" class="secondary" id="downloadSignedManifest">Save signed report</button></div></div>
+<div class="bar results-actions"><button type="button" id="downloadPackage">Download report (ZIP)</button><button type="button" class="secondary" id="downloadPdf">Highlighted PDF only</button></div></div>
 <p id="auditHeadline" class="audit-headline" role="status" aria-live="polite">Scan complete.</p>
 <details class="export-more"><summary>More downloads</summary><div class="bar">
-<button type="button" id="downloadRecords" class="secondary">Findings CSV</button><button type="button" id="downloadCoverage" class="secondary">Page coverage CSV</button><button type="button" id="downloadEvidence" class="secondary">Evidence CSV</button><button type="button" id="downloadPackage" class="secondary">Annotated ZIP</button><button type="button" id="downloadManifest" class="secondary">Evidence JSON</button>
+<button type="button" id="downloadRecords" class="secondary">Findings CSV</button><button type="button" id="downloadCoverage" class="secondary">Page coverage CSV</button><button type="button" id="downloadEvidence" class="secondary">Evidence CSV</button><button type="button" id="downloadManifest" class="secondary">Evidence JSON</button><button type="button" id="downloadSignedManifest" class="secondary">Audit proof (JSON)</button>
 </div></details>
 <div class="stats key-stats">
 <div class="stat"><span>Mismatches</span><strong id="statMismatch">0</strong></div>
