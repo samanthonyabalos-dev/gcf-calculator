@@ -268,7 +268,7 @@ $('downloadSignedManifest').addEventListener('click',async()=>{
 $('verifyEvidence').addEventListener('click',async()=>{
  const file=$('verifyEvidenceFile').files[0],source=$('verifySourceFile').files[0],button=$('verifyEvidence');
  if(!file){GCFSecurityUI.verificationStatus({message:'Choose a report ZIP or audit proof JSON to check.',state:'warning'});return;}
- const zipped=/\\.zip$/i.test(file.name),maxBytes=zipped?180*1024*1024:4*1024*1024;
+ const zipped=/\.zip$/i.test(file.name),maxBytes=zipped?180*1024*1024:4*1024*1024;
  if(file.size>maxBytes){GCFSecurityUI.verificationStatus({message:zipped?'Report ZIP exceeds the 180 MB verification limit.':'Audit proof JSON exceeds 4 MB.',state:'invalid'});return;}
  button.disabled=true;GCFSecurityUI.verificationStatus({message:'Checking whether the audit results have changed…'});
  try{
@@ -279,7 +279,7 @@ $('verifyEvidence').addEventListener('click',async()=>{
    if(!entry)throw Error('This ZIP has no signed audit proof. Download a new report ZIP from GCF-400.');
    if(Number.isFinite(entry._data?.uncompressedSize)&&entry._data.uncompressedSize>4*1024*1024)throw Error('The audit proof in this ZIP exceeds the 4 MB limit.');
    raw=await entry.async('string');
-  }else if(/\\.json$/i.test(file.name)){raw=await file.text();}
+  }else if(/\.json$/i.test(file.name)){raw=await file.text();}
   else throw Error('Choose a GCF-400 report ZIP or signed audit proof JSON.');
   if(raw.length>4*1024*1024)throw Error('The audit proof exceeds the 4 MB limit.');
   const envelope=GCFSecurity.parseEnvelope(raw);
