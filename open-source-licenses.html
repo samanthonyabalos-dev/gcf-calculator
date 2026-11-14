@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102E26">
+<title>Open-source licenses · GCF-400</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#F4F7F4;color:#182B22;font:14px/1.65 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+header{background:#102E26;color:#fff;padding:24px max(22px,calc((100vw - 840px)/2))}
+h1{font-size:clamp(24px,4vw,30px);margin:7px 0 4px}h2{font-size:18px;margin:24px 0 8px}
+main{max-width:880px;margin:0 auto;padding:24px 22px 56px}
+.card{background:#fff;border:1px solid #DCE5DE;border-radius:13px;padding:22px;margin:0 0 18px}
+a{color:#185C3C;text-underline-offset:3px}header a{color:#DAEDDF}
+a:focus-visible{outline:3px solid #F0B74C;outline-offset:3px}
+p{margin:8px 0 15px}ul{padding-left:21px}li{margin-bottom:10px}
+.meta{font-size:12px;color:#60736A}header .meta{color:#C8D9CD}
+footer{text-align:center;color:#60736A;font-size:12px;padding:0 20px 30px}
+</style>
+</head>
+<body>
+<header><a href="./index.html">Back to GCF-400</a><h1>Open-source licenses</h1><p class="meta">Third-party acknowledgments and license texts</p></header>
+<main>
+<section class="card"><h2>About these notices</h2><p>GCF-400 uses third-party libraries for ZIP handling, PDF processing, OCR and PDF export. The libraries are credited below under their respective licenses. These notices do not change the ownership or license of GCF-400's original application code.</p><p>For more detail, see <a href="./THIRD_PARTY_NOTICES.md">the third-party notice file</a>.</p></section>
+<section class="card"><h2>Libraries used by the app</h2>
+<ul>
+<li><strong>JSZip 3.10.1</strong> — ZIP and spreadsheet/archive handling. Dual licensed MIT or GPLv3; GCF-400 selects the MIT option. © 2009–2016 Stuart Knightley, David Duponchel, Franz Buchinger and António Afonso. <a href="./licenses/JSZIP-MIT.txt">MIT license text</a> · <a href="https://github.com/Stuk/jszip" rel="noopener noreferrer">Source</a></li>
+<li><strong>PDF.js 3.11.174</strong> — PDF reading and preview. Apache 2.0, Mozilla Foundation and contributors. <a href="./licenses/APACHE-2.0.txt">Apache 2.0 text</a> · <a href="https://github.com/mozilla/pdf.js" rel="noopener noreferrer">Source</a></li>
+<li><strong>Tesseract.js 5.1.1</strong> — OCR for images and scanned documents. Apache 2.0, Project Naptha/Tesseract.js contributors. <a href="./licenses/APACHE-2.0.txt">Apache 2.0 text</a> · <a href="https://github.com/naptha/tesseract.js" rel="noopener noreferrer">Source</a></li>
+<li><strong>pdf-lib 1.17.1</strong> — annotated PDF export. MIT, © 2019 Andrew Dillon. <a href="./licenses/PDF-LIB-MIT.txt">MIT license text</a> · <a href="https://github.com/Hopding/pdf-lib" rel="noopener noreferrer">Source</a></li>
+</ul></section>
+<section class="card"><h2>Included components and further notices</h2>
+<p>JSZip's browser distribution includes permissively licensed supporting code. Their notices are also provided locally:</p>
+<ul>
+<li><a href="./licenses/PAKO-MIT.txt">pako — MIT</a></li>
+<li><a href="./licenses/LIE-MIT.txt">lie — MIT</a></li>
+<li><a href="./licenses/IMMEDIATE-MIT.txt">immediate — MIT</a></li>
+<li><a href="./licenses/SETIMMEDIATE-MIT.txt">setImmediate — MIT</a></li>
+<li><a href="./licenses/READABLE-STREAM.txt">readable-stream — license and accompanying notices</a></li>
+</ul>
+<p class="meta">Some OCR, WebAssembly, language-data and other subdependencies are loaded from their upstream distributions and may contain additional third-party notices. Refer to the source distributions for those terms.</p></section>
+</main>
+<footer>GCF-400 · Open-source acknowledgments</footer>
+</body></html>
