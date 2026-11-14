@@ -2,8 +2,8 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#102E26">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com 'wasm-unsafe-eval'; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://tessdata.projectnaptha.com blob:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; upgrade-insecure-requests"><meta name="description" content="GCF-400 document, spreadsheet and weekday calculator — local-first date consistency auditing.">
-<title>GCF-400 · Date–Weekday Auditor</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com 'wasm-unsafe-eval'; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://tessdata.projectnaptha.com blob:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; upgrade-insecure-requests"><meta name="description" content="GCF Auditor checks dates and weekdays in documents, spreadsheets, and the calendar.">
+<title>GCF Auditor · GCF-400</title>
 <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./icon.svg">
 <style>
 :root{--forest:#102E26;--forest2:#1D533D;--ink:#182B22;--muted:#60736A;--line:#DCE5DE;--surface:#fff;--wash:#F4F7F4;--pale:#E8F1EA}
@@ -164,28 +164,75 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 .tool-drawer .security-check-results dt{font-size:11px;color:#6D8274}.tool-drawer .security-check-results dd{margin:2px 0;font-size:12px;font-weight:700}
 @media(max-width:640px){.tool-drawer .security-check-results{grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions{display:grid;grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions button{width:100%}}
 footer a{color:#24543C;text-underline-offset:2px}
+
+/* GCF Auditor branding and restrained task-first presentation */
+body{background:#F5F7F5;color:#172C22}
+header{background:#102E26}
+header .inner{max-width:1040px;padding:22px 24px 17px}
+.brand-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px 22px}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.brand-logo{display:block;width:56px;height:56px;flex:none;border-radius:15px;background:#F2F7F2;padding:4px;border:1px solid #8AAE97}
+.brand-copy{min-width:0}
+.brand-copy h1{margin:0;color:#fff;font-size:clamp(27px,3.6vw,35px);font-weight:780;line-height:1.15;letter-spacing:-.036em}
+.brand-copy .eyebrow{margin-top:5px;color:#BBD4C3;font-size:10px;font-weight:700;letter-spacing:.095em}
+.brand-bar .offline-strip{margin:0!important;max-width:100%;background:#1B4032;border:1px solid #456C56;padding:7px 10px!important;border-radius:9px}
+.brand-bar .offline-main{color:#E9F3EC}
+.brand-bar .offline-settings{margin:0!important}
+.brand-bar .offline-settings>summary{font-size:11px}
+.nav{max-width:650px;display:flex;gap:4px;margin-top:19px;padding:5px;background:#1C4334;border:1px solid #345A45;border-radius:11px}
+.nav button{min-width:0;flex:1 1 0;border:0;border-radius:8px;background:transparent;color:#D1E5D7;padding:10px 12px;font-weight:700;font-size:12px;transition:background .15s}
+.nav button.active,.nav button[aria-selected="true"]{color:#163B28;background:#fff;border-color:transparent;box-shadow:0 1px 4px #071E141A}
+.nav button:hover:not(.active){background:#2B5944;color:#fff}
+main{max-width:1000px;padding:25px 24px 48px}
+.card{background:#fff;border-color:#DEE8E0;border-radius:14px;box-shadow:0 1px 6px #102E2606;margin-bottom:14px}
+.primary-task{border-color:#C8DCCF;box-shadow:0 7px 22px #173F2710}
+.primary-task h2{font-size:22px;margin:0 0 18px;letter-spacing:-.027em}
+.pick{background:#FBFCFB;border-color:#BCD2C1}
+.primary-task .pick{background:#FBFDFB}
+button,.download{border-radius:8px}
+button:not(:disabled):hover,.download:hover{filter:brightness(.97)}
+.tool-drawer{box-shadow:none}
+.results-head{margin-bottom:15px}
+.results-head h2{font-size:21px}
+#quickVerifyCard .sub{margin-bottom:10px}
+#quickInput{min-height:70px}
+footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
+@media(max-width:720px){
+ header .inner{padding:16px 15px 14px}
+ .brand-bar{align-items:stretch;gap:11px}
+ .brand{gap:10px}
+ .brand-logo{width:47px;height:47px;border-radius:12px}
+ .brand-copy h1{font-size:clamp(25px,7vw,31px)}
+ .brand-bar .offline-strip{width:100%;justify-content:space-between}
+ .nav{max-width:none;margin-top:13px;padding:4px;gap:3px}
+ .nav button{flex:1 1 0;font-size:11px;padding:10px 5px}
+ main{padding:16px 12px 36px}
+ .card{padding:18px}
+ .primary-task h2{font-size:21px;margin-bottom:15px}
+}
+
 </style></head><body>
-<header><div class="inner"><div class="eyebrow">GCF-400 · v29</div><h1>Check dates and weekdays</h1><p class="header-subtitle">Upload a file or check a date in seconds.</p>
+<header><div class="inner"><div class="brand-bar"><div class="brand"><img class="brand-logo" src="./icon.svg" width="56" height="56" alt=""><div class="brand-copy"><h1>GCF Auditor</h1><div class="eyebrow">GCF-400 · v29</div></div></div>
 <div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
-<details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div>
+<details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div></div>
 <nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Documents</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheets</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
 <main>
 <section id="document" class="panel" role="tabpanel" aria-labelledby="tab-document">
- <div class="card primary-task"><h2>Check a document</h2><p class="sub">Choose a PDF or Word file, then scan it.</p>
+ <div class="card primary-task"><h2>Check a document</h2>
  <div class="pick"><input id="files" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple aria-label="Choose documents"><p class="fine">PDF or Word (DOCX) · Up to 10 files · 15 MB per file · Up to 180 pages per PDF</p></div>
  <details class="scan-options"><summary>Scan options</summary>
 <div class="fieldgroup two">
  <div><label class="field" for="reading">Weekday order</label><select id="reading"><option value="auto" selected>Automatic (recommended)</option><option value="DAY_DATE">Weekday, Date</option><option value="DATE_DAY">Date, Weekday</option></select></div>
  <div><label class="field" for="ocr">PDF recognition</label><select id="ocr"><option value="auto" selected>Automatic (recommended)</option><option value="all">OCR every page</option><option value="off">Text only</option></select></div>
  <div><label class="field" for="order">Numeric date format</label><select id="order"><option value="auto">Automatic</option><option value="DMY">Day / Month / Year</option><option value="MDY">Month / Day / Year</option></select></div>
-</div><p class="fine">Change these only if automatic detection is incorrect.</p></details>
+</div></details>
 <div class="bar"><button type="button" id="scan">Scan files</button><button type="button" id="cancel" class="secondary hide">Cancel</button><button type="button" id="reset" class="secondary">Clear</button><button type="button" id="retryPages" class="secondary hide">Retry incomplete pages</button></div>
  <div id="scanProgress" class="scan-progress hide" aria-label="Current document scan progress" role="status" aria-live="polite"><span id="progressText">Preparing scan…</span><progress id="scanProgressBar" value="0" max="100">0%</progress></div>
  <div id="engine" class="engine hide" role="status">PDF tools ready when needed.</div>
  <div id="status" class="status hide" role="status" aria-live="polite">Choose a document to begin.</div><p class="fine privacy-note">Files are processed in your browser.</p>
  </div>
  <details class="card tool-drawer" id="securityDrawer"><summary>Verify a saved report <span>Optional integrity check</span></summary><div class="tool-drawer-body">
-<p class="fine">Downloaded report ZIPs include a signed audit proof automatically, when signing is available. You do not need to create or manage a key to check a document.</p>
+
 <details class="audit-verify" id="auditVerifyPanel" open><summary>Check whether audit results were changed</summary><div class="audit-verify-body">
 <div class="security-file-grid"><div><label class="field" for="verifyEvidenceFile">Saved report ZIP or audit proof (JSON)</label><input type="file" id="verifyEvidenceFile" accept=".zip,.json,application/zip,application/json"><p class="fine">Choose the downloaded report ZIP directly. Individual JSON proof files have a 4 MB limit.</p></div><div><label class="field" for="verifySourceFile">Original PDF / DOCX (optional)</label><input type="file" id="verifySourceFile" accept=".pdf,.docx"><p class="fine">Add the original file to check whether it matches the audited source.</p></div></div>
 <div class="security-actions"><button type="button" id="verifyEvidence">Check report</button><button type="button" class="secondary" id="clearVerification">Clear</button></div>
@@ -203,7 +250,7 @@ footer a{color:#24543C;text-underline-offset:2px}
 <p class="fine">A valid signature detects changes to signed audit evidence; it does not prove who created the report or certify the source document.</p>
 </div></details>
 <div class="card hide" id="results">
-<div class="results-head"><div><h2>Scan results</h2><p class="sub">Review mismatches and uncertain dates first.</p></div>
+<div class="results-head"><div><h2>Scan results</h2></div>
 <div class="bar results-actions"><button type="button" id="downloadPackage">Download report (ZIP)</button><button type="button" class="secondary" id="downloadPdf">Highlighted PDF only</button></div></div>
 <p id="auditHeadline" class="audit-headline" role="status" aria-live="polite">Scan complete.</p>
 <details class="export-more"><summary>More downloads</summary><div class="bar">
@@ -220,11 +267,11 @@ footer a{color:#24543C;text-underline-offset:2px}
 <div id="scanQuality" class="quality-panel" role="status" aria-live="polite">Quality summary appears after scanning.</div></details><div class="fieldgroup two" style="margin:10px 0"><div><label class="field" for="resultFilter">Filter findings</label><select id="resultFilter"><option value="ALL">All findings</option><option value="MISMATCH">Mismatches</option><option value="REVIEW">Needs review</option><option value="INVALID">Invalid dates</option><option value="MATCH">Matches</option><option value="DATE_ONLY">Standalone dates</option></select></div><div><label class="field" for="resultSearch">Search findings</label><input id="resultSearch" type="search" placeholder="Date, weekday, filename or text"></div></div><div class="scroller"><table aria-label="Date audit findings"><thead><tr><th scope="col">Document</th><th scope="col">Page</th><th scope="col">Recorded date</th><th>Recorded weekday</th><th>Calculated weekday</th><th>Result</th></tr></thead><tbody id="recordRows"></tbody></table></div><p id="previewNote" class="fine"></p>
  <div id="pdfPreviewCard" class="pdf-review hide"><div class="row"><div><h3>Source document preview</h3><p class="fine">Select a finding to view its page. Hover a highlight for details.</p></div></div><div id="pdfPreviewStatus" class="fine" role="status">Preparing preview…</div><div class="pdf-scroll"><div id="pdfPreviewStage" class="pdf-stage"><canvas id="pdfPreviewCanvas" aria-label="Original PDF page with overlaid audit highlights"></canvas><div id="pdfPreviewOverlays" class="pdf-overlays" aria-label="Interactive date annotations"></div></div></div><div id="annotationDetails" class="annotation-details" role="status" aria-live="polite">Select a highlighted date to inspect it.</div><p class="fine"></p></div>
  <details id="textDiagnostics"><summary>Extraction diagnostics — what text did the scanner actually read?</summary><p class="fine">If a result misses a weekday, compare these exact extracted lines with the printed PDF. These lines come from PDF text or OCR, not assumptions.</p><pre id="extractionDiagnostics" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:400px;overflow:auto;background:#F4F7F4;border:1px solid #DCE5DE;border-radius:8px;padding:12px;font-size:12px"></pre></details><details><summary>Page and content coverage</summary><div class="scroller"><table><thead><tr><th>Document</th><th>Page</th><th>Method</th><th>Coverage</th><th>Confidence</th><th>Processing time</th><th>Notes</th></tr></thead><tbody id="coverageRows"></tbody></table></div></details><div class="downloads" id="links"></div></div>
- <details class="card"><summary>What do these results mean?</summary><p class="fine">A match means the printed weekday agrees with that date. Review uncertain findings manually.</p></details>
+ 
 <details class="card tool-drawer" id="developerChecks"><summary>Testing and diagnostics <span>Optional</span></summary><div class="tool-drawer-body qa-panel"><p class="fine">Checks date logic, not full PDF/OCR accuracy.</p><button type="button" id="runSelfChecks" class="secondary">Run self-checks</button><div id="selfCheckResults" role="status" aria-live="polite" class="fine">Not run.</div></div></details>
 </section>
 <section id="spreadsheet" class="panel" role="tabpanel" aria-labelledby="tab-spreadsheet" hidden>
- <div class="card primary-task"><h2>Check a spreadsheet</h2><p class="sub">Choose an Excel or CSV file, then validate it.</p>
+ <div class="card primary-task"><h2>Check a spreadsheet</h2>
  <div class="pick"><input id="sheetFile" type="file" accept=".xlsx,.csv,.tsv,.txt" aria-label="Choose spreadsheet"><p class="fine">Excel (XLSX), CSV, or TSV · 15 MB per file · XLSX: up to 100,000 data rows</p></div>
  <details><summary>Or paste your records</summary><label class="field" for="sheetPaste">Paste data (tab-separated or comma-separated)</label><textarea id="sheetPaste" spellcheck="false" placeholder="Date&#9;Recorded Weekday&#10;2026-12-01&#9;Tuesday&#10;2026-12-02&#9;Monday"></textarea></details>
  <details class="scan-options"><summary>Options and sample data</summary><div class="fieldgroup two">
@@ -240,17 +287,17 @@ footer a{color:#24543C;text-underline-offset:2px}
  <div class="scroller"><table><thead><tr><th>Row</th><th>Date</th><th>Recorded weekday</th><th>Expected weekday</th><th>Result</th></tr></thead><tbody id="sheetRows"></tbody></table></div><p class="fine" id="sheetPreview"></p><div id="sheetLinks" class="downloads"></div></div>
 </section>
 <section id="calculator" class="panel" role="tabpanel" aria-labelledby="tab-calculator" hidden>
- <div class="card primary-task"><h2>Find the weekday</h2><p class="sub">Enter any date.</p>
+ <div class="card primary-task"><h2>Find the weekday</h2>
  <div class="fieldgroup"><div><label class="field" for="calcMonth">Month</label><select id="calcMonth"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12" selected>December</option></select></div><div><label class="field" for="calcDay">Day</label><input id="calcDay" type="number" min="1" max="31" value="1"></div><div><label class="field" for="calcYear">Year</label><input id="calcYear" type="number" min="1" max="9999" value="2026"></div></div>
  <div class="bar"><button type="button" id="calcRun">Calculate weekday</button><button type="button" class="secondary" id="calcToday">Use today</button></div><details class="scan-options"><summary>Example date</summary><button type="button" class="secondary" id="calcExample">Try December 1, 2026</button></details><div id="calcStatus" class="status hide" role="status" aria-live="polite"></div></div>
  <div class="card hide" id="calcResult"><div class="eyeline">Calculated weekday</div><div id="calcWeekday" class="weekday">Tuesday</div><p id="calcDate" class="fine"></p><button type="button" class="secondary" id="calcCopy">Copy result</button><details class="calc-breakdown"><summary>Show calculation steps</summary><h3>GCF modular contributions</h3><div class="components"><div class="component"><span>Century (C)</span><b id="calcC">–</b></div><div class="component"><span>Year (Y)</span><b id="calcY">–</b></div><div class="component"><span>Month (M)</span><b id="calcM">–</b></div><div class="component"><span>Day (D)</span><b id="calcD">–</b></div><div class="component"><span>Result (W)</span><b id="calcW">–</b></div></div><div class="result" id="calcFormula"></div><p id="calcCache" class="fine"></p></details></div>
  <div class="card" id="quickVerifyCard"><h2>Check a printed weekday</h2>
- <p class="sub">Paste a line like “Monday, May 4, 2026”.</p>
+ 
  <label class="field" for="quickInput">Date heading to check</label><textarea id="quickInput" rows="2" maxlength="300" placeholder="Monday, May 4, 2026" style="display:block;width:100%;min-height:70px;max-width:100%;border:1px solid #9FBBA9;border-radius:9px;padding:12px;font:inherit"></textarea>
  <div class="bar" style="margin-top:10px"><button type="button" id="quickCheck">Verify weekday</button><button type="button" id="quickExample" class="secondary">Try a real mismatch</button></div>
  <div id="quickResult" class="quality-panel" aria-live="polite" role="status" hidden style="white-space:pre-line"></div>
  </div>
- <div class="card" id="learnGCFCard"><div class="row learn-heading"><div><h2>How the formula works</h2><p class="sub">Optional explanation and examples.</p></div><button type="button" id="learnGCFButton" class="secondary" aria-expanded="false" aria-controls="learnGCFContent">Learn GCF</button></div><div id="learnGCFContent" hidden class="learn-content">
+ <div class="card" id="learnGCFCard"><div class="row learn-heading"><div><h2>How the formula works</h2></div><button type="button" id="learnGCFButton" class="secondary" aria-expanded="false" aria-controls="learnGCFContent">Learn GCF</button></div><div id="learnGCFContent" hidden class="learn-content">
 <div class="learn-inner">
 <span class="badge">LEARNING MODE</span>
 <h2 style="margin-top:8px">How GCF Works</h2>
@@ -386,7 +433,7 @@ footer a{color:#24543C;text-underline-offset:2px}
 </div></div>
 </section>
 </main>
-<footer>GCF-400 · Dates checked locally in your browser · <a href="./open-source-licenses.html">Open-source licenses</a></footer>
+<footer>GCF Auditor · <a href="./open-source-licenses.html">Open-source licenses</a></footer>
 <script src="./jszip.min.js"></script><script src="./gcf-engine.js"></script><script src="./scan-core.js"></script><script src="./pdf-bridge.js"></script><script src="./document-bridge.js"></script><script src="./pdf-export.js"></script>
 <script src="./audit-utils.js"></script><script src="./security-seal.js"></script><script src="./security-ui.js"></script><script src="./audit-app.js"></script><script src="./quality-app.js"></script><script src="./sheet-app.js"></script><script src="./calc-app.js"></script><script src="./learn-app.js"></script><script src="./nav.js"></script><script src="./offline-app.js"></script><script src="./quick-verify.js"></script>
 </body></html>
