@@ -1,6 +1,6 @@
 /* GCF-400 v29 scoped offline shell: online navigation is network-first to prevent stale UI. */
 'use strict';
-const CACHE='gcf400-offline-v29-licenses-20261114';
+const CACHE='gcf400-offline-v29-cachefix-20261114';
 const CORE=['./','./index.html','./calculator.html','./mathematics-reference.html','./gcf-engine.js','./scan-core.js','./pdf-bridge.js','./document-bridge.js','./pdf-export.js','./audit-utils.js','./security-seal.js','./security-ui.js','./audit-app.js','./quality-app.js','./sheet-app.js','./calc-app.js','./learn-app.js','./nav.js','./offline-app.js','./quick-verify.js','./jszip.min.js','./open-source-licenses.html','./THIRD_PARTY_NOTICES.md','./licenses/JSZIP-MIT.txt','./licenses/APACHE-2.0.txt','./licenses/PDF-LIB-MIT.txt','./licenses/PAKO-MIT.txt','./licenses/LIE-MIT.txt','./licenses/IMMEDIATE-MIT.txt','./licenses/SETIMMEDIATE-MIT.txt','./licenses/READABLE-STREAM.txt','./manifest.webmanifest','./icon.svg'];
 const allowed=new Set(CORE.map(path=>new URL(path,self.registration.scope).pathname));
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
