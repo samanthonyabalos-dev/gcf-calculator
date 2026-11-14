@@ -6,7 +6,7 @@ const app=fs.readFileSync(path.join(__dirname,'../audit-app.js'),'utf8');
 const sheet=fs.readFileSync(path.join(__dirname,'../sheet-app.js'),'utf8');
 const quick=fs.readFileSync(path.join(__dirname,'../quick-verify.js'),'utf8');
 const at=id=>html.indexOf('id="'+id+'"');
-assert.ok(html.includes('<h1>GCF Auditor</h1>'),'App title must be prominent and unambiguous');
+assert.ok(html.includes('<h1>GCF Auditor<span class="brand-descriptor">: Date–Weekday Checker</span></h1>'),'App title and purpose must be clearly visible');
 assert.ok(/<img[^>]+class="brand-logo"[^>]+src="\.\/icon\.svg"/.test(html),'Existing calendar logo must appear next to the app title');
 assert.ok(!html.includes('Upload a file or check a date in seconds.'),'Avoid redundant marketing instructions above primary tasks');
 
