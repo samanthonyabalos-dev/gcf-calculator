@@ -3,7 +3,7 @@
 const status=document.getElementById('offlineStatus'),details=document.getElementById('offlineDetails'),checkButton=document.getElementById('offlineCheck'),installButton=document.getElementById('offlineInstall');
 const essentials=['./index.html','./gcf-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
 const updateButton=document.getElementById('offlineApplyUpdate');
-const cacheName='gcf400-offline-v29-20261110';
+const cachePrefix='gcf400-offline-';
 let ready=false,promptEvent=null,checking=false;
 function show(message,kind='info'){
  if(status){status.textContent=message;status.dataset.state=kind;}
@@ -12,10 +12,19 @@ function show(message,kind='info'){
 async function verify(){
  if(!('serviceWorker' in navigator)||!('caches' in window))return {ready:false,reason:'Your browser does not support offline installation. The calculator still works while this page stays open.'};
  try{
-  const cache=await caches.open(cacheName);
-  const present=await Promise.all(essentials.map(async p=>Boolean(await cache.match(new URL(p,location.href).href))));
+  // Read actual installed cache names instead of assuming one fixed release string.
+  // Opening a guessed name creates an empty cache and incorrectly reports every file missing.
+  const names=(await caches.keys()).filter(name=>name.startsWith(cachePrefix));
   const correct=window.GCFEngine?.gcf400(2026,5,4)===1;
-  return {ready:present.every(Boolean)&&correct,missing:essentials.filter((_,i)=>!present[i]),reason:correct?'Required files are not yet fully cached.':'The weekday self-check failed.'};
+  let bestMissing=essentials;
+  for(const name of names){
+   const cache=await caches.open(name);
+   const present=await Promise.all(essentials.map(p=>cache.match(new URL(p,location.href).href)));
+   const missing=essentials.filter((_,i)=>!present[i]);
+   if(missing.length<bestMissing.length)bestMissing=missing;
+   if(!missing.length)return {ready:correct,missing:[],reason:correct?'Offline files are cached.':'The weekday self-check failed.'};
+  }
+  return {ready:false,missing:bestMissing,reason:correct?'Required files are not yet fully cached.':'The weekday self-check failed.'};
  }catch(e){return {ready:false,reason:'Offline verification error: '+e.message};}
 }
 async function checkOffline({register=true}={}){
