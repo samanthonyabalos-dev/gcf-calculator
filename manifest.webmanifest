@@ -1,5 +1,5 @@
 {
-  "name": "GCF Auditor — GCF-400",
+  "name": "GCF Auditor: Date–Weekday Checker",
   "short_name": "GCF Auditor",
   "start_url": "./index.html#calculator",
   "scope": "./",
