@@ -35,6 +35,7 @@ const context={
  },
  console
 };
+context.window.caches=context.caches;
 vm.createContext(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../offline-app.js'),'utf8'),context);
 (async()=>{
