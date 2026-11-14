@@ -207,6 +207,21 @@ function scanPage(lines,opts={}){
    // Preserve original source line and the evidence used for a separated weekday.
    rec.sourceText=line.text;rec.dayEvidence=found?.kind==='adjacent'?(found.daySource.text+' | '+line.text):line.text;
    if(found?.kind==='adjacent')rec.note+='; verify adjacent-line association';
+   // Record the physical evidence behind each association. Retain text-only
+   // DOCX/OCR fallback behavior, but do not claim a source position it lacks.
+   const sources=[line,found?.daySource].filter(Boolean);
+   const hasGeometry=sources.some(src=>(src.parts||[]).some(p=>p?.rect&&
+     [p.rect.x0,p.rect.x1,p.rect.y0,p.rect.y1].every(Number.isFinite)));
+   rec.positionEvidence=!hasGeometry?'unavailable':
+     (rec.hasDatePosition&&(!rec.recorded||rec.hasDayPosition)?'located':'partial');
+   // With geometrical source evidence available, an unlocated side of an
+   // otherwise confident pair requires review rather than silent approval.
+   if(hasGeometry&&(rec.status==='MATCH'||rec.status==='MISMATCH')&&
+      rec.positionEvidence!=='located'){
+     rec.preliminaryClassification=rec.status;
+     rec.status='REVIEW';
+     rec.note+='; Incomplete source positions: inspect the original document';
+   }
    rows.push(rec);
   }
  }

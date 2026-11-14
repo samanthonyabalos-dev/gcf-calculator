@@ -53,6 +53,8 @@ function manifest({rows=[],coverage=[],quality=[],settings={},version='v19',gene
    sourceDate:String(r.sourceDate||''),normalizedDate:String(r.date||''),
    recordedWeekday:String(r.recorded||''),expectedWeekday:String(r.expected||''),
    status:String(r.status||''),association:String(r.association||''),
+   positionEvidence:String(r.positionEvidence||'unavailable'),
+   preliminaryClassification:r.preliminaryClassification||null,
    method:String(r.method||''),confidence:Number.isFinite(r.confidence)?Number(r.confidence):null,
    sourceEvidence:String(r.dayEvidence||r.sourceText||'').slice(0,1800),
    note:String(r.note||'').slice(0,1200)

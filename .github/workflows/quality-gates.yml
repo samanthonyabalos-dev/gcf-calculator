@@ -23,6 +23,7 @@ jobs:
         run: |
           node tests/regression.js
           node tests/prc-fixtures.js
+          node tests/source-position-provenance.js
       - name: Security and audit evidence
         run: node tests/hardening.js
       - name: Signed evidence tamper and source integrity tests
