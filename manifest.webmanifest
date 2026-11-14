@@ -1,6 +1,6 @@
 {
   "name": "GCF Auditor: Date–Weekday Checker",
-  "short_name": "GCF Auditor",
+  "short_name": "GCF Date–Weekday",
   "start_url": "./index.html#calculator",
   "scope": "./",
   "display": "standalone",
