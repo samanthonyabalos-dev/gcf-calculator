@@ -6,6 +6,10 @@ const app=fs.readFileSync(path.join(__dirname,'../audit-app.js'),'utf8');
 const sheet=fs.readFileSync(path.join(__dirname,'../sheet-app.js'),'utf8');
 const quick=fs.readFileSync(path.join(__dirname,'../quick-verify.js'),'utf8');
 const at=id=>html.indexOf('id="'+id+'"');
+assert.ok(html.includes('<h1>GCF Auditor</h1>'),'App title must be prominent and unambiguous');
+assert.ok(/<img[^>]+class="brand-logo"[^>]+src="\.\/icon\.svg"/.test(html),'Existing calendar logo must appear next to the app title');
+assert.ok(!html.includes('Upload a file or check a date in seconds.'),'Avoid redundant marketing instructions above primary tasks');
+
 const uniq=id=>assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,'Control '+id+' must exist once');
 for(const id of ['files','scan','reading','ocr','order','results','statMismatch','statReview','statMatches','statDateOnly','statDates','statPages','runSelfChecks','selfCheckResults','downloadPdf','downloadSignedManifest','downloadManifest','downloadRecords','downloadEvidence','downloadCoverage','downloadPackage','deviceSignerStatus','deviceFingerprintValue','verifyEvidenceFile','verifySourceFile','trustedKeyFingerprint','verifyEvidence','sheetFile','sheetScan','sheetOrder','sheetSample','sheetExcel','sheetExport','sheetFlagged','calcRun','calcExample','calcToday','calcCopy','calcFormula','calcCache','quickInput','quickCheck','learnGCFButton'])uniq(id);
 assert.ok(at('files')<at('scan')&&at('scan')<at('securityDrawer')&&at('securityDrawer')<at('results'),'Primary document scan must precede optional security tools and results');
