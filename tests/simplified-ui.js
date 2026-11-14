@@ -9,7 +9,7 @@ const at=id=>html.indexOf('id="'+id+'"');
 const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../manifest.webmanifest'),'utf8'));
 assert.ok(manifest.name.includes('GCF Auditor')&&manifest.name.includes('Date–Weekday Checker'),'Installed app full name must describe its purpose');
 assert.equal(manifest.short_name,'GCF Date–Weekday','Home-screen shortcut must show the date-weekday purpose');
-assert.ok(html.includes('<h1>GCF Auditor<span class="brand-colon">:</span><span class="brand-descriptor"> Date–Weekday Checker</span></h1>'),'App title and purpose must be clearly visible');
+assert.ok(html.includes('<h1>GCF Auditor: Date–Weekday Checker</h1>'),'App title and purpose must be clearly visible at the same font size');
 assert.ok(/<img[^>]+class="brand-logo"[^>]+src="\.\/icon\.svg"/.test(html),'Existing calendar logo must appear next to the app title');
 assert.ok(!html.includes('Upload a file or check a date in seconds.'),'Avoid redundant marketing instructions above primary tasks');
 
