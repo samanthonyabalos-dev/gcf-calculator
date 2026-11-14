@@ -73,7 +73,9 @@ jobs:
       - name: Mobile and desktop layout check
         run: node tests/browser-layout.js
       - name: Offline calculator and private-request safety
-        run: node tests/offline.js
+        run: |
+          node tests/offline.js
+          node tests/offline-cache-validation.js
       - name: One-line verification and ambiguity tests
         run: node tests/quick-verify.js
       - name: Independent calendar and OCR disagreement safeguards
