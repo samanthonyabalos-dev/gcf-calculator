@@ -54,6 +54,17 @@ function annotationSummary(r){
  const date=(r.sourceDate||'Not available')+(r.date&&r.date!==r.sourceDate?' ['+r.date+']':'');
  return `Status: ${r.status||'REVIEW'}\nDate checked: ${date}\nRecorded weekday: ${r.recorded||'Not printed'}\nExpected weekday: ${r.expected||'Not available'}${r.note?'\nNote: '+r.note:''}`;
 }
+
+/* On narrow previews the tooltip is wider than the date highlight. Keep its
+   left and right edges inside the document viewport rather than anchoring
+   it to the highlight's right edge. Desktop positioning is unchanged. */
+function mobileTooltipPlacement(anchorLeft,anchorWidth,stageWidth){
+ const inset=8,available=Math.max(0,Number(stageWidth)||0);
+ const width=Math.max(0,Math.min(300,available-inset*2));
+ const preferred=anchorLeft+anchorWidth/2-width/2;
+ const start=Math.max(inset,Math.min(preferred,Math.max(inset,available-inset-width)));
+ return {left:start-anchorLeft,width};
+}
 function drawPreviewOverlays(file,page,selectedIndex){
  const target=$('pdfPreviewOverlays');target.replaceChildren();if(!previewViewport)return;
  $('annotationDetails').textContent='Hover, tap, or keyboard-focus a colored date to see its status, recorded weekday, and expected weekday.';
@@ -71,6 +82,12 @@ function drawPreviewOverlays(file,page,selectedIndex){
   if(left>previewViewport.width-245)item.classList.add('pdf-tooltip-right');
   item.style.cssText=`left:${left}px;top:${top}px;width:${width}px;height:${height}px;background:${previewColors[r.status]||previewColors.REVIEW}`;
   const detail=annotationSummary(r),tip=document.createElement('span');tip.className='pdf-tooltip';tip.textContent=detail;
+  if(typeof window!=='undefined'&&window.matchMedia?.('(max-width:720px)').matches){
+   const layout=mobileTooltipPlacement(left,width,target.clientWidth||previewViewport.width);
+   tip.style.left=layout.left+'px';
+   tip.style.right='auto';
+   tip.style.width=layout.width+'px';
+  }
   item.setAttribute('tabindex','0');item.setAttribute('role','button');item.setAttribute('aria-label',detail.replace(/\n/g,'. '));item.appendChild(tip);
   const activate=()=>{target.querySelectorAll('.pdf-mark-info-active').forEach(n=>n.classList.remove('pdf-mark-info-active'));item.classList.add('pdf-mark-info-active');$('annotationDetails').textContent=detail;};
   item.addEventListener('pointerenter',activate);item.addEventListener('focus',activate);item.addEventListener('click',activate);

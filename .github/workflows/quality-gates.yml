@@ -72,7 +72,9 @@ jobs:
       - name: Simplified end-user workflow and markup
         run: node tests/simplified-ui.js
       - name: Mobile and desktop layout check
-        run: node tests/browser-layout.js
+        run: |
+          node tests/mobile-pdf-tooltip.js
+          node tests/browser-layout.js
       - name: Offline calculator and private-request safety
         run: |
           node tests/offline.js
