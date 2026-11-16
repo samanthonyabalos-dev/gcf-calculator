@@ -133,7 +133,7 @@ async function showPdfPreview(index){
 }
 // Any tap on the preview background/padding dismisses the mobile popup.
 // Tapping another highlight goes directly to that highlight's information.
-$('pdfPreviewStage').parentElement.addEventListener('click',e=>{
+$('pdfPreviewStage')?.parentElement?.addEventListener('click',e=>{
  if(isMobilePdfPreview()&&!e.target.closest('.pdf-mark'))closePreviewTip();
 });
 $('recordRows').addEventListener('mouseover',e=>{const tr=e.target.closest('tr[data-record]');if(tr&&!tr.contains(e.relatedTarget))showPdfPreview(Number(tr.dataset.record)).catch(er=>{$('pdfPreviewStatus').textContent=er.message;});});
