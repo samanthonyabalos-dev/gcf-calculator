@@ -27,4 +27,16 @@ for(const stage of [260,280,300,330,375,420,650]){
 const nearLeft=place(20,14,280),nearRight=place(250,12,280);
 assert.ok(nearLeft.left<0,'Left edge must shift tooltip left relative to a mark when needed');
 assert.ok(nearRight.left<0,'Right edge should shift popup back toward the preview');
-console.log('Mobile PDF tooltip bounds PASS: '+checks+' placements, 260–650px viewports, edge anchors, desktop CSS preserved.');
+// The mobile interaction is click-controlled, not persistent iOS hover/focus.
+const helperStart=audit.indexOf('function isMobilePdfPreview()');
+const helperEnd=audit.indexOf('\nfunction drawPreviewOverlays(',helperStart);
+assert.ok(helperStart>=0&&helperEnd>helperStart,'Mobile dismiss helper must exist');
+const tapDecision=new Function(audit.slice(helperStart,helperEnd)+';return mobilePreviewTapAction;')();
+assert.equal(tapDecision(false,false),'open','First tap opens the selected date');
+assert.equal(tapDecision(true,false),'close','Second tap closes the selected date');
+assert.equal(tapDecision(true,true),'close','Tapping large popup closes it');
+assert.ok(audit.includes("!e.target.closest('.pdf-mark'))closePreviewTip()"),'Tapping PDF background must dismiss the popup');
+assert.ok(audit.includes("target.querySelectorAll('.pdf-mark-info-active')"),'Opening a second mark must close the previous popup');
+assert.ok(html.includes('.pdf-mark:hover .pdf-tooltip,.pdf-mark:focus-visible .pdf-tooltip{display:none}'),'Mobile must suppress sticky Safari hover and focus');
+assert.ok(html.includes('.pdf-mark.pdf-mark-info-active .pdf-tooltip{display:block}'),'Only active popup should be shown on mobile');
+console.log('Mobile PDF tooltip bounds and dismiss PASS: '+checks+' placements plus tap, background, and switching behavior.');

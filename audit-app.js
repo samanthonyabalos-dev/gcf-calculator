@@ -65,6 +65,15 @@ function mobileTooltipPlacement(anchorLeft,anchorWidth,stageWidth){
  const start=Math.max(inset,Math.min(preferred,Math.max(inset,available-inset-width)));
  return {left:start-anchorLeft,width};
 }
+function isMobilePdfPreview(){return typeof window!=='undefined'&&!!window.matchMedia?.('(max-width:720px)')?.matches;}
+function mobilePreviewTapAction(isOpen,onPopup){return isOpen||onPopup?'close':'open';}
+function closePreviewTip(){
+ const overlay=$('pdfPreviewOverlays');
+ overlay.querySelectorAll('.pdf-mark-info-active').forEach(mark=>mark.classList.remove('pdf-mark-info-active'));
+ const focused=document.activeElement;
+ if(focused?.classList?.contains('pdf-mark')&&overlay.contains(focused))focused.blur();
+ $('annotationDetails').textContent='Select a highlighted date to inspect it.';
+}
 function drawPreviewOverlays(file,page,selectedIndex){
  const target=$('pdfPreviewOverlays');target.replaceChildren();if(!previewViewport)return;
  $('annotationDetails').textContent='Hover, tap, or keyboard-focus a colored date to see its status, recorded weekday, and expected weekday.';
@@ -90,8 +99,19 @@ function drawPreviewOverlays(file,page,selectedIndex){
   }
   item.setAttribute('tabindex','0');item.setAttribute('role','button');item.setAttribute('aria-label',detail.replace(/\n/g,'. '));item.appendChild(tip);
   const activate=()=>{target.querySelectorAll('.pdf-mark-info-active').forEach(n=>n.classList.remove('pdf-mark-info-active'));item.classList.add('pdf-mark-info-active');$('annotationDetails').textContent=detail;};
-  item.addEventListener('pointerenter',activate);item.addEventListener('focus',activate);item.addEventListener('click',activate);
-  item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
+  // Mobile Safari may preserve :hover/:focus after a tap. Touch popups are
+  // click-controlled so a second tap, tapping the popup, or tapping the page
+  // can reliably dismiss them without obscuring neighboring dates.
+  item.addEventListener('pointerenter',e=>{if(!isMobilePdfPreview()&&e.pointerType!=='touch')activate();});
+  item.addEventListener('focus',()=>{if(!isMobilePdfPreview())activate();});
+  item.addEventListener('click',e=>{
+   if(isMobilePdfPreview()){
+    const tappedPopup=!!e.target.closest('.pdf-tooltip');
+    if(mobilePreviewTapAction(item.classList.contains('pdf-mark-info-active'),tappedPopup)==='close')closePreviewTip();
+    else activate();
+   }else activate();
+  });
+  item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(isMobilePdfPreview()&&item.classList.contains('pdf-mark-info-active'))closePreviewTip();else activate();}});
   target.appendChild(item);highlighted++;
  }
  $('pdfPreviewStatus').textContent=`Page ${page} · ${highlighted} located highlight(s) · Hover, tap or focus a highlighted date to inspect status and expected weekday`;
@@ -111,6 +131,11 @@ async function showPdfPreview(index){
  }
  drawPreviewOverlays(row.file,row.page,index);
 }
+// Any tap on the preview background/padding dismisses the mobile popup.
+// Tapping another highlight goes directly to that highlight's information.
+$('pdfPreviewStage').parentElement.addEventListener('click',e=>{
+ if(isMobilePdfPreview()&&!e.target.closest('.pdf-mark'))closePreviewTip();
+});
 $('recordRows').addEventListener('mouseover',e=>{const tr=e.target.closest('tr[data-record]');if(tr&&!tr.contains(e.relatedTarget))showPdfPreview(Number(tr.dataset.record)).catch(er=>{$('pdfPreviewStatus').textContent=er.message;});});
 $('recordRows').addEventListener('focusin',e=>{const tr=e.target.closest('tr[data-record]');if(tr)showPdfPreview(Number(tr.dataset.record)).catch(er=>{$('pdfPreviewStatus').textContent=er.message;});});
 $('recordRows').addEventListener('click',e=>{const tr=e.target.closest('tr[data-record]');if(tr)showPdfPreview(Number(tr.dataset.record)).catch(er=>{$('pdfPreviewStatus').textContent=er.message;});});
