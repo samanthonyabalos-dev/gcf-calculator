@@ -1,4 +1,4 @@
-name: Septima Auditor quality gates
+name: SC Auditor quality gates
 on:
   push:
     branches: [main]
@@ -34,7 +34,7 @@ jobs:
         run: node tests/automatic-proof.js
       - name: Real Chromium upload, report ZIP and tamper verification
         run: node tests/browser-e2e-proof.js
-      - name: Live Septima Auditor browser upload, signed ZIP and tamper verification
+      - name: Live SC Auditor browser upload, signed ZIP and tamper verification
         env:
           SC_TARGET_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: node tests/browser-e2e-proof.js
@@ -94,6 +94,8 @@ jobs:
           assert.ok(sw.includes("'./sc-engine.js'"));
           assert.ok(sw.includes("'./offline-app.js'"));
           const manifest=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
+          assert.equal(manifest.short_name,'SC Auditor');
+          assert.equal(manifest.name,'SC Auditor');
           assert.ok(manifest.icons.length>=1);
           for(const entry of manifest.icons)assert.ok(fs.existsSync(entry.src.replace(/^\.\//,'')));
           console.log('Offline PWA references PASS');
