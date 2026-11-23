@@ -1,6 +1,6 @@
 /* SC-400 v26 · readable, accessible security status formatting.
  * Render every fingerprint using textContent, never HTML from uploaded data. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFSecurityUI=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCSecurityUI=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const FINGERPRINT=/^[0-9a-f]{64}$/i;
  const formatFingerprint=value=>{

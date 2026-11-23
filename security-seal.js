@@ -3,7 +3,7 @@
  * not the real-world identity of whoever generated or possesses that key.
  * Private keys are non-exportable. Optional device storage requires explicit user consent.
  * Web Crypto secure context required. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFSecurity=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCSecurity=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const ENCODER=new TextEncoder();
 const MAX_JSON=2*1024*1024;
@@ -44,7 +44,7 @@ async function generateSessionKey(){
  return true;
 }
 function resetSession(){keyPair=null;}
-const KEY_DATABASE='gcf400-audit-signer-v1',KEY_STORE='keys',KEY_ID='device-signer';
+const KEY_DATABASE='sc400-audit-signer-v1',KEY_STORE='keys',KEY_ID='device-signer';
 function openKeyStore(){
  if(typeof indexedDB==='undefined')return Promise.reject(Error('Secure local key storage is unavailable in this browser'));
  return new Promise((resolve,reject)=>{
@@ -94,7 +94,7 @@ async function eraseDeviceKey(){
 }
 
 async function seal(evidence){
- if(!evidence||evidence.schema!=='gcf400-audit-evidence-v1')throw Error('Expected SC-400 evidence JSON');
+ if(!evidence||evidence.schema!=='sc400-audit-evidence-v1')throw Error('Expected SC-400 evidence JSON');
  if(!keyPair)await generateSessionKey();
  const api=secureCrypto(),spki=new Uint8Array(await api.subtle.exportKey('spki',keyPair.publicKey));
  const payload=ENCODER.encode(canonical(evidence));
@@ -102,7 +102,7 @@ async function seal(evidence){
  const signature=new Uint8Array(await api.subtle.sign({name:'ECDSA',hash:'SHA-256'},keyPair.privateKey,payload));
  const digest=await api.subtle.digest('SHA-256',payload);
  const fp=await api.subtle.digest('SHA-256',spki);
- return {schema:'gcf400-evidence-seal-v1',algorithm:'ECDSA-P256-SHA256',
+ return {schema:'sc400-evidence-seal-v1',algorithm:'ECDSA-P256-SHA256',
    createdAt:new Date().toISOString(),publicKeySpki:bytesToBase64(spki),
    publicKeyFingerprint:hex(new Uint8Array(fp)),payloadSHA256:hex(new Uint8Array(digest)),
    signature:bytesToBase64(signature),evidence,
@@ -112,10 +112,10 @@ async function seal(evidence){
  };
 }
 async function verify(sealed){
- if(!sealed||typeof sealed!=='object'||sealed.schema!=='gcf400-evidence-seal-v1')return {valid:false,reason:'Not a SC-400 signed evidence envelope'};
+ if(!sealed||typeof sealed!=='object'||sealed.schema!=='sc400-evidence-seal-v1')return {valid:false,reason:'Not a SC-400 signed evidence envelope'};
  if(sealed.algorithm!=='ECDSA-P256-SHA256')return {valid:false,reason:'Unsupported signature algorithm'};
  try{
-  if(!sealed.evidence||sealed.evidence.schema!=='gcf400-audit-evidence-v1')return {valid:false,reason:'Missing SC-400 evidence payload'};
+  if(!sealed.evidence||sealed.evidence.schema!=='sc400-audit-evidence-v1')return {valid:false,reason:'Missing SC-400 evidence payload'};
   const api=secureCrypto(),payload=ENCODER.encode(canonical(sealed.evidence));
   if(payload.length>MAX_JSON)return {valid:false,reason:'Evidence exceeds verifier size limit'};
   const spki=base64ToBytes(sealed.publicKeySpki),signature=base64ToBytes(sealed.signature);
