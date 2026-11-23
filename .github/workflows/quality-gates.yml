@@ -95,7 +95,7 @@ jobs:
           assert.ok(sw.includes("'./offline-app.js'"));
           const manifest=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
           assert.equal(manifest.short_name,'SC Auditor');
-          assert.equal(manifest.name,'SC Auditor');
+          assert.equal(manifest.name,'Septima Congruence Auditor');
           assert.ok(manifest.icons.length>=1);
           for(const entry of manifest.icons)assert.ok(fs.existsSync(entry.src.replace(/^\.\//,'')));
           console.log('Offline PWA references PASS');
