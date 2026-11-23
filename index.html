@@ -2,10 +2,10 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#102E26">
-<meta name="application-name" content="SC Auditor"><meta name="apple-mobile-web-app-title" content="SC Auditor">
+<meta name="application-name" content="Septima Congruence Auditor"><meta name="apple-mobile-web-app-title" content="Septima Congruence Auditor">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com 'wasm-unsafe-eval'; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://tessdata.projectnaptha.com blob:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; upgrade-insecure-requests"><meta name="description" content="SC Auditor checks dates and weekdays in documents, spreadsheets, and the calendar.">
-<title>SC Auditor | Date–Weekday Checker</title>
-<link rel="manifest" href="./manifest.webmanifest?brand=sc-auditor-v30"><link rel="icon" type="image/svg+xml" href="./icon.svg">
+<title>Septima Congruence Auditor | Date–Weekday Checker</title>
+<link rel="manifest" href="./manifest.webmanifest?brand=septima-congruence-auditor-v30"><link rel="icon" type="image/svg+xml" href="./icon.svg">
 <style>
 :root{--forest:#102E26;--forest2:#1D533D;--ink:#182B22;--muted:#60736A;--line:#DCE5DE;--surface:#fff;--wash:#F4F7F4;--pale:#E8F1EA}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--wash);color:var(--ink);font:14px/1.55 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
@@ -167,7 +167,7 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 @media(max-width:640px){.tool-drawer .security-check-results{grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions{display:grid;grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions button{width:100%}}
 footer a{color:#24543C;text-underline-offset:2px}
 
-/* SC Auditor branding and restrained task-first presentation */
+/* Septima Congruence Auditor branding and restrained task-first presentation */
 body{background:#F5F7F5;color:#172C22}
 header{background:#102E26}
 header .inner{max-width:1040px;padding:22px 24px 17px}
@@ -175,7 +175,7 @@ header .inner{max-width:1040px;padding:22px 24px 17px}
 .brand{display:flex;align-items:center;gap:13px;min-width:0}
 .brand-logo{display:block;width:56px;height:56px;flex:none;border-radius:15px;background:#F2F7F2;padding:4px;border:1px solid #8AAE97}
 .brand-copy{min-width:0}
-.brand-copy h1{margin:0;color:#fff;font-size:clamp(25px,3vw,31px);font-weight:760;line-height:1.2;letter-spacing:-.03em;overflow-wrap:normal}.brand-descriptor{display:block;color:#D4E6D9;font-size:13px;line-height:1.3;margin-top:2px;letter-spacing:.01em}
+.brand-copy h1{margin:0;color:#fff;font-size:clamp(23px,2.8vw,30px);font-weight:760;line-height:1.2;letter-spacing:-.03em;overflow-wrap:normal}.brand-descriptor{display:block;color:#D4E6D9;font-size:13px;line-height:1.3;margin-top:2px;letter-spacing:.01em}
 .brand-copy .eyebrow{margin-top:5px;color:#BBD4C3;font-size:10px;font-weight:700;letter-spacing:.095em}
 .brand-bar .offline-strip{margin:0!important;max-width:100%;background:#1B4032;border:1px solid #456C56;padding:7px 10px!important;border-radius:9px}
 .brand-bar .offline-main{color:#E9F3EC}
@@ -204,7 +204,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
  .brand-bar{align-items:stretch;gap:11px}
  .brand{gap:10px}
  .brand-logo{width:47px;height:47px;border-radius:12px}
- .brand-copy h1{font-size:clamp(22px,6vw,27px)}
+ .brand-copy h1{font-size:clamp(20px,5.5vw,26px);overflow-wrap:break-word}
  .brand-bar .offline-strip{width:100%;justify-content:space-between}
  .nav{max-width:none;margin-top:13px;padding:4px;gap:3px}
  .nav button{flex:1 1 0;font-size:11px;padding:10px 5px}
@@ -214,7 +214,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 }
 
 </style></head><body>
-<header><div class="inner"><div class="brand-bar"><div class="brand"><img class="brand-logo" src="./icon.svg" width="56" height="56" alt=""><div class="brand-copy"><h1>SC Auditor</h1><div class="brand-descriptor">Date–Weekday Checker</div><div class="eyebrow">SC-400 · v30</div></div></div>
+<header><div class="inner"><div class="brand-bar"><div class="brand"><img class="brand-logo" src="./icon.svg" width="56" height="56" alt=""><div class="brand-copy"><h1>Septima Congruence Auditor</h1><div class="brand-descriptor">Date–Weekday Checker</div><div class="eyebrow">SC-400 · v30</div></div></div>
 <div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
 <details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div></div>
 <nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Documents</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheets</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
@@ -435,7 +435,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 </div></div>
 </section>
 </main>
-<footer>SC Auditor · <a href="./open-source-licenses.html">Open-source licenses</a></footer>
+<footer>Septima Congruence Auditor · <a href="./open-source-licenses.html">Open-source licenses</a></footer>
 <script src="./jszip.min.js"></script><script src="./sc-engine.js"></script><script src="./scan-core.js"></script><script src="./pdf-bridge.js"></script><script src="./document-bridge.js"></script><script src="./pdf-export.js"></script>
 <script src="./audit-utils.js"></script><script src="./security-seal.js"></script><script src="./security-ui.js"></script><script src="./audit-app.js"></script><script src="./quality-app.js"></script><script src="./sheet-app.js"></script><script src="./calc-app.js"></script><script src="./learn-app.js"></script><script src="./nav.js"></script><script src="./offline-app.js"></script><script src="./quick-verify.js"></script>
 </body></html>
