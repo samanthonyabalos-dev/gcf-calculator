@@ -1,6 +1,6 @@
 /* Page-by-page PDF reader. Requires version-pinned PDF.js and optionally Tesseract.js.
    Every page gets a coverage record; pages not readable fail the completeness gate. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFPDF=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCPDF=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const LIBS={
  pdf:[['Local','./vendor/pdf.min.js','./vendor/pdf.worker.min.js'],['Cloudflare','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'],['jsDelivr','https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js','https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'],['unpkg','https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js','https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js']],
@@ -9,7 +9,7 @@ const LIBS={
 };
 const pending={};
 function js(src){return new Promise((resolve,reject)=>{let done=false;const el=document.createElement('script');el.src=src;el.async=true;const timer=setTimeout(()=>finish(Error('Load timed out: '+src)),7000);function finish(e){if(done)return;done=true;clearTimeout(timer);el.onload=el.onerror=null;if(e){el.remove();reject(e);}else resolve();}el.onload=()=>finish();el.onerror=()=>finish(Error('Library unavailable: '+src));document.head.append(el);});}
-async function load(which){const field=which==='pdf'?'pdfjsLib':which==='ocr'?'Tesseract':'PDFLib';if(globalThis[field])return {provider:'already loaded'};if(pending[which])return pending[which];pending[which]=(async()=>{let errors=[];for(const entry of LIBS[which]){try{await js(entry[1]);if(globalThis[field]){if(which==='pdf')globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc=entry[2];globalThis['__gcfProvider_'+which]=entry[0];return {provider:entry[0]};}errors.push(entry[0]+': loaded but no global object');}catch(e){errors.push(e.message);}}pending[which]=null;throw Error('Could not load '+which+' engine. Add the missing vendor libraries or allow CDN scripts. '+errors.slice(0,2).join(' | '));})();return pending[which];}
+async function load(which){const field=which==='pdf'?'pdfjsLib':which==='ocr'?'Tesseract':'PDFLib';if(globalThis[field])return {provider:'already loaded'};if(pending[which])return pending[which];pending[which]=(async()=>{let errors=[];for(const entry of LIBS[which]){try{await js(entry[1]);if(globalThis[field]){if(which==='pdf')globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc=entry[2];globalThis['__scProvider_'+which]=entry[0];return {provider:entry[0]};}errors.push(entry[0]+': loaded but no global object');}catch(e){errors.push(e.message);}}pending[which]=null;throw Error('Could not load '+which+' engine. Add the missing vendor libraries or allow CDN scripts. '+errors.slice(0,2).join(' | '));})();return pending[which];}
 // Reconstruct PDF text using glyph spacing instead of inserting a space between every text fragment.
 function joinGlyphRuns(parts){
  let result='',prev=null;
@@ -51,7 +51,7 @@ function groupSpans(items,page,file){
   return {file,page,lineNo:i,location:'Page '+page+' · line '+(i+1),method:'PDF text',text,parts:g.parts,baseline:g.y,confidence:null};
  }).filter(x=>x.text);
 }
-async function workerOCR(){await load('ocr');if(!globalThis.__gcfWorker){let settings={logger:()=>{}};if(globalThis.__gcfProvider_ocr==='Local'){settings.workerPath=new URL('vendor/tesseract.worker.min.js',location.href).href;settings.corePath=new URL('vendor/tesseract-core',location.href).href;settings.langPath=new URL('vendor/lang',location.href).href;}globalThis.__gcfWorker=await Tesseract.createWorker('eng',1,settings);}return globalThis.__gcfWorker;}
+async function workerOCR(){await load('ocr');if(!globalThis.__scWorker){let settings={logger:()=>{}};if(globalThis.__scProvider_ocr==='Local'){settings.workerPath=new URL('vendor/tesseract.worker.min.js',location.href).href;settings.corePath=new URL('vendor/tesseract-core',location.href).href;settings.langPath=new URL('vendor/lang',location.href).href;}globalThis.__scWorker=await Tesseract.createWorker('eng',1,settings);}return globalThis.__scWorker;}
 async function extractOCR(pdfPage,file,pageIndex){const viewport=pdfPage.getViewport({scale:1.55}),canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);if(canvas.width*canvas.height>18000000)throw Error('Page too large for browser OCR');const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Canvas unavailable');try{await pdfPage.render({canvasContext:ctx,viewport}).promise;
   let dark=0,total=0;const image=ctx.getImageData(0,0,canvas.width,canvas.height).data,step=Math.max(1,Math.floor(canvas.width*canvas.height/25000));for(let i=0;i<canvas.width*canvas.height;i+=step){const j=i*4;total++;if(Math.min(image[j],image[j+1],image[j+2])<205)dark++;}
   if(dark/Math.max(1,total)<0.00015)return {blank:true,lines:[],confidence:null};
@@ -74,7 +74,7 @@ async function extractOCR(pdfPage,file,pageIndex){const viewport=pdfPage.getView
  }finally{canvas.width=canvas.height=0;}}
 function needsOCR(mode,native,reading='auto'){
  const nativeText=native.map(x=>x.text).join(' '),textLen=nativeText.trim().length;
- const findings=globalThis.GCFScanner?.scanPage(native,{reading})||[];
+ const findings=globalThis.SCScanner?.scanPage(native,{reading})||[];
  const paired=findings.filter(r=>r.status==='MATCH'||r.status==='MISMATCH').length;
  const uncertain=findings.filter(r=>r.status==='REVIEW').length;
  const lone=findings.filter(r=>r.status==='DATE_ONLY').length;
@@ -111,8 +111,8 @@ async function readPdf(file,{ocr='auto',reading='auto',order='auto',pageNumbers=
    const check=needsOCR(ocr,native,reading);
    if(check.needed){details.ocrAttempted=true;details.note+='Reason for OCR: '+check.reason+'; ';onProgress(index+1,selected.length,'OCR page '+i);
     try{if(!pg)pg=await doc.getPage(i);recognized=await extractOCR(pg,file.name,i);details.ocrLines=recognized.lines.length;details.ocrConfidence=recognized.confidence??'';}catch(e){details.note+='OCR: '+e.message+'; ';}}
-   const nativeRecords=globalThis.GCFScanner?.scanPage(native,{reading,order})||[];
-   const ocrRecords=recognized?.lines?.length?GCFScanner.scanPage(recognized.lines,{reading,order}):[];
+   const nativeRecords=globalThis.SCScanner?.scanPage(native,{reading,order})||[];
+   const ocrRecords=recognized?.lines?.length?SCScanner.scanPage(recognized.lines,{reading,order}):[];
    const nativePairs=nativeRecords.filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length;
    const ocrPairs=ocrRecords.filter(x=>x.status==='MATCH'||x.status==='MISMATCH').length;
    const conflicts=evidenceDisagreements(nativeRecords,ocrRecords);
@@ -131,7 +131,7 @@ async function readPdf(file,{ocr='auto',reading='auto',order='auto',pageNumbers=
  coverage.sort((a,b)=>a.page-b.page);
  return {file:file.name,lines,coverage,pageCount:doc.numPages,stopped,complete:!stopped&&!pageNumbers&&coverage.length===doc.numPages&&coverage.every(x=>x.status!=='UNREADABLE'&&x.status!=='SKIPPED'),unchecked:coverage.filter(x=>x.status==='UNREADABLE'||x.status==='SKIPPED')};
 }
-async function closeOCR(){if(globalThis.__gcfWorker){await globalThis.__gcfWorker.terminate();globalThis.__gcfWorker=null;}}
+async function closeOCR(){if(globalThis.__scWorker){await globalThis.__scWorker.terminate();globalThis.__scWorker=null;}}
 // Render an original PDF page inside the audit panel. Highlights are drawn as
 // positioned HTML overlays, so hovering/clicking a result selects its source.
 let previewCache=null,previewQueue=Promise.resolve();

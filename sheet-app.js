@@ -1,4 +1,4 @@
-(function(){'use strict';const $=id=>document.getElementById(id),G=window.GCFEngine;let result=null,source='';const urls=[];
+(function(){'use strict';const $=id=>document.getElementById(id),G=window.SCEngine;let result=null,source='';const urls=[];
 const quote=v=>'"'+String(v??'').replace(/^[\s\uFEFF]*[=+@\-\t\r]/,m=>"'"+m).replace(/"/g,'""')+'"';
 function csv(header,rows){return '\uFEFF'+[header,...rows].map(a=>a.map(quote).join(',')).join('\r\n');}
 function state(message,kind=''){$('sheetStatus').textContent=message;$('sheetStatus').className='status'+(kind?' '+kind:'');}

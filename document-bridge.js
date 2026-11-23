@@ -1,5 +1,5 @@
 /* Preserve original Word bytes. Audits paragraphs and table paragraphs in document.xml. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFWord=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCWord=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const NS='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 async function open(file){

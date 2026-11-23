@@ -14,7 +14,7 @@ function status(text,kind='normal'){$('status').textContent=text;$('status').cla
 function linksClear(){urls.forEach(x=>URL.revokeObjectURL(x));urls=[];$('links').replaceChildren();}
 async function fingerprint(file){if(!globalThis.crypto?.subtle)return '';const h=await crypto.subtle.digest('SHA-256',await file.arrayBuffer());return [...new Uint8Array(h)].map(n=>n.toString(16).padStart(2,'0')).join('');}
 function direct(blob,name,label){const url=URL.createObjectURL(blob);urls.push(url);const link=document.createElement('a');link.className='download';link.href=url;link.download=name;link.textContent=label||name;$('links').appendChild(link);return link;}
-function reset(){lastSettings=null;$('scanProgress').classList.add('hide');$('extractionDiagnostics').textContent='';if(running)return status('Finish or cancel the current scan before clearing.','warning');docs=[];rows=[];coverage=[];quality=[];displayRows=[];previewSeq++;previewKey='';previewViewport=null;linksClear();$('files').value='';$('results').classList.add('hide');$('pdfPreviewCard').classList.add('hide');$('retryPages').classList.add('hide');$('scanQuality').textContent='Quality summary appears after scanning.';$('scanQuality').className='quality-panel';$('status').textContent='';$('status').className='status hide';GCFPDF.closePreview().catch(()=>{});}
+function reset(){lastSettings=null;$('scanProgress').classList.add('hide');$('extractionDiagnostics').textContent='';if(running)return status('Finish or cancel the current scan before clearing.','warning');docs=[];rows=[];coverage=[];quality=[];displayRows=[];previewSeq++;previewKey='';previewViewport=null;linksClear();$('files').value='';$('results').classList.add('hide');$('pdfPreviewCard').classList.add('hide');$('retryPages').classList.add('hide');$('scanQuality').textContent='Quality summary appears after scanning.';$('scanQuality').className='quality-panel';$('status').textContent='';$('status').className='status hide';SCPDF.closePreview().catch(()=>{});}
 function summarize(){let c=Object.fromEntries(['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].map(s=>[s,0]));rows.forEach(r=>c[r.status]=(c[r.status]||0)+1);$('statDates').textContent=rows.length.toLocaleString();$('statMatches').textContent=c.MATCH.toLocaleString();$('statMismatch').textContent=c.MISMATCH.toLocaleString();$('statReview').textContent=c.REVIEW.toLocaleString();$('statDateOnly').textContent=c.DATE_ONLY.toLocaleString();$('statPages').textContent=coverage.length.toLocaleString();
  const filter=$('resultFilter').value,search=$('resultSearch').value.trim().toLowerCase();
  const filtered=rows.filter(r=>(filter==='ALL'||r.status===filter)&&(!search||[r.file,r.sourceDate,r.date,r.recorded,r.expected,r.sourceText,r.note].some(v=>String(v??'').toLowerCase().includes(search))));
@@ -35,7 +35,7 @@ function updateQualityPanel(){
  const ocrPages=coverage.filter(c=>c.ocrAttempted).length;
  const durations=coverage.reduce((n,c)=>n+(Number(c.durationMs)||0),0);
  const missingPositions=rows.filter(r=>/\.pdf$/i.test(r.file||'')&&(!r.hasDatePosition||(['MATCH','MISMATCH'].includes(r.status)&&!r.hasDayPosition))).length;
- const state=GCFAuditUtils.summarize(rows,coverage).state;
+ const state=SCAuditUtils.summarize(rows,coverage).state;
  const node=$('scanQuality');node.className='quality-panel'+(unreadable.length||reviews||!pairCount||missingPositions?' warning':'');
  node.textContent='Overall audit state: '+state+'\nPage coverage: '+scanned.length+'/'+coverage.length+' readable or verified blank · '+unreadable.length+' incomplete\nPrinted weekday/date pairs: '+pairCount+' · errors: '+errors+' · review: '+reviews+' · date-only: '+rows.filter(r=>r.status==='DATE_ONLY').length+'\nPages with conflicting text/OCR evidence: '+conflictingPages+' (manual review)\nFindings with incomplete PDF highlight positions: '+missingPositions+'\nOCR attempted on '+ocrPages+' page(s) · page processing: '+(durations/1000).toFixed(2)+' seconds (excludes previews/exports)\n'+(unreadable.length?'Incomplete pages require retry or manual verification.':!pairCount?'No paired weekdays confirmed; inspect extraction diagnostics.':'All pages processed, but undetected text remains possible.')+' This report is not a certification of the source document.';
  const headline=$('auditHeadline');
@@ -125,7 +125,7 @@ async function showPdfPreview(index){
  const key=row.file+'|'+row.page,sequence=++previewSeq;
  if(previewKey!==key||!previewViewport){
   $('pdfPreviewStatus').textContent='Rendering source page '+row.page+'…';
-  const viewport=await GCFPDF.previewPage(documentInfo.fileObj,row.page,$('pdfPreviewCanvas'));
+  const viewport=await SCPDF.previewPage(documentInfo.fileObj,row.page,$('pdfPreviewCanvas'));
   if(sequence!==previewSeq)return;
   previewKey=key;previewViewport=viewport;
  }
@@ -141,14 +141,14 @@ $('recordRows').addEventListener('focusin',e=>{const tr=e.target.closest('tr[dat
 $('recordRows').addEventListener('click',e=>{const tr=e.target.closest('tr[data-record]');if(tr)showPdfPreview(Number(tr.dataset.record)).catch(er=>{$('pdfPreviewStatus').textContent=er.message;});});
 $('resultFilter').addEventListener('change',summarize);
 $('resultSearch').addEventListener('input',summarize);
-async function scan(){if(running)return;const files=[...$('files').files];if(!files.length)return status('Choose one or more PDF or Word files.','warning');if(files.length>10)return status('Select up to ten files.','warning');if(files.some(f=>f.size>15*1024*1024))return status('Some files exceed 15 MB. Split them before scanning.','warning');if(new Set(files.map(f=>f.name.toLowerCase())).size!==files.length)return status('Rename duplicate filenames to avoid mixing findings.','warning');try{GCFAuditUtils.inspectNames(files);for(const file of files)await GCFAuditUtils.inspectFile(file);}catch(e){return status('Upload validation: '+e.message,'error');}
+async function scan(){if(running)return;const files=[...$('files').files];if(!files.length)return status('Choose one or more PDF or Word files.','warning');if(files.length>10)return status('Select up to ten files.','warning');if(files.some(f=>f.size>15*1024*1024))return status('Some files exceed 15 MB. Split them before scanning.','warning');if(new Set(files.map(f=>f.name.toLowerCase())).size!==files.length)return status('Rename duplicate filenames to avoid mixing findings.','warning');try{SCAuditUtils.inspectNames(files);for(const file of files)await SCAuditUtils.inspectFile(file);}catch(e){return status('Upload validation: '+e.message,'error');}
  $('scanProgress').classList.remove('hide');$('scanProgressBar').value=0;$('progressText').textContent='Preparing documents…';lastSettings={reading:$('reading').value,ocr:$('ocr').value,order:$('order').value,readingLabel:$('reading').selectedOptions[0].text,ocrLabel:$('ocr').selectedOptions[0].text,orderLabel:$('order').selectedOptions[0].text};running=true;stopRequested=false;$('scan').disabled=true;$('reset').disabled=true;$('cancel').classList.remove('hide');docs=[];rows=[];coverage=[];quality=[];linksClear();$('results').classList.add('hide');$('pdfPreviewCard').classList.add('hide');previewKey='';previewViewport=null;previewSeq++;const problems=[];try{for(const [i,file] of files.entries()){
    status(`Scanning ${file.name} (${i+1}/${files.length})...`);
    try{const started=performance.now();let document;if(stopRequested)throw Error('Scan canceled.');if(/\.pdf$/i.test(file.name)){
-    $('engine').textContent='Loading PDF.js; Tesseract OCR is loaded on demand…';document=await GCFPDF.readPdf(file,{reading:$('reading').value,order:$('order').value,ocr:$('ocr').value,shouldStop:()=>stopRequested,onProgress:(a,b,method)=>{const percent=Math.round(100*(i+a/Math.max(1,b))/files.length);$('scanProgressBar').value=percent;$('progressText').textContent=`${file.name} · page ${a}/${b} · ${method} · ${percent}%`;}});$('engine').textContent=`PDF.js ready. PDF pages are inspected individually; OCR is ${$('ocr').value}.`;
-   }else if(/\.docx$/i.test(file.name)){document=await GCFWord.read(file);}else throw Error('Only PDF and DOCX files are supported');
+    $('engine').textContent='Loading PDF.js; Tesseract OCR is loaded on demand…';document=await SCPDF.readPdf(file,{reading:$('reading').value,order:$('order').value,ocr:$('ocr').value,shouldStop:()=>stopRequested,onProgress:(a,b,method)=>{const percent=Math.round(100*(i+a/Math.max(1,b))/files.length);$('scanProgressBar').value=percent;$('progressText').textContent=`${file.name} · page ${a}/${b} · ${method} · ${percent}%`;}});$('engine').textContent=`PDF.js ready. PDF pages are inspected individually; OCR is ${$('ocr').value}.`;
+   }else if(/\.docx$/i.test(file.name)){document=await SCWord.read(file);}else throw Error('Only PDF and DOCX files are supported');
    if(stopRequested&&!document.stopped)throw Error('Scan canceled.');
-   const scanned=GCFScanner.scanDocument([document],{order:$('order').value,reading:$('reading').value});
+   const scanned=SCScanner.scanDocument([document],{order:$('order').value,reading:$('reading').value});
    const conflictPages=new Set(document.coverage.filter(c=>c.disagreement).map(c=>c.page));
    for(const rec of scanned.records)if(conflictPages.has(rec.page)&&rec.status!=='INVALID'){
     scanned.counts[rec.status]--;scanned.counts.REVIEW++;rec.status='REVIEW';
@@ -165,32 +165,32 @@ async function scan(){if(running)return;const files=[...$('files').files];if(!fi
   const diagnostic=[];
   for(const d of docs){
     diagnostic.push('FILE: '+d.file+' — '+d.pageCount+' pages');
-    const relevant=(d.lines||[]).filter(l=>GCFScanner.dateMatches(l.text,lastSettings?.order||'auto').length||GCFScanner.dayMatches(l.text).length);
+    const relevant=(d.lines||[]).filter(l=>SCScanner.dateMatches(l.text,lastSettings?.order||'auto').length||SCScanner.dayMatches(l.text).length);
     for(const l of relevant.slice(0,150)) diagnostic.push('Page '+l.page+' ['+l.method+'] '+l.text);
     if(relevant.length>150)diagnostic.push('... '+(relevant.length-150)+' additional lines omitted');
     if(!relevant.length)diagnostic.push('No date or weekday strings could be reconstructed.');
   }
   $('extractionDiagnostics').textContent=diagnostic.join('\n')||'No extracted lines. Check the page coverage and error report.';
-  summarize();const passed=coverage.filter(c=>c.status==='READABLE'||c.status==='BLANK').length,total=coverage.filter(c=>Number.isInteger(c.page)).length;const bad=coverage.filter(c=>c.status==='UNREADABLE'||c.status==='FAILED'||c.status==='PARTIAL').length;const weekdayWords=docs.reduce((n,d)=>n+(d.lines||[]).reduce((t,l)=>t+GCFScanner.dayMatches(l.text).length,0),0),paired=rows.filter(r=>r.status==='MATCH'||r.status==='MISMATCH').length,unpaired=rows.filter(r=>r.status==='DATE_ONLY').length;
+  summarize();const passed=coverage.filter(c=>c.status==='READABLE'||c.status==='BLANK').length,total=coverage.filter(c=>Number.isInteger(c.page)).length;const bad=coverage.filter(c=>c.status==='UNREADABLE'||c.status==='FAILED'||c.status==='PARTIAL').length;const weekdayWords=docs.reduce((n,d)=>n+(d.lines||[]).reduce((t,l)=>t+SCScanner.dayMatches(l.text).length,0),0),paired=rows.filter(r=>r.status==='MATCH'||r.status==='MISMATCH').length,unpaired=rows.filter(r=>r.status==='DATE_ONLY').length;
   if(problems.length||bad)status('Scan finished with incomplete pages. See results for details.','warning');
   else if(!paired)status('Scan finished. No weekday–date pairs confirmed. Check scan details.','warning');
   else status('Scan complete. Review the findings below.');
   $('results').scrollIntoView?.({behavior:'smooth',block:'start'});
- }finally{running=false;$('scanProgressBar').value=100;$('progressText').textContent=stopRequested?'Scan stopped. Review coverage and errors.':'Scan finished. Review findings and coverage.';$('scan').disabled=false;$('reset').disabled=false;$('cancel').classList.add('hide');try{await GCFPDF.closeOCR();}catch(e){}}}
+ }finally{running=false;$('scanProgressBar').value=100;$('progressText').textContent=stopRequested?'Scan stopped. Review coverage and errors.':'Scan finished. Review findings and coverage.';$('scan').disabled=false;$('reset').disabled=false;$('cancel').classList.add('hide');try{await SCPDF.closeOCR();}catch(e){}}}
 function saveText(content,name,label){const link=direct(new Blob([content],{type:'text/csv;charset=utf-8'}),name,label);link.click();}
-async function annotatedPDF(doc,selected){await GCFPDF.load('write');return GCFPdfExport.create(doc.fileObj,selected);}
+async function annotatedPDF(doc,selected){await SCPDF.load('write');return SCPdfExport.create(doc.fileObj,selected);}
 
 async function downloadHighlightedPDF(){
  const pdfs=docs.filter(d=>/\.pdf$/i.test(d.fileObj?.name));
  if(!pdfs.length)return status('Scan a PDF file first.','warning');
  const button=$('downloadPdf');button.disabled=true;let count=0;const errors=[];
  try{
-  await GCFPDF.load('write');
+  await SCPDF.load('write');
   for(const d of pdfs){
    if(!d.complete){errors.push(d.fileObj.name+': not all pages were readable');continue;}
    const records=rows.filter(r=>r.file===d.fileObj.name);
    try{
-    const result=await GCFPdfExport.create(d.fileObj,records);
+    const result=await SCPdfExport.create(d.fileObj,records);
     const stem=d.fileObj.name.replace(/\.pdf$/i,'').replace(/[^\w.-]/g,'_');
     const link=direct(result.blob,`${stem}_Highlighted.pdf`,`Save highlighted ${d.fileObj.name} (${result.fullyAnnotated} findings fully located)`);
     if(count===0)link.click();count++;
@@ -208,23 +208,23 @@ async function createSignedEvidence(){
  // Reuse an explicitly saved device key if present, without making key setup a requirement.
  if(selectedSigner!=='stored'){
   try{
-   const saved=await GCFSecurity.useDeviceKey();
+   const saved=await SCSecurity.useDeviceKey();
    selectedSigner='stored';
    showSigner('Previously saved signing key selected automatically.',saved.fingerprint,'success');
-  }catch(_){/* No saved key: GCFSecurity creates a temporary, non-exportable key automatically. */}
+  }catch(_){/* No saved key: SCSecurity creates a temporary, non-exportable key automatically. */}
  }
- const evidence=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'});
- const sealed=await GCFSecurity.seal(evidence);
- const verification=await GCFSecurity.verify(sealed);
+ const evidence=SCAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'});
+ const sealed=await SCSecurity.seal(evidence);
+ const verification=await SCSecurity.verify(sealed);
  if(!verification.valid)throw Error('Automatic integrity verification failed: '+verification.reason);
  return sealed;
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('SC_Audit_Settings.txt',`SC-400 v30\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('SC_Findings.csv',recordCSV());zip.file('SC_Page_Coverage.csv',coverageCSV());zip.file('SC_Quality_Evidence.csv',qualityCSV());zip.file('SC_Audit_Evidence.json',JSON.stringify(GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'}),null,2));
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('SC_Audit_Settings.txt',`SC-400 v30\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('SC_Findings.csv',recordCSV());zip.file('SC_Page_Coverage.csv',coverageCSV());zip.file('SC_Quality_Evidence.csv',qualityCSV());zip.file('SC_Audit_Evidence.json',JSON.stringify(SCAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'}),null,2));
 const issues=[];let files=0;let proofIncluded=false;
 try{
  const signed=await createSignedEvidence();
  zip.file('Verification/SC400_Signed_Evidence.json',JSON.stringify(signed,null,2));
- zip.file('Verification/GCF400_Signed_Evidence.json',JSON.stringify(signed,null,2)); // Legacy compatibility
+ zip.file('Verification/SC400_Signed_Evidence.json',JSON.stringify(signed,null,2)); // Legacy compatibility
  zip.file('Verification/ABOUT_THE_PROOF.txt','This report includes an automatically signed record of the audit findings and original source-file hashes.\r\nTo check it, open SC-400 > Verify a saved report and select this ZIP. You do not need to open or edit the JSON file.\r\nA valid signature only shows that the signed audit evidence has not changed relative to the included public key. It does NOT verify the signer identity, guarantee the correctness of findings, or authenticate PRC documents. The signature does not protect other files in this ZIP independently.\r\n');
  proofIncluded=true;
 }catch(e){
@@ -235,7 +235,7 @@ try{
  for(const doc of docs){const selected=rows.filter(r=>r.file===doc.fileObj.name&&['MATCH','MISMATCH','INVALID','REVIEW','DATE_ONLY'].includes(r.status));const stem=doc.fileObj.name.replace(/\.(pdf|docx)$/i,'').replace(/[^\w.-]/g,'_');
   try{if(/\.pdf$/i.test(doc.fileObj.name)){
    if(!doc.complete)throw Error('Incomplete PDF page coverage. Annotations not certified.');const a=await annotatedPDF(doc,selected);zip.file(`Annotated/${stem}_Annotated.pdf`,a.blob);direct(a.blob,`${stem}_Annotated.pdf`,`Open/download highlighted ${doc.fileObj.name}`);files++;issues.push(...a.unresolved.map(t=>doc.fileObj.name+': '+t));
-  }else{const a=await GCFWord.annotate(doc.fileObj,selected);zip.file(`Annotated/${stem}_Annotated.docx`,a.blob);files++;issues.push(...a.issues.map(it=>doc.fileObj.name+': '+it.reason));}}
+  }else{const a=await SCWord.annotate(doc.fileObj,selected);zip.file(`Annotated/${stem}_Annotated.docx`,a.blob);files++;issues.push(...a.issues.map(it=>doc.fileObj.name+': '+it.reason));}}
   catch(e){issues.push(doc.fileObj.name+': annotation export unavailable ('+e.message+')');}
  }
  zip.file('Annotation_Notes.txt',`Generated annotated files: ${files}\r\nUnresolved locations or issues:\r\n${issues.length?issues.join('\r\n'):'None identified'}\r\n\r\nOriginal uploads were never overwritten. A missing annotation must not be interpreted as a correct record.\r\n`);
@@ -251,12 +251,12 @@ async function retryIncomplete(){
   if(stopRequested)break;
   status('Retrying '+pages.length+' incomplete page(s) in '+doc.file+'…');
   try{
-   const delta=await GCFPDF.readPdf(doc.fileObj,{pageNumbers:pages,reading:lastSettings?.reading||'auto',order:lastSettings?.order||'auto',ocr:lastSettings?.ocr==='off'?'auto':lastSettings?.ocr||'auto',shouldStop:()=>stopRequested,onProgress:(done,total,phase)=>{$('scanProgressBar').value=Math.round(100*done/total);$('progressText').textContent='Retry '+done+'/'+total+' · '+phase;}});
+   const delta=await SCPDF.readPdf(doc.fileObj,{pageNumbers:pages,reading:lastSettings?.reading||'auto',order:lastSettings?.order||'auto',ocr:lastSettings?.ocr==='off'?'auto':lastSettings?.ocr||'auto',shouldStop:()=>stopRequested,onProgress:(done,total,phase)=>{$('scanProgressBar').value=Math.round(100*done/total);$('progressText').textContent='Retry '+done+'/'+total+' · '+phase;}});
    const touched=new Set(delta.coverage.map(c=>c.page));
    doc.lines=doc.lines.filter(l=>!touched.has(l.page)).concat(delta.lines);
    doc.coverage=doc.coverage.filter(c=>!touched.has(c.page)).concat(delta.coverage).sort((a,b)=>a.page-b.page);
    doc.unchecked=doc.coverage.filter(c=>c.status==='UNREADABLE'||c.status==='SKIPPED');doc.complete=!doc.unchecked.length&&doc.coverage.length===doc.pageCount;
-   const rerun=GCFScanner.scanDocument([doc],{reading:lastSettings?.reading||'auto',order:lastSettings?.order||'auto'});
+   const rerun=SCScanner.scanDocument([doc],{reading:lastSettings?.reading||'auto',order:lastSettings?.order||'auto'});
    const conflictPages=new Set(doc.coverage.filter(c=>c.disagreement).map(c=>c.page));
    for(const rec of rerun.records)if(conflictPages.has(rec.page)&&rec.status!=='INVALID'){
     rerun.counts[rec.status]--;rerun.counts.REVIEW++;rec.status='REVIEW';
@@ -268,34 +268,34 @@ async function retryIncomplete(){
  }
  coverage=docs.flatMap(d=>d.coverage);
  summarize();status(problems.length?'Some retries failed: '+problems.join(' | '):stopRequested?'Retry interrupted. Completed page results retained.':'Retry finished. Check page coverage and extraction diagnostics; results are not certified.',problems.length||stopRequested?'warning':'normal');
- }finally{running=false;$('scan').disabled=false;$('retryPages').disabled=false;$('cancel').classList.add('hide');try{await GCFPDF.closeOCR();}catch(e){}}
+ }finally{running=false;$('scan').disabled=false;$('retryPages').disabled=false;$('cancel').classList.add('hide');try{await SCPDF.closeOCR();}catch(e){}}
 }
 $('retryPages').addEventListener('click',retryIncomplete);
 $('scan').addEventListener('click',scan);$('cancel').addEventListener('click',()=>{stopRequested=true;status('Cancel requested. The current PDF/OCR operation may finish before it can stop.','warning');});$('reset').addEventListener('click',reset);$('downloadRecords').addEventListener('click',()=>saveText(recordCSV(),'SC_Findings.csv','Findings CSV'));
 $('downloadCoverage').addEventListener('click',()=>saveText(coverageCSV(),'SC_Page_Coverage.csv','Page coverage CSV'));
 $('downloadEvidence').addEventListener('click',()=>saveText(qualityCSV(),'SC_Quality_Evidence.csv','Quality evidence CSV'));
-$('downloadManifest').addEventListener('click',()=>{const data=GCFAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'SC400_Audit_Evidence.json','Save structured audit evidence');link.click();});
+$('downloadManifest').addEventListener('click',()=>{const data=SCAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=direct(blob,'SC400_Audit_Evidence.json','Save structured audit evidence');link.click();});
 let selectedSigner='temporary';
 function showSigner(message,fingerprint='',state='info'){
- GCFSecurityUI.keyStatus({message,fingerprint,state});
+ SCSecurityUI.keyStatus({message,fingerprint,state});
  $('deviceCopyStatus').textContent='';
 }
-$('copyDeviceFingerprint').addEventListener('click',()=>GCFSecurityUI.copyFingerprint());
+$('copyDeviceFingerprint').addEventListener('click',()=>SCSecurityUI.copyFingerprint());
 $('createDeviceSigner').addEventListener('click',async()=>{
  if(!confirm('Create a reusable device signing key? This replaces the previously saved signing key. Old reports remain independently verifiable.'))return;
  showSigner('Creating a device signing key…');
- try{const r=await GCFSecurity.createDeviceKey();selectedSigner='stored';showSigner('Saved device key created and selected. To reuse it in a later session, choose “Use saved key”.',r.fingerprint,'success');}
+ try{const r=await SCSecurity.createDeviceKey();selectedSigner='stored';showSigner('Saved device key created and selected. To reuse it in a later session, choose “Use saved key”.',r.fingerprint,'success');}
  catch(e){selectedSigner='temporary';showSigner('Could not create key: '+e.message,'','invalid');}
 });
 $('loadDeviceSigner').addEventListener('click',async()=>{
  showSigner('Loading the saved device key…');
- try{const r=await GCFSecurity.useDeviceKey();selectedSigner='stored';showSigner('Saved device key selected. Future signed exports from this tab will use this fingerprint.',r.fingerprint,'success');}
+ try{const r=await SCSecurity.useDeviceKey();selectedSigner='stored';showSigner('Saved device key selected. Future signed exports from this tab will use this fingerprint.',r.fingerprint,'success');}
  catch(e){selectedSigner='temporary';showSigner('Saved key unavailable: '+e.message,'','warning');}
 });
 $('eraseDeviceSigner').addEventListener('click',async()=>{
  if(!confirm('Erase the saved signing key? New reports can no longer use that key. Existing signed reports remain verifiable.'))return;
  showSigner('Erasing saved key…');
- try{await GCFSecurity.eraseDeviceKey();selectedSigner='temporary';showSigner('Saved key erased. Exports will use a temporary key until you create or select another saved key.','','success');}
+ try{await SCSecurity.eraseDeviceKey();selectedSigner='temporary';showSigner('Saved key erased. Exports will use a temporary key until you create or select another saved key.','','success');}
  catch(e){showSigner('Could not erase saved key: '+e.message,'','invalid');}
 });
 $('downloadSignedManifest').addEventListener('click',async()=>{
@@ -310,39 +310,39 @@ $('downloadSignedManifest').addEventListener('click',async()=>{
 });
 $('verifyEvidence').addEventListener('click',async()=>{
  const file=$('verifyEvidenceFile').files[0],source=$('verifySourceFile').files[0],button=$('verifyEvidence');
- if(!file){GCFSecurityUI.verificationStatus({message:'Choose a report ZIP or audit proof JSON to check.',state:'warning'});return;}
+ if(!file){SCSecurityUI.verificationStatus({message:'Choose a report ZIP or audit proof JSON to check.',state:'warning'});return;}
  const zipped=/\.zip$/i.test(file.name),maxBytes=zipped?180*1024*1024:4*1024*1024;
- if(file.size>maxBytes){GCFSecurityUI.verificationStatus({message:zipped?'Report ZIP exceeds the 180 MB verification limit.':'Audit proof JSON exceeds 4 MB.',state:'invalid'});return;}
- button.disabled=true;GCFSecurityUI.verificationStatus({message:'Checking whether the audit results have changed…'});
+ if(file.size>maxBytes){SCSecurityUI.verificationStatus({message:zipped?'Report ZIP exceeds the 180 MB verification limit.':'Audit proof JSON exceeds 4 MB.',state:'invalid'});return;}
+ button.disabled=true;SCSecurityUI.verificationStatus({message:'Checking whether the audit results have changed…'});
  try{
   let raw;
   if(zipped){
    const zip=await JSZip.loadAsync(file);
-   const entry=zip.file('Verification/SC400_Signed_Evidence.json')||zip.file('Verification/GCF400_Signed_Evidence.json');
+   const entry=zip.file('Verification/SC400_Signed_Evidence.json')||zip.file('Verification/SC400_Signed_Evidence.json');
    if(!entry)throw Error('This ZIP has no signed audit proof. Download a new report ZIP from SC-400.');
    if(Number.isFinite(entry._data?.uncompressedSize)&&entry._data.uncompressedSize>4*1024*1024)throw Error('The audit proof in this ZIP exceeds the 4 MB limit.');
    raw=await entry.async('string');
   }else if(/\.json$/i.test(file.name)){raw=await file.text();}
   else throw Error('Choose a SC-400 report ZIP or signed audit proof JSON.');
   if(raw.length>4*1024*1024)throw Error('The audit proof exceeds the 4 MB limit.');
-  const envelope=GCFSecurity.parseEnvelope(raw);
-  const result=source?await GCFSecurity.verifySourceFile(envelope,source):await GCFSecurity.verify(envelope);
+  const envelope=SCSecurity.parseEnvelope(raw);
+  const result=source?await SCSecurity.verifySourceFile(envelope,source):await SCSecurity.verify(envelope);
   const trusted=$('trustedKeyFingerprint').value.trim().toLowerCase();
   if(trusted&&!/^[a-f0-9]{64}$/.test(trusted))throw Error('Enter exactly 64 hexadecimal characters for the trusted key.');
   const matchesKey=trusted?result.fingerprint===trusted:null;
   const valid=result.valid&&(!source||result.sourceMatch)&&matchesKey!==false;
-  GCFSecurityUI.verificationStatus({
+  SCSecurityUI.verificationStatus({
    message:(valid?'Audit proof is intact. ':'Audit proof could not be verified. ')+result.reason+' This does not authenticate the signer or certify the original document.',
    state:valid?'success':'invalid',fingerprint:result.fingerprint||'',digest:result.hash||'',
    sourceResult:source?(result.sourceMatch?'Source file hash matches':'Source file hash does not match'):'Not supplied',
    trustResult:trusted?(matchesKey?'Trusted fingerprint matches':'Trusted fingerprint differs'):'No independent trusted key supplied'
   });
- }catch(e){GCFSecurityUI.verificationStatus({message:'Verification error: '+e.message,state:'invalid'});}
+ }catch(e){SCSecurityUI.verificationStatus({message:'Verification error: '+e.message,state:'invalid'});}
  finally{button.disabled=false;}
 });
 $('clearVerification').addEventListener('click',()=>{
  $('verifyEvidenceFile').value='';$('verifySourceFile').value='';$('trustedKeyFingerprint').value='';
- GCFSecurityUI.verificationStatus({message:'Selection cleared. You can check another report ZIP.'});
+ SCSecurityUI.verificationStatus({message:'Selection cleared. You can check another report ZIP.'});
 });
 $('downloadPdf').addEventListener('click',downloadHighlightedPDF);$('downloadPackage').addEventListener('click',downloadPackage);
 })();

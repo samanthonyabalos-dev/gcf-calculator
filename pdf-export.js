@@ -1,7 +1,7 @@
 /* SC-400 PDF review export. Draws transparent ink on source pages, not just
    /Highlight annotations. The ink is visible in any conforming PDF renderer.
    This adds overlays and a legend; it does NOT replace original page text. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFPdfExport=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCPdfExport=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const COLORS={MATCH:[.19,.74,.31],MISMATCH:[.96,.25,.29],REVIEW:[.98,.70,.17],INVALID:[.98,.47,.15],DATE_ONLY:[.32,.62,.92]};
 const notes={MATCH:'Recorded and calculated weekdays agree',MISMATCH:'Recorded weekday disagrees',REVIEW:'Source association needs manual review',INVALID:'Invalid Gregorian date',DATE_ONLY:'Standalone date (not an error)'};
@@ -58,7 +58,7 @@ async function create(file,records,pdfLib=globalThis.PDFLib){
     a.set(pdfLib.PDFName.of('T'),pdfLib.PDFHexString.fromText('SC-400 | '+row.status));
     a.set(pdfLib.PDFName.of('Subj'),pdfLib.PDFHexString.fromText('Date and weekday audit'));
     a.set(pdfLib.PDFName.of('Contents'),pdfLib.PDFHexString.fromText(description.slice(0,1200)));
-    a.set(pdfLib.PDFName.of('NM'),pdfLib.PDFString.of('gcf-'+row.page+'-'+annotationMarks));
+    a.set(pdfLib.PDFName.of('NM'),pdfLib.PDFString.of('sc-'+row.page+'-'+annotationMarks));
     page.node.addAnnot(ctx.register(a));annotationMarks++;
    }catch(e){/* Visible page ink survives even if PDF annotation dictionaries fail. */}
   }

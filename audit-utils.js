@@ -1,5 +1,5 @@
 /* SC-400 v19: local file-type checks and evidence summaries (no uploads). */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFAuditUtils=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCAuditUtils=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const MAX_FILE_BYTES=15*1024*1024,MAX_FILES=10;
 const CATEGORIES=['MATCH','MISMATCH','REVIEW','INVALID','DATE_ONLY'];
@@ -44,7 +44,7 @@ function summarize(rows=[],coverage=[]){
 }
 function manifest({rows=[],coverage=[],quality=[],settings={},version='v19',generatedAt=new Date().toISOString()}={}){
  const summary=summarize(rows,coverage);
- return {schema:'gcf400-audit-evidence-v1',version,generatedAt,scope:'Browser-local weekday/date consistency audit (not document authentication)',summary,
+ return {schema:'sc400-audit-evidence-v1',version,generatedAt,scope:'Browser-local weekday/date consistency audit (not document authentication)',summary,
   settings:{reading:String(settings.reading||'auto'),numericDateOrder:String(settings.order||'auto'),recognition:String(settings.ocr||'auto')},
   files:quality.map(f=>({file:String(f.file||''),bytes:Number(f.bytes)||0,sha256:f.sha256||null,pages:Number(f.pages)||0,processed:Number(f.processed)||0,unchecked:Number(f.unchecked)||0,dates:Number(f.dates)||0,matches:Number(f.matches)||0,mismatches:Number(f.mismatches)||0,review:Number(f.review)||0,processingMs:Number(f.elapsedMs)||0,outcome:String(f.outcome||'')})),
   pageCoverage:coverage.map(p=>({file:String(p.file||''),page:p.page,status:String(p.status||''),method:String(p.method||''),ocrAttempted:!!p.ocrAttempted,processingMs:Number(p.durationMs)||0})),

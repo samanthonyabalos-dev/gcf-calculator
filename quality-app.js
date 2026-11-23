@@ -1,7 +1,7 @@
 /* User-invoked deterministic self-tests; not PDF/OCR certification. */
 (function(root){'use strict';
 function runSelfChecks(){
- const G=root.GCFEngine,S=root.GCFScanner,P=root.GCFPDF,failures=[];let total=0;
+ const G=root.SCEngine,S=root.SCScanner,P=root.SCPDF,failures=[];let total=0;
  const check=(name,ok,actual='')=>{total++;if(!ok)failures.push(name+(actual?' [got '+actual+']':''));};
  if(!G||!S||!P)return {total:1,passed:0,failed:1,failures:['Missing scanner component'],ms:0};
  const started=performance.now();
@@ -26,7 +26,7 @@ function runSelfChecks(){
  }catch(e){check('Split weekday pairing',false,e.message);}
  return {total,passed:total-failures.length,failed:failures.length,failures,ms:Math.round(performance.now()-started)};
 }
-root.GCFQuality={runSelfChecks};
+root.SCQuality={runSelfChecks};
 const button=typeof document!=='undefined'?document.getElementById('runSelfChecks'):null;
 if(button)button.addEventListener('click',()=>{
  const output=document.getElementById('selfCheckResults');button.disabled=true;

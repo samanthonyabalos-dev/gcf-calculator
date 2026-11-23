@@ -1,7 +1,7 @@
 /* SC-400 document weekday/date association; positions matter.
    An unambiguous adjacent date and weekday is a classified pair with provenance.
    Ambiguity is always REVIEW rather than guessed. */
-(function(root,factory){const api=factory(root.GCFEngine||(typeof require==='function'?require('./gcf-engine.js'):null));if(typeof module==='object'&&module.exports)module.exports=api;root.GCFScanner=api;})(typeof globalThis!=='undefined'?globalThis:this,function(G){
+(function(root,factory){const api=factory(root.SCEngine||(typeof require==='function'?require('./sc-engine.js'):null));if(typeof module==='object'&&module.exports)module.exports=api;root.SCScanner=api;})(typeof globalThis!=='undefined'?globalThis:this,function(G){
 'use strict';
 if(!G)throw Error('SC engine missing');
 const MONTH='January|February|March|April|May|June|July|August|September|October|November|December|Jan\\.?|Feb\\.?|Mar\\.?|Apr\\.?|Jun\\.?|Jul\\.?|Aug\\.?|Sep\\.?|Sept\\.?|Oct\\.?|Nov\\.?|Dec\\.?';
@@ -76,7 +76,7 @@ function classify(date,day,source,options={}){
  const row={file:source.file||'',page:source.page,location:source.location||'Page '+source.page,date:date.iso,sourceDate:date.raw,recorded:day?.day||'',expected:'',status:'',sourceText:source.text,method:source.method||'PDF text',confidence:Math.min(...[source.confidence,daySource.confidence].filter(v=>Number.isFinite(v)).map(Number).concat([100])),rect,rects,hasDatePosition:dateRects.length>0,hasDayPosition:!!day&&dayRects.length>0,note:'',parts:source.parts||[],association:options.association||'none'};
  if(!date.valid){row.status='INVALID';row.note='Invalid Gregorian calendar date';return row;}
  if(date.ambiguous){row.status='REVIEW';row.note='Ambiguous numeric date order';return row;}
- const w=G.gcf400(date.y,date.m,date.d);row.expected=G.DAYS[w];
+ const w=G.sc400(date.y,date.m,date.d);row.expected=G.DAYS[w];
  const utc=new Date(Date.UTC(2000,date.m-1,date.d));utc.setUTCFullYear(date.y);
  if(!Number.isInteger(w)||utc.getUTCDay()!==w){
   row.status='REVIEW';row.note='Independent UTC calendar cross-check disagreed with SC-400; result withheld for manual review.';return row;
