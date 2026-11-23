@@ -12,8 +12,8 @@ const binary=(()=>{
 })();
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'gcf-real-'));
 const downloadDir=path.join(temp,'downloads');fs.mkdirSync(downloadDir);
-const docxPath=path.join(temp,'GCF_Test.docx');
-const tamperedZip=path.join(temp,'GCF_Changed_Report.zip');
+const docxPath=path.join(temp,'SC_Test.docx');
+const tamperedZip=path.join(temp,'SC_Changed_Report.zip');
 function contentType(file){
  return {'.html':'text/html','.js':'application/javascript','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml'}[path.extname(file)]||'application/octet-stream';
 }
@@ -85,12 +85,12 @@ async function eventually(fn,label,tries=140){
   assert.equal(results.matches,'1','Correct Monday date should match');
   assert.equal(results.mismatches,'1','Incorrect May 5 weekday should be flagged');
   await evaluate("document.getElementById('downloadPackage').click()");
-  const zipPath=path.join(downloadDir,'GCF400_Audit_Reports.zip');
+  const zipPath=path.join(downloadDir,'SC400_Audit_Reports.zip');
   await eventually(()=>fs.existsSync(zipPath)&&fs.statSync(zipPath).size>1000&&zipPath,'downloaded ZIP',200);
   const archive=await JSZip.loadAsync(fs.readFileSync(zipPath));
-  assert.ok(archive.file('GCF_Findings.csv'),'Findings CSV missing');
-  assert.ok(archive.file('Annotated/GCF_Test_Annotated.docx'),'Annotated document missing');
-  const proof=archive.file('Verification/GCF400_Signed_Evidence.json');
+  assert.ok(archive.file('SC_Findings.csv'),'Findings CSV missing');
+  assert.ok(archive.file('Annotated/SC_Test_Annotated.docx'),'Annotated document missing');
+  const proof=archive.file('Verification/SC400_Signed_Evidence.json');
   assert.ok(proof,'Automatic signed proof not included');
   const sealed=JSON.parse(await proof.async('string'));
   assert.equal(sealed.algorithm,'ECDSA-P256-SHA256');
@@ -101,7 +101,7 @@ async function eventually(fn,label,tries=140){
   const sourceStatus=await evaluate("document.getElementById('verificationSourceValue').textContent");
   assert.match(sourceStatus,/matches/i,'Original source check should pass');
   const altered=JSON.parse(JSON.stringify(sealed));altered.evidence.findings[0].status='MISMATCH';
-  archive.file('Verification/GCF400_Signed_Evidence.json',JSON.stringify(altered));
+  archive.file('Verification/SC400_Signed_Evidence.json',JSON.stringify(altered));
   fs.writeFileSync(tamperedZip,await archive.generateAsync({type:'nodebuffer'}));
   await setFile('#verifyEvidenceFile',tamperedZip);
   await evaluate("document.getElementById('verifyEvidence').click()");

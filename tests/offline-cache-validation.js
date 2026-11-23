@@ -6,7 +6,7 @@ const scope='https://example.test/gcf-calculator/';
 const essentials=['index.html','gcf-engine.js','calc-app.js','nav.js','offline-app.js'];
 const cacheEntries=new Map([
  ['gcf400-offline-v29-20261110',new Set()],
- ['gcf400-offline-v29-licenses-20261114',new Set(essentials)]
+ ['septima-offline-v30-rebrand-20261123',new Set(essentials)]
 ]);
 const listeners=new Map();
 const elements=new Map();
@@ -43,11 +43,11 @@ vm.runInContext(fs.readFileSync(path.join(__dirname,'../offline-app.js'),'utf8')
  let result=await checker();
  assert.equal(result.ready,true,'Current installed offline cache should pass despite an old empty cache');
  assert.equal(result.missing.length,0,'No essential files are actually missing');
- cacheEntries.get('gcf400-offline-v29-licenses-20261114').delete('nav.js');
+ cacheEntries.get('septima-offline-v30-rebrand-20261123').delete('nav.js');
  result=await checker();
  assert.equal(result.ready,false,'Missing essential file must fail offline readiness');
  assert.deepEqual([...result.missing],['./nav.js'],'Only nav.js should be listed as missing');
- cacheEntries.get('gcf400-offline-v29-licenses-20261114').add('nav.js');
+ cacheEntries.get('septima-offline-v30-rebrand-20261123').add('nav.js');
  cacheEntries.delete('gcf400-offline-v29-20261110');
  result=await checker();
  assert.equal(result.ready,true,'Offline cache discovery must work after old versions are deleted');

@@ -54,19 +54,19 @@ vm.runInContext(fs.readFileSync(path.join(__dirname,'../audit-app.js'),'utf8'),c
 (async()=>{
  await events.get('scan:click')();
  await events.get('downloadPackage:click')();
- const exported=generated.find(x=>x.name==='GCF400_Audit_Reports.zip');
+ const exported=generated.find(x=>x.name==='SC400_Audit_Reports.zip');
  assert.ok(exported?.blob,'One-click report ZIP must be produced');
  const contents=await JSZip.loadAsync(Buffer.from(await exported.blob.arrayBuffer()));
- assert.ok(contents.file('GCF_Findings.csv'),'Findings must remain included');
+ assert.ok(contents.file('SC_Findings.csv'),'Findings must remain included');
  assert.ok(contents.file('Annotated/demo_Annotated.pdf'),'Annotated output must remain included');
- const proof=contents.file('Verification/GCF400_Signed_Evidence.json');
+ const proof=contents.file('Verification/SC400_Signed_Evidence.json');
  assert.ok(proof,'Signed audit proof must be bundled automatically, without Create key or Save proof clicks');
  const envelope=JSON.parse(await proof.async('string'));
  assert.equal((await Security.verify(envelope)).valid,true,'Proof must verify with the public key');
  assert.equal((await Security.verifySourceFile(envelope,sourceFile)).sourceMatch,true,'Original source digest must match');
  const altered=structuredClone(envelope);altered.evidence.findings[0].status='MISMATCH';
  assert.equal((await Security.verify(altered)).valid,false,'Changed audit findings must invalidate signature');
- const input=Buffer.from(await exported.blob.arrayBuffer());input.name='GCF400_Audit_Reports.zip';input.size=input.length;
+ const input=Buffer.from(await exported.blob.arrayBuffer());input.name='SC400_Audit_Reports.zip';input.size=input.length;
  get('verifyEvidenceFile').files=[input];get('verifySourceFile').files=[sourceFile];
  await events.get('verifyEvidence:click')();
  assert.equal(verification?.state,'success','Uploading the ZIP directly must pass verification');

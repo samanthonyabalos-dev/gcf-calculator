@@ -49,5 +49,5 @@ vm.runInContext(fs.readFileSync(path.join(__dirname,'../audit-app.js'),'utf8'),c
  assert.match(get('previewNote').textContent,/Showing 0 of 0/);
  get('resultFilter').value='ALL';events.get('resultFilter:change')();
  assert.match(get('recordRows').innerHTML,/MONDAY|Monday/);
- console.log('GCF-400 UI smoke PASS: scan, quality state, finding display and filtering.');
+ console.log('SC-400 UI smoke PASS: scan, quality state, finding display and filtering.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
