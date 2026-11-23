@@ -7,10 +7,11 @@ const sheet=fs.readFileSync(path.join(__dirname,'../sheet-app.js'),'utf8');
 const quick=fs.readFileSync(path.join(__dirname,'../quick-verify.js'),'utf8');
 const at=id=>html.indexOf('id="'+id+'"');
 const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../manifest.webmanifest'),'utf8'));
-assert.ok(manifest.name.includes('Septima Auditor')&&manifest.name.includes('Date–Weekday Checker'),'Installed app full name must describe its purpose');
-assert.equal(manifest.short_name,'SC Date–Weekday','Home-screen shortcut must show the date-weekday purpose');
-assert.ok(html.includes('<h1>Septima Auditor: <span class="brand-descriptor">Date–Weekday Checker</span></h1>'),'App title and purpose must remain clearly visible');
-assert.ok(html.includes('.brand-descriptor{color:#D4E6D9}'),'Descriptor must retain its softer original color while inheriting title font size');
+assert.equal(manifest.name,'SC Auditor','The installed app must use the SC Auditor name');
+assert.ok(manifest.description.toLowerCase().includes('weekday')&&manifest.description.toLowerCase().includes('document'),'Manifest must still clearly describe the app purpose');
+assert.equal(manifest.short_name,'SC Auditor','Home-screen shortcut must show SC Auditor');
+assert.ok(html.includes('<h1>SC Auditor</h1><div class="brand-descriptor">Date–Weekday Checker</div>'),'App title and purpose must remain clearly visible');
+assert.ok(html.includes('.brand-descriptor{display:block;color:#D4E6D9;font-size:13px'),'Descriptor must remain visually secondary to the main app name');
 assert.ok(/<img[^>]+class="brand-logo"[^>]+src="\.\/icon\.svg"/.test(html),'Existing calendar logo must appear next to the app title');
 assert.ok(!html.includes('Upload a file or check a date in seconds.'),'Avoid redundant marketing instructions above primary tasks');
 
