@@ -77,7 +77,7 @@ async function eventually(fn,label,tries=140){
   console.log('Testing site:',targetURL);
   await send('Page.navigate',{url:targetURL});
   await eventually(()=>evaluate("document.readyState==='complete' && !!window.GCFSecurity && !!window.GCFWord && !!window.JSZip"),'app scripts');
-  assert.ok(await evaluate("document.querySelector('header').textContent.includes('v29')"),'Must test v29 UI');
+  assert.ok(await evaluate("document.querySelector('header').textContent.includes('v30')"),'Must test SC-400 v30 UI');
   await setFile('#files',docxPath);
   await evaluate("document.getElementById('scan').click()");
   await eventually(()=>evaluate("document.getElementById('status').textContent.includes('Scan complete')"),'completed document scan');
