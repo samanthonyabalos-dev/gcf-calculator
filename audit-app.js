@@ -219,13 +219,13 @@ async function createSignedEvidence(){
  if(!verification.valid)throw Error('Automatic integrity verification failed: '+verification.reason);
  return sealed;
 }
-async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('SC_Audit_Settings.txt',`SC-400 v30\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('SC_Findings.csv',recordCSV());zip.file('SC_Page_Coverage.csv',coverageCSV());zip.file('SC_Quality_Evidence.csv',qualityCSV());zip.file('SC_Audit_Evidence.json',JSON.stringify(SCAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'}),null,2));
+async function downloadPackage(){if(!docs.length&&!coverage.length)return status('Run a scan first.','warning');$('downloadPackage').disabled=true;status('Preparing your reports. The original documents will not be overwritten.');try{const zip=new JSZip();zip.file('SC_Audit_Settings.txt',`SC Auditor v30\r\nWeekday-date reading rule: ${lastSettings?.readingLabel||$('reading').selectedOptions[0].text}\r\nPDF recognition: ${lastSettings?.ocrLabel||$('ocr').selectedOptions[0].text}\r\nNumeric date order: ${lastSettings?.orderLabel||$('order').selectedOptions[0].text}\r\nDATE_ONLY is an informational date reference, not an error.\r\nREVIEW is not a certified match or mismatch.\r\n`);zip.file('SC_Findings.csv',recordCSV());zip.file('SC_Page_Coverage.csv',coverageCSV());zip.file('SC_Quality_Evidence.csv',qualityCSV());zip.file('SC_Audit_Evidence.json',JSON.stringify(SCAuditUtils.manifest({rows,coverage,quality,settings:lastSettings||{},version:'v30'}),null,2));
 const issues=[];let files=0;let proofIncluded=false;
 try{
  const signed=await createSignedEvidence();
  zip.file('Verification/SC400_Signed_Evidence.json',JSON.stringify(signed,null,2));
  zip.file('Verification/SC400_Signed_Evidence.json',JSON.stringify(signed,null,2)); // Legacy compatibility
- zip.file('Verification/ABOUT_THE_PROOF.txt','This report includes an automatically signed record of the audit findings and original source-file hashes.\r\nTo check it, open SC-400 > Verify a saved report and select this ZIP. You do not need to open or edit the JSON file.\r\nA valid signature only shows that the signed audit evidence has not changed relative to the included public key. It does NOT verify the signer identity, guarantee the correctness of findings, or authenticate PRC documents. The signature does not protect other files in this ZIP independently.\r\n');
+ zip.file('Verification/ABOUT_THE_PROOF.txt','This report includes an automatically signed record of the audit findings and original source-file hashes.\r\nTo check it, open SC Auditor > Verify a saved report and select this ZIP. You do not need to open or edit the JSON file.\r\nA valid signature only shows that the signed audit evidence has not changed relative to the included public key. It does NOT verify the signer identity, guarantee the correctness of findings, or authenticate PRC documents. The signature does not protect other files in this ZIP independently.\r\n');
  proofIncluded=true;
 }catch(e){
  issues.push('Automatic audit proof not available: '+e.message);
@@ -319,11 +319,11 @@ $('verifyEvidence').addEventListener('click',async()=>{
   if(zipped){
    const zip=await JSZip.loadAsync(file);
    const entry=zip.file('Verification/SC400_Signed_Evidence.json')||zip.file('Verification/SC400_Signed_Evidence.json');
-   if(!entry)throw Error('This ZIP has no signed audit proof. Download a new report ZIP from SC-400.');
+   if(!entry)throw Error('This ZIP has no signed audit proof. Download a new report ZIP from SC Auditor.');
    if(Number.isFinite(entry._data?.uncompressedSize)&&entry._data.uncompressedSize>4*1024*1024)throw Error('The audit proof in this ZIP exceeds the 4 MB limit.');
    raw=await entry.async('string');
   }else if(/\.json$/i.test(file.name)){raw=await file.text();}
-  else throw Error('Choose a SC-400 report ZIP or signed audit proof JSON.');
+  else throw Error('Choose a SC Auditor report ZIP or signed audit proof JSON.');
   if(raw.length>4*1024*1024)throw Error('The audit proof exceeds the 4 MB limit.');
   const envelope=SCSecurity.parseEnvelope(raw);
   const result=source?await SCSecurity.verifySourceFile(envelope,source):await SCSecurity.verify(envelope);
