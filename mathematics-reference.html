@@ -483,7 +483,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   </div>
 </section>
 
-<div id="builderPanel" class="builder-panel-wrap"><section id="build-gcf" class="section">
+<div id="builderPanel" class="builder-panel-wrap"><section id="build-sc" class="section">
   <div class="section-head">
     <div>
       <h2>Build the SC</h2>
@@ -506,19 +506,19 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     </div>
   </div>
 
-  <div id="gcf-builder">
+  <div id="sc-builder">
     <div class="step-box">
-      <div class="math-progress" id="gcfProgress"></div>
-      <div class="prompt" id="gcfPrompt"></div>
-      <div id="gcfInputWrap"></div>
+      <div class="math-progress" id="scProgress"></div>
+      <div class="prompt" id="scPrompt"></div>
+      <div id="scInputWrap"></div>
       <div class="step-actions">
-        <button type="button" id="gcfCheckBtn" class="btn primary">Check answer</button>
-        <button type="button" id="gcfHintBtn" class="btn secondary">Why this step?</button>
-        <button type="button" id="gcfNextBtn" class="btn secondary" style="display:none">Next step</button>
-        <button type="button" id="gcfSyncBtn" class="btn secondary">Sync with Calculator</button>
+        <button type="button" id="scCheckBtn" class="btn primary">Check answer</button>
+        <button type="button" id="scHintBtn" class="btn secondary">Why this step?</button>
+        <button type="button" id="scNextBtn" class="btn secondary" style="display:none">Next step</button>
+        <button type="button" id="scSyncBtn" class="btn secondary">Sync with Calculator</button>
       </div>
-      <div id="gcfFeedback" class="step-feedback" style="display:none"></div>
-      <div id="gcfWhy" class="why-panel"></div>
+      <div id="scFeedback" class="step-feedback" style="display:none"></div>
+      <div id="scWhy" class="why-panel"></div>
     </div>
   </div>
 </section>
@@ -560,7 +560,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 </div>
 
 <script src="./jszip.min.js"></script>
-<script src="./gcf-engine.js"></script>
+<script src="./sc-engine.js"></script>
 <script>
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const COMMON=[6,2,2,5,0,3,5,1,4,6,2,4];
@@ -579,7 +579,7 @@ function validDate(y,m,d){
 function centuryCode(c){
   return [7,5,3,1][((c%4)+4)%4];
 }
-function calcGCF(y,m,d){
+function calcSC(y,m,d){
   const c=floorDiv(y,100), yy=y%100;
   const C=centuryCode(c);
   const q=floorDiv(yy,4);
@@ -623,7 +623,7 @@ function calculate(){
     return;
   }
   els.resultBox.classList.remove("invalid");
-  const g=calcGCF(y,m,d);
+  const g=calcSC(y,m,d);
   els.weekday.textContent=g.weekday;
   els.resultText.textContent=`SC code: ${g.W}`;
   els.status.textContent="VALID";
@@ -644,8 +644,8 @@ function calculate(){
 }
 
 
-els.calcBtn.addEventListener("click",()=>{calculate();window.dispatchEvent(new Event("gcf-date-updated"));});
-els.resetBtn.addEventListener("click",()=>{els.year.value=1;els.month.value=1;els.day.value=1;calculate();window.dispatchEvent(new Event("gcf-date-updated"));});
+els.calcBtn.addEventListener("click",()=>{calculate();window.dispatchEvent(new Event("sc-date-updated"));});
+els.resetBtn.addEventListener("click",()=>{els.year.value=1;els.month.value=1;els.day.value=1;calculate();window.dispatchEvent(new Event("sc-date-updated"));});
 // Date fields do not auto-calculate. The Calculate button controls when the result updates.
 
 document.querySelectorAll(".tab").forEach(btn=>{
@@ -781,7 +781,7 @@ calculate();
   }
 
   function renderProgress(){
-    const el=document.getElementById("gcfProgress");
+    const el=document.getElementById("scProgress");
     el.innerHTML=steps.map((s,i)=>`<span class="${i<builder.step?'done ':''}${i===builder.step?'active':''}">${i+1}. ${stepLabel(s)}</span>`).join("");
   }
 
@@ -792,28 +792,28 @@ calculate();
       `<span class="date-chip">${String(data.month).padStart(2,"0")}/${String(data.day).padStart(2,"0")}/${data.year}</span>
        <span class="builder-note">${data.leap?"Leap year":"Common year"}</span>`;
     renderProgress();
-    document.getElementById("gcfPrompt").innerHTML=questionFor(s,data);
-    const wrap=document.getElementById("gcfInputWrap");
+    document.getElementById("scPrompt").innerHTML=questionFor(s,data);
+    const wrap=document.getElementById("scInputWrap");
     if(s==="leap"){
       wrap.innerHTML=`<select id="builderLeapAnswer" aria-label="Leap year answer">
         <option value="">Choose…</option><option value="yes">Yes</option><option value="no">No</option>
       </select>`;
     } else {
-      wrap.innerHTML=`<input id="gcfAnswer" type="number" step="1" min="-999999" inputmode="numeric" aria-label="Your answer" autocomplete="off" />`;
+      wrap.innerHTML=`<input id="scAnswer" type="number" step="1" min="-999999" inputmode="numeric" aria-label="Your answer" autocomplete="off" />`;
     }
-    document.getElementById("gcfFeedback").style.display="none";
-    document.getElementById("gcfNextBtn").style.display="none";
-    document.getElementById("gcfWhy").classList.remove("show");
-    document.getElementById("gcfWhy").innerHTML=whyText(s,data);
+    document.getElementById("scFeedback").style.display="none";
+    document.getElementById("scNextBtn").style.display="none";
+    document.getElementById("scWhy").classList.remove("show");
+    document.getElementById("scWhy").innerHTML=whyText(s,data);
     if (builderHasOpened) {
-      const input=document.getElementById(s==="leap"?"builderLeapAnswer":"gcfAnswer");
+      const input=document.getElementById(s==="leap"?"builderLeapAnswer":"scAnswer");
       if (input) input.focus();
     }
   }
 
   function currentAnswerValue(){
     const s=steps[builder.step];
-    const input=document.getElementById(s==="leap"?"builderLeapAnswer":"gcfAnswer");
+    const input=document.getElementById(s==="leap"?"builderLeapAnswer":"scAnswer");
     return input ? String(input.value).trim().toLowerCase() : "";
   }
 
@@ -823,13 +823,13 @@ calculate();
     const val=currentAnswerValue();
     const expected=expectedFor(s,data);
     const ok=val===String(expected).toLowerCase();
-    const fb=document.getElementById("gcfFeedback");
+    const fb=document.getElementById("scFeedback");
     fb.style.display="block";
     fb.className="step-feedback "+(ok?"good":"bad");
     if(ok){
       builder.passed=true;
       fb.innerHTML=`<b>Correct.</b> ${stepLabel(s)} = <b>${expected}</b>.`;
-      document.getElementById("gcfNextBtn").style.display=builder.step<steps.length-1?"inline-block":"none";
+      document.getElementById("scNextBtn").style.display=builder.step<steps.length-1?"inline-block":"none";
       if(builder.step===steps.length-1){
         fb.innerHTML+=`<div class="code-reveal">You constructed <b>W = ${data.W}</b> → <b>${data.weekday}</b>.</div>`;
       }
@@ -839,16 +839,16 @@ calculate();
     }
   }
 
-  document.getElementById("gcfCheckBtn").addEventListener("click",checkAnswer);
-  document.getElementById("gcfNextBtn").addEventListener("click",()=>{
+  document.getElementById("scCheckBtn").addEventListener("click",checkAnswer);
+  document.getElementById("scNextBtn").addEventListener("click",()=>{
     if(builder.passed && builder.step<steps.length-1){builder.step++;renderBuilder();}
   });
-  document.getElementById("gcfHintBtn").addEventListener("click",()=>{
-    document.getElementById("gcfWhy").classList.toggle("show");
+  document.getElementById("scHintBtn").addEventListener("click",()=>{
+    document.getElementById("scWhy").classList.toggle("show");
   });
-  document.getElementById("gcfSyncBtn").addEventListener("click",()=>syncBuilder(true));
+  document.getElementById("scSyncBtn").addEventListener("click",()=>syncBuilder(true));
 
-  document.getElementById("gcf-builder").addEventListener("keydown",e=>{
+  document.getElementById("sc-builder").addEventListener("keydown",e=>{
     if(e.key==="Enter"){e.preventDefault();checkAnswer();}
   });
 
@@ -877,7 +877,7 @@ calculate();
         const a=appWeek(2000,1,1),b=appWeek(2400,1,1);
         return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${a===b?"Pass":"Review"}</td></tr>`;
       }
-      const got=appWeek(t.y,t.m,t.d),ground=GCFEngine.ordinal(t.y,t.m,t.d);
+      const got=appWeek(t.y,t.m,t.d),ground=SCEngine.ordinal(t.y,t.m,t.d);
       return `<tr><td>${t.condition}</td><td>${t.example}</td><td>${t.what}</td><td>${got===ground?"Pass":"Review"}</td></tr>`;
     }).join("");
   }
@@ -1045,7 +1045,7 @@ calculate();
     const shifts={"-3":0,"-2":0,"-1":0,"+1":0,"+2":0,"+3":0};
     for(const r of rows){
       if(!r.recordedRaw.trim()) missing++;
-      const expanded=GCFEngine.validateRecord(r.original,r.record,batchState.dateIdx,batchState.dayIdx);
+      const expanded=SCEngine.validateRecord(r.original,r.record,batchState.dateIdx,batchState.dayIdx);
       for(const entry of expanded){
         if(entry.status==="MATCH") matches++;
         else if(entry.status==="MISMATCH"){
@@ -1053,7 +1053,7 @@ calculate();
           shifts[(entry.shift>0?"+":"")+entry.shift]++;
         }else invalid++;
         result.push({ ...r, date:entry.date, recorded:entry.recorded,
-          gcf:entry.expected, status:entry.status, reason:entry.note||"",
+          sc:entry.expected, status:entry.status, reason:entry.note||"",
           shift:entry.shift, residue:entry.residue });
       }
     }
@@ -1080,7 +1080,7 @@ calculate();
     const rows=preview.map(r=>{
       const cls=r.status==="MISMATCH"?"batch-mismatch":r.status==="INVALID"?"batch-invalid":"";
       const pill=r.status==="MATCH"?"match":r.status==="MISMATCH"?"mismatch":"invalid";
-      return `<tr class="${cls}"><td>${r.record}</td><td>${xmlEsc(r.date)}</td><td>${xmlEsc(r.recorded)}</td><td class="batch-expected-cell">${xmlEsc(r.gcf)}</td><td class="batch-status-cell ${pill}"><span class="batch-pill ${pill}">${r.status}</span></td><td>${r.status==="MISMATCH"?xmlEsc((r.shift>0?"+":"")+r.shift):"—"}</td></tr>`;
+      return `<tr class="${cls}"><td>${r.record}</td><td>${xmlEsc(r.date)}</td><td>${xmlEsc(r.recorded)}</td><td class="batch-expected-cell">${xmlEsc(r.sc)}</td><td class="batch-status-cell ${pill}"><span class="batch-pill ${pill}">${r.status}</span></td><td>${r.status==="MISMATCH"?xmlEsc((r.shift>0?"+":"")+r.shift):"—"}</td></tr>`;
     }).join("");
     const note=data.result.length>preview.length ? `<p class="small" style="padding:10px">Preview prioritizes flagged rows and is limited to ${preview.length.toLocaleString()} entries. Downloads contain all ${data.result.length.toLocaleString()} records in original order.</p>` : "";
     wrap.innerHTML=`<table class="batch-table"><thead><tr><th>Row</th><th>Date</th><th>Recorded Weekday</th><th>SC Expected Day</th><th>Status</th><th>Weekday offset</th></tr></thead><tbody>${rows}</tbody></table>${note}`;
@@ -1103,7 +1103,7 @@ calculate();
     ["downloadBatchCsvBtn","downloadBatchXlsBtn","downloadMismatchBtn"].forEach(id=>document.getElementById(id).disabled=true);
   }
   function safeBaseName(name){
-    const base=String(name||"GCF_Data").replace(/\.[^.]+$/i,"").trim() || "GCF_Data";
+    const base=String(name||"SC_Data").replace(/\.[^.]+$/i,"").trim() || "SC_Data";
     return base.replace(/[<>:"/\\|?*\x00-\x1F]/g,"_").replace(/\s+/g," ").slice(0,80);
   }
   function downloadBlob(blob,name){
@@ -1123,10 +1123,10 @@ calculate();
     rows.forEach(r=>{
       const base=(r.original||[]).slice();
       while(base.length<header.length-6) base.push("");
-      base.push(r.date,r.recorded,r.gcf,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");
+      base.push(r.date,r.recorded,r.sc,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");
       out.push(base.map(csvCell).join(","));
     });
-    const stem=safeBaseName(batchState.filename||"GCF_Data");
+    const stem=safeBaseName(batchState.filename||"SC_Data");
     const filename=all?`${stem}_Validated.csv`:`${stem}_Mismatches.csv`;
     downloadBlob(new Blob(["\uFEFF"+out.join("\r\n")],{type:"text/csv;charset=utf-8"}),filename);
   }
@@ -1145,7 +1145,7 @@ calculate();
     rows.forEach(r=>{
       const base=(r.original||[]).slice();
       while(base.length<header.length-6) base.push("");
-      base.push(r.date,r.recorded,r.gcf,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");
+      base.push(r.date,r.recorded,r.sc,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");
       baseRows.push(base);
     });
     const statusIndex=header.length-3;
@@ -1154,7 +1154,7 @@ calculate();
       if(ci!==statusIndex) return 0;
       return String(v)==="MATCH"?2:String(v)==="MISMATCH"?3:String(v)==="INVALID"?4:0;
     };
-    const mismatchBase=mismatchRows.map(r=>{const base=(r.original||[]).slice();while(base.length<header.length-6)base.push("");base.push(r.date,r.recorded,r.gcf,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");return base;});
+    const mismatchBase=mismatchRows.map(r=>{const base=(r.original||[]).slice();while(base.length<header.length-6)base.push("");base.push(r.date,r.recorded,r.sc,r.status,r.status==="MISMATCH"?(r.shift>0?"+":"")+r.shift:"",r.reason||"");return base;});
     const mismatchHeader=header;
     const mismatchStyles=(ri,ci,v)=>{if(ri===0)return 1;if(ci!==statusIndex)return 0;return String(v)==="MISMATCH"?3:String(v)==="INVALID"?4:0;};
     zip.file("[Content_Types].xml",contentTypes);zip.file("_rels/.rels",rootRels);zip.file("xl/workbook.xml",wb);zip.file("xl/_rels/workbook.xml.rels",wbRels);zip.file("xl/styles.xml",styles);
@@ -1188,7 +1188,7 @@ calculate();
     ];
     const mismatches=s.result.filter(r=>r.status!=="MATCH");
     const blob=await buildXlsx(s.result,summary,mismatches);
-    const stem=safeBaseName(batchState.filename||"GCF_Data");
+    const stem=safeBaseName(batchState.filename||"SC_Data");
     const outBlob=blob instanceof Blob ? new Blob([blob],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}) : blob;
     downloadBlob(outBlob,`${stem}_Validated.xlsx`);
   }
@@ -1260,7 +1260,7 @@ calculate();
 
   // Keep the builder's stored date synchronized while it is open,
   // but never open or scroll to it automatically.
-  window.addEventListener("gcf-date-updated", ()=>{
+  window.addEventListener("sc-date-updated", ()=>{
     if(builderHasOpened){
       syncBuilder(true);
     }

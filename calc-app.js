@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const $=id=>document.getElementById(id),G=window.GCFEngine;
+const $=id=>document.getElementById(id),G=window.SCEngine;
 let latest='';
 function calculate(){
  const y=Number($('calcYear').value),m=Number($('calcMonth').value),d=Number($('calcDay').value);
@@ -9,7 +9,7 @@ function calculate(){
   $('calcStatus').textContent='Enter a valid Gregorian date (years 1–9999); February and leap years are checked automatically.';
   return;
  }
- const item=G.gcf(y,m,d),fast=G.gcf400(y,m,d);
+ const item=G.sc(y,m,d),fast=G.sc400(y,m,d);
  if(item.W!==fast){
   latest='';$('calcResult').classList.add('hide');$('calcStatus').className='status error';
   $('calcStatus').textContent='Independent SC calculations disagreed; the result has been withheld. Try refreshing or report this issue.';

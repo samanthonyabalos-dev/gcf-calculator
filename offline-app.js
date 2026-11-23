@@ -1,7 +1,7 @@
 /* SC-400 v21 — genuine offline readiness, install guidance and calculator smoke. */
 (function(){'use strict';
 const status=document.getElementById('offlineStatus'),details=document.getElementById('offlineDetails'),checkButton=document.getElementById('offlineCheck'),installButton=document.getElementById('offlineInstall');
-const essentials=['./index.html','./gcf-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
+const essentials=['./index.html','./sc-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
 const updateButton=document.getElementById('offlineApplyUpdate');
 const cachePrefix='septima-offline-';
 let ready=false,promptEvent=null,checking=false;
@@ -15,7 +15,7 @@ async function verify(){
   // Read actual installed cache names instead of assuming one fixed release string.
   // Opening a guessed name creates an empty cache and incorrectly reports every file missing.
   const names=(await caches.keys()).filter(name=>name.startsWith(cachePrefix));
-  const correct=window.GCFEngine?.gcf400(2026,5,4)===1;
+  const correct=window.SCEngine?.sc400(2026,5,4)===1;
   let bestMissing=essentials;
   for(const name of names){
    const cache=await caches.open(name);
@@ -63,5 +63,5 @@ if('serviceWorker' in navigator){
 }
 if(updateButton)updateButton.addEventListener('click',()=>window.location.reload());
 window.addEventListener('load',()=>checkOffline());
-window.GCFOffline={verify,checkOffline};
+window.SCOffline={verify,checkOffline};
 })();
