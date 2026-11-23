@@ -1,4 +1,4 @@
-# GCF-400 Security Model — Version 24
+# SC-400 Security Model — Version 24
 
 ## Supported security guarantees
 

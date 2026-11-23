@@ -1,4 +1,4 @@
-/* GCF-400 v22 — one-line source verification without file upload. */
+/* SC-400 v22 — one-line source verification without file upload. */
 (function(root,factory){const api=factory(root.GCFScanner||(typeof require==='function'?require('./scan-core.js'):null));if(typeof module==='object'&&module.exports)module.exports=api;root.GCFQuick=api;})(typeof globalThis!=='undefined'?globalThis:this,function(scanner){
 'use strict';
 function check(line){

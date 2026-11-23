@@ -1,9 +1,9 @@
-/* GCF-400 document weekday/date association; positions matter.
+/* SC-400 document weekday/date association; positions matter.
    An unambiguous adjacent date and weekday is a classified pair with provenance.
    Ambiguity is always REVIEW rather than guessed. */
 (function(root,factory){const api=factory(root.GCFEngine||(typeof require==='function'?require('./gcf-engine.js'):null));if(typeof module==='object'&&module.exports)module.exports=api;root.GCFScanner=api;})(typeof globalThis!=='undefined'?globalThis:this,function(G){
 'use strict';
-if(!G)throw Error('GCF engine missing');
+if(!G)throw Error('SC engine missing');
 const MONTH='January|February|March|April|May|June|July|August|September|October|November|December|Jan\\.?|Feb\\.?|Mar\\.?|Apr\\.?|Jun\\.?|Jul\\.?|Aug\\.?|Sep\\.?|Sept\\.?|Oct\\.?|Nov\\.?|Dec\\.?';
 const DATE=new RegExp(`\\b(?:(${MONTH})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:\\s*,\\s*|\\s+)(\\d{4})|(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH})[,]?\\s+(\\d{4})|(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})|(\\d{1,2})[-/](\\d{1,2})[-/](\\d{4}))\\b`,'gi');
 const WEEKDAY=/\b(Sunday|Sun\.?|Monday|Mon\.?|Tuesday|Tues\.?|Tue\.?|Wednesday|Wed\.?|Thursday|Thurs\.?|Thur\.?|Thu\.?|Friday|Fri\.?|Saturday|Sat\.?)\b/gi;
@@ -79,7 +79,7 @@ function classify(date,day,source,options={}){
  const w=G.gcf400(date.y,date.m,date.d);row.expected=G.DAYS[w];
  const utc=new Date(Date.UTC(2000,date.m-1,date.d));utc.setUTCFullYear(date.y);
  if(!Number.isInteger(w)||utc.getUTCDay()!==w){
-  row.status='REVIEW';row.note='Independent UTC calendar cross-check disagreed with GCF-400; result withheld for manual review.';return row;
+  row.status='REVIEW';row.note='Independent UTC calendar cross-check disagreed with SC-400; result withheld for manual review.';return row;
  }
  if(!day){row.status=options.uncertain?'REVIEW':'DATE_ONLY';row.note=options.uncertain?(options.nearDay?'Detected '+options.nearDay.day+' near the date, but it does not meet the selected weekday–date reading rule; REVIEW required':'A weekday is nearby but cannot be paired unambiguously; verify the source'):'Date appears without a directly associated printed weekday; informational, not a weekday mismatch';if(options.uncertain&&options.nearDay)row.recorded=options.nearDay.day;return row;}
  row.status=day.weekday===w?'MATCH':'MISMATCH';
