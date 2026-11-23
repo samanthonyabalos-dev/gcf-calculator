@@ -51,6 +51,19 @@ if(installButton)installButton.addEventListener('click',async()=>{
  const e=promptEvent;promptEvent=null;await e.prompt();if(installButton)installButton.hidden=true;
 });
 if(checkButton)checkButton.addEventListener('click',()=>checkOffline());
+const offlineSettings=document.querySelector('.offline-settings');
+if(offlineSettings){
+ document.addEventListener('pointerdown',event=>{
+  if(offlineSettings.open&&!offlineSettings.contains(event.target))offlineSettings.open=false;
+ });
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&offlineSettings.open){
+   offlineSettings.open=false;
+   offlineSettings.querySelector('summary')?.focus();
+  }
+ });
+}
+
 window.addEventListener('online',()=>show(ready?'Offline calculator installed and verified.':'Connected — verify offline installation.',ready?'success':'info'));
 window.addEventListener('offline',()=>show(ready?'Offline mode active — calculator ready.':'Offline; caching was not verified.',ready?'success':'warning'));
 if('serviceWorker' in navigator){
