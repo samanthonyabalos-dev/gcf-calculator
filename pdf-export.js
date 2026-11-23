@@ -1,4 +1,4 @@
-/* SC-400 PDF review export. Draws transparent ink on source pages, not just
+/* SC Auditor PDF review export. Draws transparent ink on source pages, not just
    /Highlight annotations. The ink is visible in any conforming PDF renderer.
    This adds overlays and a legend; it does NOT replace original page text. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.SCPdfExport=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
@@ -55,7 +55,7 @@ async function create(file,records,pdfLib=globalThis.PDFLib){
      'Expected weekday: '+(row.expected||'Not available'),
      'Note: '+(row.note||notes[row.status]||'No additional details')
     ].join('\n');
-    a.set(pdfLib.PDFName.of('T'),pdfLib.PDFHexString.fromText('SC-400 | '+row.status));
+    a.set(pdfLib.PDFName.of('T'),pdfLib.PDFHexString.fromText('SC Auditor | '+row.status));
     a.set(pdfLib.PDFName.of('Subj'),pdfLib.PDFHexString.fromText('Date and weekday audit'));
     a.set(pdfLib.PDFName.of('Contents'),pdfLib.PDFHexString.fromText(description.slice(0,1200)));
     a.set(pdfLib.PDFName.of('NM'),pdfLib.PDFString.of('sc-'+row.page+'-'+annotationMarks));
@@ -66,7 +66,7 @@ async function create(file,records,pdfLib=globalThis.PDFLib){
  }
  if(!inkMarks)throw Error('No dates have confidently located highlight boxes; a false annotated PDF will not be exported. See findings CSV.');
  const legend=doc.addPage([612,792]),reg=await doc.embedFont(pdfLib.StandardFonts.Helvetica),bold=await doc.embedFont(pdfLib.StandardFonts.HelveticaBold);
- legend.drawText('SC-400  |  ANNOTATED DOCUMENT AUDIT',{x:42,y:743,font:bold,size:16,color:pdfLib.rgb(.08,.23,.16)});
+ legend.drawText('SC Auditor  |  ANNOTATED DOCUMENT AUDIT',{x:42,y:743,font:bold,size:16,color:pdfLib.rgb(.08,.23,.16)});
  legend.drawText(`Source: ${file.name.replace(/[^\x20-\x7e]/g,'?').slice(0,83)}`,{x:42,y:716,font:reg,size:9});
  let y=665;for(const [status,color] of Object.entries(COLORS)){
   legend.drawRectangle({x:44,y:y-3,width:14,height:14,color:pdfLib.rgb(...color)});
