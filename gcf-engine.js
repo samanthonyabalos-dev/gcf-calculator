@@ -1,10 +1,10 @@
-/* GCF computational core — mathematical contribution is adopted ALBADORA/GCF;
+/* Septima Congruence computational core (previously GCF); original mathematical research attributed to Albadora;
    cache and record validation are implementations, not new calendar laws.
    Proleptic Gregorian dates, years 1-9999, weekday Sunday=0. */
 (function(root,factory){
   const api=factory();
   if(typeof module==='object' && module.exports) module.exports=api;
-  root.GCFEngine=api;
+  root.GCFEngine=api; root.SeptimaEngine=api; root.SCEngine=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -58,8 +58,8 @@ function validateRecord(row,rowNum, dateIdx,dayIdx, maxExpansion=62){const rawDa
 function detectColumns(header){const norm=header.map(s=>String(s??'').trim().toLowerCase());let date=norm.findIndex(s=>s==='date'||s==='date(s)'||s==='event date'||s==='exam date');let day=norm.findIndex(s=>s==='recorded weekday'||s==='weekday'||s==='day of week'||s==='day/s');if(date<0||day<0||date===day)throw Error('Required columns: Date and Recorded Weekday (or Weekday).');return {date,day};}
 function validateMatrix(matrix){if(!matrix.length)throw Error('Dataset is empty');const header=matrix[0].map(s=>String(s??''));const ix=detectColumns(header);const results=[],counts={MATCH:0,MISMATCH:0,INVALID:0},shifts={'-3':0,'-2':0,'-1':0,'+1':0,'+2':0,'+3':0},inputRows=matrix.length-1;let nonempty=0,rangeRows=0;
  for(let i=1;i<matrix.length;i++){const row=(matrix[i]||[]).map(s=>String(s??''));if(!row.some(s=>s.trim()))continue;nonempty++;const res=validateRecord(row,i+1,ix.date,ix.day);if(res.length>1)rangeRows++;for(const entry of res){results.push(entry);counts[entry.status]++;if(entry.status==='MISMATCH')shifts[(entry.shift>0?'+':'')+entry.shift]++;}}
- const valid=counts.MATCH+counts.MISMATCH;return {header,results,counts,shifts,sourceRecords:nonempty,expandedRecords:results.length,rangeRows,agreement:valid?counts.MATCH/valid*100:0,engine:'GCF-400 cached'};
+ const valid=counts.MATCH+counts.MISMATCH;return {header,results,counts,shifts,sourceRecords:nonempty,expandedRecords:results.length,rangeRows,agreement:valid?counts.MATCH/valid*100:0,engine:'SC-400 cached'};
 }
 function parseDelimited(text){const src=String(text??'').replace(/^\uFEFF/,'');const delim=(src.split(/\r?\n/,1)[0]||'').includes('\t')?'\t':',';let row=[],cell='',quoted=false,rows=[];for(let i=0;i<src.length;i++){let ch=src[i];if(ch==='"'){if(quoted&&src[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}else if(ch===delim&&!quoted){row.push(cell);cell='';}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&src[i+1]==='\n')i++;row.push(cell);if(row.some(v=>String(v).trim()))rows.push(row);row=[];cell='';}else cell+=ch;}if(quoted)throw Error('Unclosed quoted field');row.push(cell);if(row.some(v=>String(v).trim()))rows.push(row);return rows;}
-return Object.freeze({DAYS,COMMON,LEAP,CACHE,isLeap,validDate,gcf,gcf400,zeller,gauss,sakamoto,ordinal,carroll,doomsday,iso,parseDate,parseWeekday,difference,expandDates,expandWeekdays,validateRecord,validateMatrix,parseDelimited});
+return Object.freeze({DAYS,COMMON,LEAP,CACHE,isLeap,validDate,gcf,gcf400,sc:gcf,sc400:gcf400,zeller,gauss,sakamoto,ordinal,carroll,doomsday,iso,parseDate,parseWeekday,difference,expandDates,expandWeekdays,validateRecord,validateMatrix,parseDelimited});
 });

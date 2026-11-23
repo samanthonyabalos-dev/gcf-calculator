@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#24463A">
-<meta name="description" content="Gregorian Congruence Formula — an offline-friendly mathematics learning and weekday calculation app.">
-<title>GCF Weekday Calculator</title>
+<meta name="description" content="Septima Congruence — an offline-friendly mathematics learning and weekday calculation app.">
+<title>SC Weekday Calculator</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{
@@ -70,7 +70,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 @media (max-width:800px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.practice-grid{grid-template-columns:1fr}.app{padding:12px 10px 28px}}
 
-/* GCF learning redesign */
+/* SC learning redesign */
 .learning-lead{
   font-size:15px; line-height:1.6; max-width:860px; color:var(--ink);
 }
@@ -237,8 +237,8 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 <body>
 <div class="app">
   <header class="header">
-    <h1>Gregorian Congruence Formula</h1>
-    <p>Learn how the Gregorian Congruence Formula works, calculate weekdays, and check date–weekday records.</p>
+    <h1>Septima Congruence</h1>
+    <p>Learn how the Septima Congruence works, calculate weekdays, and check date–weekday records.</p>
   
 <div id="offlineStatus" class="offline-status" role="status" aria-live="polite">
   <span class="offline-dot"></span>
@@ -249,7 +249,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 
   <nav class="tabs" aria-label="Main sections">
     <button class="tab active" data-tab="calc">Calculator</button>
-    <button class="tab" data-tab="learn">Learn GCF</button>
+    <button class="tab" data-tab="learn">Learn SC</button>
     <button class="tab" data-tab="practice">Practice</button>
     <button class="tab" data-tab="batch">Batch Validator</button>
   </nav>
@@ -269,14 +269,14 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
           <button class="btn btn-secondary" id="resetBtn">Reset</button>
         </div>
         <hr>
-        <div class="callout"><b>Learning mode:</b> the calculation below intentionally shows every GCF component instead of hiding the mathematics.</div>
+        <div class="callout"><b>Learning mode:</b> the calculation below intentionally shows every SC component instead of hiding the mathematics.</div>
       </div>
 
       <div class="card">
         <div id="resultBox" class="result">
-          <span class="badge">GCF RESULT</span>
+          <span class="badge">SC RESULT</span>
           <div id="weekday" class="weekday">Friday</div>
-          <div id="resultText" class="code">GCF code: 5</div>
+          <div id="resultText" class="code">SC code: 5</div>
           <div class="kpis">
             <div class="kpi"><span class="small">Input status</span><b id="status">VALID</b></div>
             <div class="kpi"><span class="small">Year type</span><b id="yearType">COMMON</b></div>
@@ -287,14 +287,14 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     <div class="build-callout">
       <div>
         <strong>Want to learn how the date was calculated?</strong>
-        <span>Build the GCF step by step using this exact date.</span>
+        <span>Build the SC step by step using this exact date.</span>
       </div>
-      <button type="button" class="btn btn-secondary" id="openBuilderBtn">Build the GCF →</button>
+      <button type="button" class="btn btn-secondary" id="openBuilderBtn">Build the SC →</button>
     </div>
 </div>
 
     <div class="card" style="margin-top:16px">
-      <h2>Step-by-Step GCF Calculation</h2>
+      <h2>Step-by-Step SC Calculation</h2>
       <div id="steps" class="steps"></div>
     </div>
   </section>
@@ -302,9 +302,9 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   <section id="learn" class="panel">
     <div class="card">
       <span class="badge">LEARNING MODE</span>
-      <h2 style="margin-top:8px">How GCF Works</h2>
+      <h2 style="margin-top:8px">How SC Works</h2>
       <p class="learning-lead">
-        GCF turns a Gregorian date into four understandable contributions—century, year, month, and day—
+        SC turns a Gregorian date into four understandable contributions—century, year, month, and day—
         and combines them in a seven-day cycle. The goal of this section is not only to give the answer,
         but to show <b>why each number is used and how one step leads to the next</b>.
       </p>
@@ -324,7 +324,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
           <div class="process-num">2</div>
           <div>
             <h3>Split the year into century and year position</h3>
-            <p>For a year <i>N</i>, compute <b>c = ⌊N/100⌋</b> for the completed centuries and <b>y = N mod 100</b> for the years within the current century. This lets GCF handle long-term and within-century shifts separately.</p>
+            <p>For a year <i>N</i>, compute <b>c = ⌊N/100⌋</b> for the completed centuries and <b>y = N mod 100</b> for the years within the current century. This lets SC handle long-term and within-century shifts separately.</p>
           </div>
         </div>
 
@@ -332,7 +332,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
           <div class="process-num">3</div>
           <div>
             <h3>Find the century code C</h3>
-            <p>Use <b>c mod 4</b> and the repeating GCF century pattern: 0 → 7, 1 → 5, 2 → 3, 3 → 1. The four-position repetition follows the Gregorian calendar's 400-year cycle.</p>
+            <p>Use <b>c mod 4</b> and the repeating SC century pattern: 0 → 7, 1 → 5, 2 → 3, 3 → 1. The four-position repetition follows the Gregorian calendar's 400-year cycle.</p>
           </div>
         </div>
 
@@ -372,7 +372,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
           <div class="process-num">8</div>
           <div>
             <h3>Combine the four components</h3>
-            <p>Add <b>C + Y + M + D</b>, then reduce the total modulo 7. The remainder is the GCF weekday code.</p>
+            <p>Add <b>C + Y + M + D</b>, then reduce the total modulo 7. The remainder is the SC weekday code.</p>
           </div>
         </div>
 
@@ -380,13 +380,13 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
           <div class="process-num">9</div>
           <div>
             <h3>Translate the code into the weekday</h3>
-            <p>GCF uses <b>0 = Sunday</b>, <b>1 = Monday</b>, through <b>6 = Saturday</b>. The app shows both the numerical code and the weekday name.</p>
+            <p>SC uses <b>0 = Sunday</b>, <b>1 = Monday</b>, through <b>6 = Saturday</b>. The app shows both the numerical code and the weekday name.</p>
           </div>
         </div>
       </div>
 
       <div class="why-box">
-        <h3>Think of GCF as a chain</h3>
+        <h3>Think of SC as a chain</h3>
         <div class="mini-flow">
           <span class="flow-pill">Date</span><span class="flow-arrow">→</span>
           <span class="flow-pill">C</span><span class="flow-arrow">+</span>
@@ -423,7 +423,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
         February's code is 6 + 3 ≡ 2 (mod 7). The same process continues through the year.
       </p>
 
-      <h3>GCF Code Tables</h3>
+      <h3>SC Code Tables</h3>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Month</th><th>Common Year</th><th>Leap Year</th><th>Month #</th></tr></thead>
@@ -433,7 +433,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 
       <div class="table-wrap" style="margin-top:12px">
         <table>
-          <thead><tr><th>GCF Code</th><th>Weekday</th></tr></thead>
+          <thead><tr><th>SC Code</th><th>Weekday</th></tr></thead>
           <tbody id="weekdayTable"></tbody>
         </table>
       </div>
@@ -455,7 +455,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   <div class="card">
     <span class="badge">PRELIMINARY CONSISTENCY CHECK</span>
     <h2 style="margin-top:8px">Batch Date–Weekday Validator</h2>
-    <p class="batch-help">Upload or paste a list of dates and recorded weekdays. GCF flags mismatches and invalid entries while keeping your original record details for review.</p>
+    <p class="batch-help">Upload or paste a list of dates and recorded weekdays. SC flags mismatches and invalid entries while keeping your original record details for review.</p>
     <div class="batch-drop">
       <b>Upload a spreadsheet</b>
       <div class="small">CSV, TSV, or Excel (.xlsx), with <code>Date</code> and <code>Recorded Weekday</code> columns.</div>
@@ -486,7 +486,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 <div id="builderPanel" class="builder-panel-wrap"><section id="build-gcf" class="section">
   <div class="section-head">
     <div>
-      <h2>Build the GCF</h2>
+      <h2>Build the SC</h2>
       <p>Interactive mode for the date currently selected in the Calculator.</p>
     </div>
     <button type="button" class="btn btn-secondary" id="closeBuilderBtn" style="margin-bottom:12px">Close Build Mode</button>
@@ -528,7 +528,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
   <div class="section-head">
     <div>
       <h2>Challenge the Formula</h2>
-      <p>These are not random dates. Each test targets a specific part of GCF.</p>
+      <p>These are not random dates. Each test targets a specific part of SC.</p>
     </div>
   </div>
   <table class="stress-test-table">
@@ -539,7 +539,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
 <section id="practice" class="panel">
     <div class="card">
       <h2>Practice with Worked Dates</h2>
-      <p class="small">Choose a case to load it into the calculator. Each case demonstrates a different part of the GCF procedure.</p>
+      <p class="small">Choose a case to load it into the calculator. Each case demonstrates a different part of the SC procedure.</p>
       <div class="practice-grid">
         <div class="practice" data-y="1983" data-m="5" data-d="1"><b>May 1, 1983</b><br><span class="small">Common-year example</span></div>
         <div class="practice" data-y="2008" data-m="2" data-d="1"><b>February 1, 2008</b><br><span class="small">Leap-year example</span></div>
@@ -556,7 +556,7 @@ footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
     </div>
   </section>
 
-  <footer>GCF Weekday Calculator • Offline-capable mathematics learning app • Code-based Gregorian weekday model</footer>
+  <footer>SC Weekday Calculator • Offline-capable mathematics learning app • Code-based Gregorian weekday model</footer>
 </div>
 
 <script src="./jszip.min.js"></script>
@@ -625,7 +625,7 @@ function calculate(){
   els.resultBox.classList.remove("invalid");
   const g=calcGCF(y,m,d);
   els.weekday.textContent=g.weekday;
-  els.resultText.textContent=`GCF code: ${g.W}`;
+  els.resultText.textContent=`SC code: ${g.W}`;
   els.status.textContent="VALID";
   els.yearType.textContent=g.leap?"LEAP":"COMMON";
   const yd = `${g.yy} + ${g.q} = ${g.yy+g.q} ≡ ${g.Y} (mod 7)`;
@@ -639,7 +639,7 @@ function calculate(){
     step(5,"Check the leap-year rule",`${y} is ${g.leap?"a":"not a"} leap year.`),
     step(6,"Choose the month code",`${monthText}.`),
     step(7,"Use the day",`D = <b>${d}</b>.`),
-    step(8,"Combine the GCF components",`W ≡ ${g.C} + ${g.Y} + ${g.M} + ${d} = ${finalSum} ≡ <b>${g.W}</b> (mod 7) → <b>${g.weekday}</b>.`)
+    step(8,"Combine the SC components",`W ≡ ${g.C} + ${g.Y} + ${g.M} + ${d} = ${finalSum} ≡ <b>${g.W}</b> (mod 7) → <b>${g.weekday}</b>.`)
   ].join("");
 }
 
@@ -763,7 +763,7 @@ calculate();
     }
   }
 
-  // The builder uses the same GCF result already calculated for the selected date.
+  // The builder uses the same SC result already calculated for the selected date.
   // No independent calendar calculation is used to supply the weekday label.
 
   function whyText(step,data){
@@ -774,7 +774,7 @@ calculate();
       C:`Use c mod 4. Here, ${data.c} mod 4 = ${data.c%4}, which selects C = ${data.C}.`,
       Y:`Y ≡ y + ⌊y/4⌋ (mod 7). Here, Y ≡ ${data.y} + ⌊${data.y}/4⌋ ≡ ${data.Y} (mod 7).`,
       M:`M is selected from the common-year or leap-year month-code table. The choice depends on ${data.year}'s leap-year status.`,
-      D:`D is simply the day number from the user's selected date. It is inserted directly into the final GCF sum.`,
+      D:`D is simply the day number from the user's selected date. It is inserted directly into the final SC sum.`,
       W:`Add the four contributions and reduce modulo 7: W ≡ ${data.C} + ${data.Y} + ${data.M} + ${data.D} ≡ ${data.W} (mod 7).`
     };
     return map[step];
@@ -857,7 +857,7 @@ calculate();
   // (No direct builder sync listener is attached here.)
 
   const stressTests=[
-    {condition:"Ordinary year",example:"1983-05-01",y:1983,m:5,d:1,what:"Basic GCF flow"},
+    {condition:"Ordinary year",example:"1983-05-01",y:1983,m:5,d:1,what:"Basic SC flow"},
     {condition:"Leap year",example:"2008-02-01",y:2008,m:2,d:1,what:"Leap-year handling"},
     {condition:"Leap day",example:"2000-02-29",y:2000,m:2,d:29,what:"February 29 handling"},
     {condition:"Non-leap century",example:"1900-02-28",y:1900,m:2,d:28,what:"Century exception"},
@@ -1021,7 +1021,7 @@ calculate();
     if(!matrix.length) throw new Error("No rows were found.");
     const header=matrix[0].map(x=>String(x??"").trim().toLowerCase());
     const expandedDateIdx=header.indexOf("expanded date"), expandedDayIdx=header.indexOf("expanded recorded weekday");
-    // Allow exported GCF reports to be imported again without expanding date ranges twice.
+    // Allow exported SC reports to be imported again without expanding date ranges twice.
     const dateIdx=(expandedDateIdx>=0&&expandedDayIdx>=0)?expandedDateIdx:header.findIndex(x=>x==="date"||x.includes("date"));
     const dayIdx=(expandedDateIdx>=0&&expandedDayIdx>=0)?expandedDayIdx:header.findIndex(x=>x==="recorded weekday"||x.includes("recorded weekday")||x==="day"||x.includes("weekday"));
     if(dateIdx<0 || dayIdx<0) throw new Error("Required columns not found. Your spreadsheet must contain Date and Recorded Weekday columns.");
@@ -1061,7 +1061,7 @@ calculate();
     const agreement=valid?matches/valid*100:0;
     return {result,matches,mismatches,invalid,missing,total:result.length,
       sourceRecords:rows.length,agreement,shifts,
-      calculationMs:Math.max(0,performance.now()-start),engine:"GCF-400 cached"};
+      calculationMs:Math.max(0,performance.now()-start),engine:"SC-400 cached"};
   }
   function renderBatchResults(data){
     const sum=document.getElementById("batchSummary");
@@ -1083,7 +1083,7 @@ calculate();
       return `<tr class="${cls}"><td>${r.record}</td><td>${xmlEsc(r.date)}</td><td>${xmlEsc(r.recorded)}</td><td class="batch-expected-cell">${xmlEsc(r.gcf)}</td><td class="batch-status-cell ${pill}"><span class="batch-pill ${pill}">${r.status}</span></td><td>${r.status==="MISMATCH"?xmlEsc((r.shift>0?"+":"")+r.shift):"—"}</td></tr>`;
     }).join("");
     const note=data.result.length>preview.length ? `<p class="small" style="padding:10px">Preview prioritizes flagged rows and is limited to ${preview.length.toLocaleString()} entries. Downloads contain all ${data.result.length.toLocaleString()} records in original order.</p>` : "";
-    wrap.innerHTML=`<table class="batch-table"><thead><tr><th>Row</th><th>Date</th><th>Recorded Weekday</th><th>GCF Expected Day</th><th>Status</th><th>Weekday offset</th></tr></thead><tbody>${rows}</tbody></table>${note}`;
+    wrap.innerHTML=`<table class="batch-table"><thead><tr><th>Row</th><th>Date</th><th>Recorded Weekday</th><th>SC Expected Day</th><th>Status</th><th>Weekday offset</th></tr></thead><tbody>${rows}</tbody></table>${note}`;
     document.getElementById("batchNote").textContent = `${data.sourceRecords.toLocaleString()} source records → ${data.total.toLocaleString()} checked dates. Used ${data.engine}; classification: ${data.calculationMs.toFixed(2)} ms (excludes import and export). Nonzero weekday offsets require source review.`;
     const patternBox=document.getElementById("batchDiagnostics");
     patternBox.hidden=data.mismatches===0;
@@ -1118,7 +1118,7 @@ calculate();
   function downloadBatchCsv(all=true){
     if(!batchState.summary) return;
     const rows=(all?batchState.summary.result:batchState.summary.result.filter(r=>r.status!=="MATCH"));
-    const header=[...(batchState.header||["Date","Recorded Weekday"]),"Expanded Date","Expanded Recorded Weekday","GCF Expected Day","Status","Weekday Shift","Validation Note"];
+    const header=[...(batchState.header||["Date","Recorded Weekday"]),"Expanded Date","Expanded Recorded Weekday","SC Expected Day","Status","Weekday Shift","Validation Note"];
     const out=[header.map(csvCell).join(",")];
     rows.forEach(r=>{
       const base=(r.original||[]).slice();
@@ -1140,7 +1140,7 @@ calculate();
     const wb=`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Validated Records" sheetId="1" r:id="rId1"/><sheet name="Summary" sheetId="2" r:id="rId2"/><sheet name="Mismatches" sheetId="3" r:id="rId3"/></sheets></workbook>`;
     const wbRels=`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/></Relationships>`;
     const styles=`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="EAF0EA"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="E4F2E7"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="F7D5D2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6C2"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellXfs count="6"><xf fontId="0" fillId="0" borderId="0"/><xf fontId="1" fillId="2" borderId="0"/><xf fontId="1" fillId="3" borderId="0"/><xf fontId="1" fillId="4" borderId="0"/><xf fontId="1" fillId="5" borderId="0"/><xf fontId="0" fillId="0" borderId="0"/></cellXfs></styleSheet>`;
-    const header=[...(batchState.header||["Date","Recorded Weekday"]),"Expanded Date","Expanded Recorded Weekday","GCF Expected Day","Status","Weekday Shift","Validation Note"];
+    const header=[...(batchState.header||["Date","Recorded Weekday"]),"Expanded Date","Expanded Recorded Weekday","SC Expected Day","Status","Weekday Shift","Validation Note"];
     const baseRows=[header];
     rows.forEach(r=>{
       const base=(r.original||[]).slice();
@@ -1171,7 +1171,7 @@ calculate();
     }
     const s=batchState.summary;
     const summary=[
-      ["GCF Batch Validation Summary", ""],
+      ["SC Batch Validation Summary", ""],
       ["Source file", batchState.filename],
       ["Validation run", new Date().toLocaleString()],
       ["Source records", s.sourceRecords],

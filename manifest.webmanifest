@@ -1,6 +1,6 @@
 {
-  "name": "GCF Auditor: Date–Weekday Checker",
-  "short_name": "GCF Date–Weekday",
+  "name": "Septima Auditor: Date–Weekday Checker",
+  "short_name": "SC Date–Weekday",
   "start_url": "./index.html#calculator",
   "scope": "./",
   "display": "standalone",

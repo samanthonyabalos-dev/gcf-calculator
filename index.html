@@ -2,8 +2,8 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#102E26">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com 'wasm-unsafe-eval'; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://tessdata.projectnaptha.com blob:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; upgrade-insecure-requests"><meta name="description" content="GCF Auditor checks dates and weekdays in documents, spreadsheets, and the calendar.">
-<title>GCF Auditor: Date–Weekday Checker · GCF-400</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com 'wasm-unsafe-eval'; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://tessdata.projectnaptha.com blob:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; upgrade-insecure-requests"><meta name="description" content="Septima Auditor checks dates and weekdays in documents, spreadsheets, and the calendar.">
+<title>Septima Auditor: Date–Weekday Checker · SC-400</title>
 <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./icon.svg">
 <style>
 :root{--forest:#102E26;--forest2:#1D533D;--ink:#182B22;--muted:#60736A;--line:#DCE5DE;--surface:#fff;--wash:#F4F7F4;--pale:#E8F1EA}
@@ -166,7 +166,7 @@ main{max-width:960px;padding-top:22px}.card{margin-bottom:13px;padding:23px}.pri
 @media(max-width:640px){.tool-drawer .security-check-results{grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions{display:grid;grid-template-columns:minmax(0,1fr)}.tool-drawer .security-actions button{width:100%}}
 footer a{color:#24543C;text-underline-offset:2px}
 
-/* GCF Auditor branding and restrained task-first presentation */
+/* Septima Auditor branding and restrained task-first presentation */
 body{background:#F5F7F5;color:#172C22}
 header{background:#102E26}
 header .inner{max-width:1040px;padding:22px 24px 17px}
@@ -213,7 +213,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 }
 
 </style></head><body>
-<header><div class="inner"><div class="brand-bar"><div class="brand"><img class="brand-logo" src="./icon.svg" width="56" height="56" alt=""><div class="brand-copy"><h1>GCF Auditor: <span class="brand-descriptor">Date–Weekday Checker</span></h1><div class="eyebrow">GCF-400 · v29</div></div></div>
+<header><div class="inner"><div class="brand-bar"><div class="brand"><img class="brand-logo" src="./icon.svg" width="56" height="56" alt=""><div class="brand-copy"><h1>Septima Auditor: <span class="brand-descriptor">Date–Weekday Checker</span></h1><div class="eyebrow">SC-400 · v30</div></div></div>
 <div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
 <details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div></div>
 <nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Documents</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheets</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
@@ -291,19 +291,19 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
  <div class="card primary-task"><h2>Find the weekday</h2>
  <div class="fieldgroup"><div><label class="field" for="calcMonth">Month</label><select id="calcMonth"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12" selected>December</option></select></div><div><label class="field" for="calcDay">Day</label><input id="calcDay" type="number" min="1" max="31" value="1"></div><div><label class="field" for="calcYear">Year</label><input id="calcYear" type="number" min="1" max="9999" value="2026"></div></div>
  <div class="bar"><button type="button" id="calcRun">Calculate weekday</button><button type="button" class="secondary" id="calcToday">Use today</button></div><details class="scan-options"><summary>Example date</summary><button type="button" class="secondary" id="calcExample">Try December 1, 2026</button></details><div id="calcStatus" class="status hide" role="status" aria-live="polite"></div></div>
- <div class="card hide" id="calcResult"><div class="eyeline">Calculated weekday</div><div id="calcWeekday" class="weekday">Tuesday</div><p id="calcDate" class="fine"></p><button type="button" class="secondary" id="calcCopy">Copy result</button><details class="calc-breakdown"><summary>Show calculation steps</summary><h3>GCF modular contributions</h3><div class="components"><div class="component"><span>Century (C)</span><b id="calcC">–</b></div><div class="component"><span>Year (Y)</span><b id="calcY">–</b></div><div class="component"><span>Month (M)</span><b id="calcM">–</b></div><div class="component"><span>Day (D)</span><b id="calcD">–</b></div><div class="component"><span>Result (W)</span><b id="calcW">–</b></div></div><div class="result" id="calcFormula"></div><p id="calcCache" class="fine"></p></details></div>
+ <div class="card hide" id="calcResult"><div class="eyeline">Calculated weekday</div><div id="calcWeekday" class="weekday">Tuesday</div><p id="calcDate" class="fine"></p><button type="button" class="secondary" id="calcCopy">Copy result</button><details class="calc-breakdown"><summary>Show calculation steps</summary><h3>SC modular contributions</h3><div class="components"><div class="component"><span>Century (C)</span><b id="calcC">–</b></div><div class="component"><span>Year (Y)</span><b id="calcY">–</b></div><div class="component"><span>Month (M)</span><b id="calcM">–</b></div><div class="component"><span>Day (D)</span><b id="calcD">–</b></div><div class="component"><span>Result (W)</span><b id="calcW">–</b></div></div><div class="result" id="calcFormula"></div><p id="calcCache" class="fine"></p></details></div>
  <div class="card" id="quickVerifyCard"><h2>Check a printed weekday</h2>
  
  <label class="field" for="quickInput">Date heading to check</label><textarea id="quickInput" rows="2" maxlength="300" placeholder="Monday, May 4, 2026" style="display:block;width:100%;min-height:70px;max-width:100%;border:1px solid #9FBBA9;border-radius:9px;padding:12px;font:inherit"></textarea>
  <div class="bar" style="margin-top:10px"><button type="button" id="quickCheck">Verify weekday</button><button type="button" id="quickExample" class="secondary">Try a real mismatch</button></div>
  <div id="quickResult" class="quality-panel" aria-live="polite" role="status" hidden style="white-space:pre-line"></div>
  </div>
- <div class="card" id="learnGCFCard"><div class="row learn-heading"><div><h2>How the formula works</h2></div><button type="button" id="learnGCFButton" class="secondary" aria-expanded="false" aria-controls="learnGCFContent">Learn GCF</button></div><div id="learnGCFContent" hidden class="learn-content">
+ <div class="card" id="learnGCFCard"><div class="row learn-heading"><div><h2>How the formula works</h2></div><button type="button" id="learnGCFButton" class="secondary" aria-expanded="false" aria-controls="learnGCFContent">Learn SC</button></div><div id="learnGCFContent" hidden class="learn-content">
 <div class="learn-inner">
 <span class="badge">LEARNING MODE</span>
-<h2 style="margin-top:8px">How GCF Works</h2>
+<h2 style="margin-top:8px">How SC Works</h2>
 <p class="learning-lead">
-        GCF turns a Gregorian date into four understandable contributions—century, year, month, and day—
+        SC turns a Gregorian date into four understandable contributions—century, year, month, and day—
         and combines them in a seven-day cycle. The goal of this section is not only to give the answer,
         but to show <b>why each number is used and how one step leads to the next</b>.
       </p>
@@ -320,14 +320,14 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 <div class="process-num">2</div>
 <div>
 <h3>Split the year into century and year position</h3>
-<p>For a year <i>N</i>, compute <b>c = ⌊N/100⌋</b> for the completed centuries and <b>y = N mod 100</b> for the years within the current century. This lets GCF handle long-term and within-century shifts separately.</p>
+<p>For a year <i>N</i>, compute <b>c = ⌊N/100⌋</b> for the completed centuries and <b>y = N mod 100</b> for the years within the current century. This lets SC handle long-term and within-century shifts separately.</p>
 </div>
 </div>
 <div class="process-card">
 <div class="process-num">3</div>
 <div>
 <h3>Find the century code C</h3>
-<p>Use <b>c mod 4</b> and the repeating GCF century pattern: 0 → 7, 1 → 5, 2 → 3, 3 → 1. The four-position repetition follows the Gregorian calendar's 400-year cycle.</p>
+<p>Use <b>c mod 4</b> and the repeating SC century pattern: 0 → 7, 1 → 5, 2 → 3, 3 → 1. The four-position repetition follows the Gregorian calendar's 400-year cycle.</p>
 </div>
 </div>
 <div class="process-card">
@@ -362,19 +362,19 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 <div class="process-num">8</div>
 <div>
 <h3>Combine the four components</h3>
-<p>Add <b>C + Y + M + D</b>, then reduce the total modulo 7. The remainder is the GCF weekday code.</p>
+<p>Add <b>C + Y + M + D</b>, then reduce the total modulo 7. The remainder is the SC weekday code.</p>
 </div>
 </div>
 <div class="process-card">
 <div class="process-num">9</div>
 <div>
 <h3>Translate the code into the weekday</h3>
-<p>GCF uses <b>0 = Sunday</b>, <b>1 = Monday</b>, through <b>6 = Saturday</b>. The app shows both the numerical code and the weekday name.</p>
+<p>SC uses <b>0 = Sunday</b>, <b>1 = Monday</b>, through <b>6 = Saturday</b>. The app shows both the numerical code and the weekday name.</p>
 </div>
 </div>
 </div>
 <div class="why-box">
-<h3>Think of GCF as a chain</h3>
+<h3>Think of SC as a chain</h3>
 <div class="mini-flow">
 <span class="flow-pill">Date</span><span class="flow-arrow">→</span>
 <span class="flow-pill">C</span><span class="flow-arrow">+</span>
@@ -407,7 +407,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
         For example, January starts with code 6; since January has 31 days and 31 mod 7 = 3,
         February's code is 6 + 3 ≡ 2 (mod 7). The same process continues through the year.
       </p>
-<h3>GCF Code Tables</h3>
+<h3>SC Code Tables</h3>
 <div class="scroller">
 <table>
 <thead><tr><th>Month</th><th>Common Year</th><th>Leap Year</th><th>Month #</th></tr></thead>
@@ -416,7 +416,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 </div>
 <div class="scroller" style="margin-top:12px">
 <table>
-<thead><tr><th>GCF Code</th><th>Weekday</th></tr></thead>
+<thead><tr><th>SC Code</th><th>Weekday</th></tr></thead>
 <tbody id="learnWeekdayTable"></tbody>
 </table>
 </div>
@@ -434,7 +434,7 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 </div></div>
 </section>
 </main>
-<footer>GCF Auditor · <a href="./open-source-licenses.html">Open-source licenses</a></footer>
+<footer>Septima Auditor · <a href="./open-source-licenses.html">Open-source licenses</a></footer>
 <script src="./jszip.min.js"></script><script src="./gcf-engine.js"></script><script src="./scan-core.js"></script><script src="./pdf-bridge.js"></script><script src="./document-bridge.js"></script><script src="./pdf-export.js"></script>
 <script src="./audit-utils.js"></script><script src="./security-seal.js"></script><script src="./security-ui.js"></script><script src="./audit-app.js"></script><script src="./quality-app.js"></script><script src="./sheet-app.js"></script><script src="./calc-app.js"></script><script src="./learn-app.js"></script><script src="./nav.js"></script><script src="./offline-app.js"></script><script src="./quick-verify.js"></script>
 </body></html>
