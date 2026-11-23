@@ -1,6 +1,6 @@
-# SC-400 — Third-party software notices
+# SC Auditor — Third-party software notices
 
-These notices cover the third-party software used by the SC-400 browser application. They **do not license or transfer ownership of SC-400's original source code**. License terms and copyright notices for third-party components remain with their respective rights holders.
+These notices cover the third-party software used by the SC Auditor browser application. They **do not license or transfer ownership of SC Auditor's original source code**. License terms and copyright notices for third-party components remain with their respective rights holders.
 
 ## Direct dependencies
 
@@ -11,7 +11,7 @@ These notices cover the third-party software used by the SC-400 browser applicat
 | [Tesseract.js](https://github.com/naptha/tesseract.js) | 5.1.1 (loaded on demand from a CDN) | OCR fallback for scanned PDF pages | Apache License 2.0 | [Apache 2.0](licenses/APACHE-2.0.txt) |
 | [pdf-lib](https://github.com/Hopding/pdf-lib) | 1.17.1 (loaded on demand from a CDN) | Exporting annotated PDFs | MIT | [pdf-lib MIT notice](licenses/PDF-LIB-MIT.txt) |
 
-- **JSZip:** Copyright (c) 2009–2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso. JSZip is dual-licensed; SC-400 elects the **MIT** option and preserves the original attribution header in `jszip.min.js`. License: [upstream v3.10.1](https://github.com/Stuk/jszip/blob/v3.10.1/LICENSE.markdown).
+- **JSZip:** Copyright (c) 2009–2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso. JSZip is dual-licensed; SC Auditor elects the **MIT** option and preserves the original attribution header in `jszip.min.js`. License: [upstream v3.10.1](https://github.com/Stuk/jszip/blob/v3.10.1/LICENSE.markdown).
 - **PDF.js:** Mozilla Foundation and contributors. The project uses the Apache License 2.0. License: [upstream v3.11.174](https://github.com/mozilla/pdf.js/blob/v3.11.174/LICENSE).
 - **Tesseract.js:** Project Naptha/Tesseract.js contributors. The project uses the Apache License 2.0. License: [upstream v5.1.1](https://github.com/naptha/tesseract.js/blob/v5.1.1/LICENSE.md). OCR engines, language data and subdependencies may carry additional notices; see their upstream distributions.
 - **pdf-lib:** Copyright (c) 2019 Andrew Dillon. License: [upstream v1.17.1](https://github.com/Hopding/pdf-lib/blob/v1.17.1/LICENSE.md).
@@ -34,7 +34,7 @@ The notices in this section are based on the upstream package licenses; some bro
 
 Tesseract.js may load **tesseract.js-core**, WebAssembly binaries, and language data on demand. See the upstream [tesseract.js-core license](https://github.com/naptha/tesseract.js-core/blob/master/LICENSE) (Apache 2.0) and any license or attribution shipped with individual language/model assets. PDF.js and Tesseract.js CDN scripts can contain further bundled third-party components; their upstream distributions remain authoritative for those components' notices.
 
-The application uses these libraries under their own terms; this document is **not** a declaration that all third-party code is original SC-400 code, or a claim that a legal audit of every transitive component has been completed.
+The application uses these libraries under their own terms; this document is **not** a declaration that all third-party code is original SC Auditor code, or a claim that a legal audit of every transitive component has been completed.
 
 ## License texts
 
@@ -47,4 +47,4 @@ The application uses these libraries under their own terms; this document is **n
 - [setImmediate MIT](licenses/SETIMMEDIATE-MIT.txt)
 - [readable-stream license and accompanying notices](licenses/READABLE-STREAM.txt)
 
-None of these third-party licenses requires SC-400's own independently written code to be licensed under the same terms by virtue of using the listed MIT/Apache-licensed components.
+None of these third-party licenses requires SC Auditor's own independently written code to be licensed under the same terms by virtue of using the listed MIT/Apache-licensed components.
