@@ -57,7 +57,7 @@ if('serviceWorker' in navigator){
  let alreadyControlled=Boolean(navigator.serviceWorker.controller);
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
   if(!alreadyControlled){alreadyControlled=true;return;}
-  show('A newer SC Auditor version is ready. Choose “Load updated app” to use the latest page.','warning');
+  show('A newer Septima Congruence Auditor version is ready. Choose “Load updated app” to use the latest page.','warning');
   if(updateButton)updateButton.hidden=false;
  });
 }
