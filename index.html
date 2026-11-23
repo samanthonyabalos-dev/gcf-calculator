@@ -213,10 +213,19 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
  .primary-task h2{font-size:21px;margin-bottom:15px}
 }
 
+
+/* Floating offline menu: opening details must not change the header or navigation layout. */
+header{position:relative;z-index:5}
+.brand-bar .offline-settings{position:relative;flex:0 0 auto}
+.brand-bar .offline-settings[open]{z-index:30}
+.brand-bar .offline-settings .offline-popover{position:absolute;top:calc(100% + 11px);right:-10px;width:min(380px,calc(100vw - 30px));box-sizing:border-box;padding:13px 14px;background:#1B4032;border:1px solid #679477;border-radius:12px;color:#EFF6EF;box-shadow:0 16px 36px #071E1440}
+.brand-bar .offline-popover .offline-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0!important}
+.brand-bar .offline-popover .offline-detail{margin:10px 0 0!important}
+@media(max-width:720px){.brand-bar .offline-settings .offline-popover{width:min(350px,calc(100vw - 32px))}}
 </style></head><body>
 <header><div class="inner"><div class="brand-bar"><div class="brand"><img class="brand-logo" src="./icon.svg" width="56" height="56" alt=""><div class="brand-copy"><h1>Septima Congruence Auditor</h1><div class="brand-descriptor">Date–Weekday Checker</div><div class="eyebrow">SC-400 · v30</div></div></div>
 <div class="offline-strip" aria-label="Offline status"><div class="offline-main"><span class="offline-indicator" aria-hidden="true"></span><span id="offlineStatus" role="status" aria-live="polite">Checking offline access…</span></div>
-<details class="offline-settings"><summary>Offline options</summary><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div></div>
+<details class="offline-settings"><summary>Offline options</summary><div class="offline-popover"><div class="offline-actions"><button type="button" id="offlineCheck" class="offline-button">Check offline</button><button type="button" id="offlineInstall" class="offline-button" hidden>Install app</button></div><p id="offlineDetails" class="offline-detail">Core calculator tools work offline after setup.</p></div></details><button type="button" id="offlineApplyUpdate" class="offline-button" hidden>Load update</button></div></div>
 <nav class="nav" aria-label="Main tools" role="tablist"><button type="button" id="tab-document" role="tab" aria-controls="document" aria-selected="true" class="active" data-section="document">Documents</button><button type="button" id="tab-spreadsheet" role="tab" aria-controls="spreadsheet" aria-selected="false" data-section="spreadsheet">Spreadsheets</button><button type="button" id="tab-calculator" role="tab" aria-controls="calculator" aria-selected="false" data-section="calculator">Calculator</button></nav></div></header>
 <main>
 <section id="document" class="panel" role="tabpanel" aria-labelledby="tab-document">
