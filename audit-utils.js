@@ -1,4 +1,4 @@
-/* GCF-400 v19: local file-type checks and evidence summaries (no uploads). */
+/* SC-400 v19: local file-type checks and evidence summaries (no uploads). */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.GCFAuditUtils=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const MAX_FILE_BYTES=15*1024*1024,MAX_FILES=10;

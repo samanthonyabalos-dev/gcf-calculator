@@ -1,4 +1,4 @@
-/* GCF-400 v24 · Browser-local cryptographic audit seals.
+/* SC-400 v24 · Browser-local cryptographic audit seals.
  * ECDSA P-256 signatures prove consistency with the INCLUDED public key,
  * not the real-world identity of whoever generated or possesses that key.
  * Private keys are non-exportable. Optional device storage requires explicit user consent.
@@ -52,7 +52,7 @@ function openKeyStore(){
   request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(KEY_STORE))request.result.createObjectStore(KEY_STORE);};
   request.onsuccess=()=>resolve(request.result);
   request.onerror=()=>reject(request.error||Error('Local key store could not be opened'));
-  request.onblocked=()=>reject(Error('Close other GCF-400 tabs and try again'));
+  request.onblocked=()=>reject(Error('Close other SC-400 tabs and try again'));
  });
 }
 async function transaction(mode,operation){
@@ -94,7 +94,7 @@ async function eraseDeviceKey(){
 }
 
 async function seal(evidence){
- if(!evidence||evidence.schema!=='gcf400-audit-evidence-v1')throw Error('Expected GCF-400 evidence JSON');
+ if(!evidence||evidence.schema!=='gcf400-audit-evidence-v1')throw Error('Expected SC-400 evidence JSON');
  if(!keyPair)await generateSessionKey();
  const api=secureCrypto(),spki=new Uint8Array(await api.subtle.exportKey('spki',keyPair.publicKey));
  const payload=ENCODER.encode(canonical(evidence));
@@ -112,10 +112,10 @@ async function seal(evidence){
  };
 }
 async function verify(sealed){
- if(!sealed||typeof sealed!=='object'||sealed.schema!=='gcf400-evidence-seal-v1')return {valid:false,reason:'Not a GCF-400 signed evidence envelope'};
+ if(!sealed||typeof sealed!=='object'||sealed.schema!=='gcf400-evidence-seal-v1')return {valid:false,reason:'Not a SC-400 signed evidence envelope'};
  if(sealed.algorithm!=='ECDSA-P256-SHA256')return {valid:false,reason:'Unsupported signature algorithm'};
  try{
-  if(!sealed.evidence||sealed.evidence.schema!=='gcf400-audit-evidence-v1')return {valid:false,reason:'Missing GCF-400 evidence payload'};
+  if(!sealed.evidence||sealed.evidence.schema!=='gcf400-audit-evidence-v1')return {valid:false,reason:'Missing SC-400 evidence payload'};
   const api=secureCrypto(),payload=ENCODER.encode(canonical(sealed.evidence));
   if(payload.length>MAX_JSON)return {valid:false,reason:'Evidence exceeds verifier size limit'};
   const spki=base64ToBytes(sealed.publicKeySpki),signature=base64ToBytes(sealed.signature);
