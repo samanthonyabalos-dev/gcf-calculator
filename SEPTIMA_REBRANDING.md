@@ -1,11 +1,12 @@
-# SC Auditor — Branding and Repository Migration
+# Septima Congruence Auditor — Branding and Repository Migration
 
-**Website and installed app:** SC Auditor  
+**Website and installed app:** Septima Congruence Auditor  
+**Short app label:** SC Auditor  
 **App subtitle:** Date–Weekday Checker  
 **Mathematical method:** Septima Congruence (SC)  
 **Core implementation designation:** SC-400
 
-The website, PWA metadata, user-facing audit exports, PDF legends, and licensing pages use **SC Auditor**. Mathematical attribution and legacy report schemas remain unchanged for compatibility.
+The website, PWA metadata, user-facing audit exports, PDF legends, and licensing pages use **Septima Congruence Auditor**. Mathematical attribution and legacy report schemas remain unchanged for compatibility.
 
 ## GitHub repository and Pages address
 
