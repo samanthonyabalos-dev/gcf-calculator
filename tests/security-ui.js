@@ -1,4 +1,4 @@
-/* GCF-400 v27 — layout, copy and responsive security verification. */
+/* SC-400 v27 — layout, copy and responsive security verification. */
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const FP='ab12cd34'.repeat(8);
@@ -55,5 +55,5 @@ assert.equal(node('copyDeviceFingerprint').dataset.value,FP);
  assert.ok(app.includes('GCFSecurityUI.keyStatus'));
  assert.ok(app.includes('GCFSecurityUI.verificationStatus'));
  assert.ok(!app.includes("'Public SHA-256 fingerprint: '+r.fingerprint"),'Never print raw fingerprint in paragraph');
- console.log('GCF security layout PASS: grouping, copy, mobile wrap CSS, state changes and independent verifier display.');
+ console.log('SC security layout PASS: grouping, copy, mobile wrap CSS, state changes and independent verifier display.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

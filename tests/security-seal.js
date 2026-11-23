@@ -1,4 +1,4 @@
-/* GCF-400 v24 cryptographic evidence security tests. */
+/* SC-400 v24 cryptographic evidence security tests. */
 'use strict';
 const assert=require('node:assert/strict');
 const crypto=require('node:crypto');
@@ -34,5 +34,5 @@ const file={name:'exam.pdf',size:sourceBytes.length,arrayBuffer:async()=>sourceB
  assert.ok(!('privateKey' in sealed),'Private signing key must never be exported');
  S.resetSession();
  assert.equal((await S.verify(sealed)).valid,true,'Independent verification should work after signing key is destroyed');
- console.log('GCF-400 security seal PASS: canonical payload, signing, independent verify, tampering, fingerprint, source hash, privacy, and identity limitations.');
+ console.log('SC-400 security seal PASS: canonical payload, signing, independent verify, tampering, fingerprint, source hash, privacy, and identity limitations.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

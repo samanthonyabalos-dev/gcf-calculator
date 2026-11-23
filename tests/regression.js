@@ -1,4 +1,4 @@
-/* GCF-400 v21 deterministic regression tests. Run: node tests/regression.js */
+/* SC-400 v21 deterministic regression tests. Run: node tests/regression.js */
 'use strict';
 const assert=require('node:assert/strict');
 globalThis.GCFEngine=require('../gcf-engine.js');
@@ -15,5 +15,5 @@ for(const text of prc){const findings=runLine(text);assert.equal(findings.length
 assert.equal(runLine('TUESDAY, MAY 4, 2026')[0].status,'MISMATCH');
 assert.equal(runLine('FEBRUARY 29, 2025')[0].status,'INVALID');
 assert.equal(runLine('MAY 4, 2026')[0].status,'DATE_ONLY');
-console.log('GCF-400 regression: '+result.passed+'/'+result.total+' core checks passed; PRC weekday test cases passed; '+result.ms+' ms.');
+console.log('SC-400 regression: '+result.passed+'/'+result.total+' core checks passed; PRC weekday test cases passed; '+result.ms+' ms.');
 console.log('NOTE: These tests do not establish PDF.js OCR accuracy or cross-reader annotation compatibility.');
