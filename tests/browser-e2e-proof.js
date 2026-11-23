@@ -10,7 +10,7 @@ const binary=(()=>{
  try{return execFileSync('which',[candidate],{encoding:'utf8'}).trim();}catch(_){}
  throw Error('Chromium browser is required for end-to-end validation');
 })();
-const temp=fs.mkdtempSync(path.join(os.tmpdir(),'gcf-real-'));
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'sc-real-'));
 const downloadDir=path.join(temp,'downloads');fs.mkdirSync(downloadDir);
 const docxPath=path.join(temp,'SC_Test.docx');
 const tamperedZip=path.join(temp,'SC_Changed_Report.zip');
@@ -73,10 +73,10 @@ async function eventually(fn,label,tries=140){
   };
   await send('Page.enable');await send('Runtime.enable');await send('DOM.enable');
   await send('Page.setDownloadBehavior',{behavior:'allow',downloadPath:downloadDir});
-  const targetURL=process.env.SC_TARGET_URL||process.env.GCF_TARGET_URL||('http://127.0.0.1:'+server.address().port+'/index.html');
+  const targetURL=process.env.SC_TARGET_URL||process.env.SC_TARGET_URL||('http://127.0.0.1:'+server.address().port+'/index.html');
   console.log('Testing site:',targetURL);
   await send('Page.navigate',{url:targetURL});
-  await eventually(()=>evaluate("document.readyState==='complete' && !!window.GCFSecurity && !!window.GCFWord && !!window.JSZip"),'app scripts');
+  await eventually(()=>evaluate("document.readyState==='complete' && !!window.SCSecurity && !!window.SCWord && !!window.JSZip"),'app scripts');
   assert.ok(await evaluate("document.querySelector('header').textContent.includes('v30')"),'Must test SC-400 v30 UI');
   await setFile('#files',docxPath);
   await evaluate("document.getElementById('scan').click()");

@@ -1,7 +1,7 @@
 /* Independent calendar parity + text/OCR disagreement acceptance tests. */
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const G=require('../gcf-engine.js'),S=require('../scan-core.js'),P=require('../pdf-bridge.js');
+const G=require('../sc-engine.js'),S=require('../scan-core.js'),P=require('../pdf-bridge.js');
 const D=G.DAYS;
 function scan(text,mod=S){return mod.scanPage([{file:'test.pdf',page:1,lineNo:0,text,parts:[]}],{reading:'auto'});}
 let seed=1234;
@@ -10,9 +10,9 @@ for(let n=0;n<2000;n++){
  const y=1+Math.floor(rnd()*9999),m=1+Math.floor(rnd()*12),max=new Date(Date.UTC(2000,m,0)).getUTCDate(),d=1+Math.floor(rnd()*max);
  if(!G.validDate(y,m,d))continue;
  const utc=new Date(Date.UTC(2000,m-1,d));utc.setUTCFullYear(y);
- assert.equal(G.gcf400(y,m,d),utc.getUTCDay(),'SC/UTC parity '+[y,m,d]);
+ assert.equal(G.sc400(y,m,d),utc.getUTCDay(),'SC/UTC parity '+[y,m,d]);
 }
-const incorrect={...G,gcf400:()=>0},vm=require('node:vm');
+const incorrect={...G,sc400:()=>0},vm=require('node:vm');
 const context={module:{exports:{}},require:()=>incorrect};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../scan-core.js'),'utf8'),context);
 const mock=context.module;

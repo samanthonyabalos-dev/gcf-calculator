@@ -2,25 +2,25 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const handlers={},assets=new Map();
-const scope='https://example.test/gcf-calculator/';
+const scope='https://example.test/sc/';
 const cache={
  addAll:async entries=>{for(const name of entries)assets.set(new URL(name,scope).pathname,{ok:true,name});},
  match:async req=>assets.get(new URL(typeof req==='string'?req:req.url,scope).pathname)||null,
  put:async (req,reply)=>assets.set(new URL(req.url,scope).pathname,reply)
 };
 const context={self:{registration:{scope},location:{origin:'https://example.test'},clients:{claim:async()=>{}},skipWaiting:async()=>{},addEventListener:(k,fn)=>handlers[k]=fn},URL,Set,Promise,
- caches:{open:async()=>cache,keys:async()=>['gcf400-offline-v20'],delete:async()=>true},
+ caches:{open:async()=>cache,keys:async()=>['sc400-offline-v20'],delete:async()=>true},
  fetch:async()=>{throw Error('offline');}};
 vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),context);
 const task=(name,input={})=>new Promise((resolve,reject)=>{try{handlers[name]({...input,waitUntil:p=>Promise.resolve(p).then(resolve,reject)});}catch(e){reject(e);}});
 (async()=>{
  await task('install');
- assert.ok(assets.has('/gcf-calculator/index.html'));
- assert.ok(assets.has('/gcf-calculator/calc-app.js'));
- assert.ok(assets.has('/gcf-calculator/offline-app.js'));
+ assert.ok(assets.has('/sc/index.html'));
+ assert.ok(assets.has('/sc/calc-app.js'));
+ assert.ok(assets.has('/sc/offline-app.js'));
  await task('activate');
  // The page must refresh from the network when online, even if an old index was cached.
- const oldShell=assets.get('/gcf-calculator/index.html');
+ const oldShell=assets.get('/sc/index.html');
  let onlineCalls=0;
  context.fetch=async(_req,options)=>{
   onlineCalls++;
@@ -30,7 +30,7 @@ const task=(name,input={})=>new Promise((resolve,reject)=>{try{handlers[name]({.
  const online=await new Promise((resolve,reject)=>handlers.fetch({request:{method:'GET',url:scope+'index.html',mode:'navigate'},respondWith:p=>p.then(resolve,reject)}));
  assert.equal(online.fresh,true,'Navigation must use a fresh online page instead of old cached HTML');
  assert.equal(onlineCalls,1);
- assert.notEqual(assets.get('/gcf-calculator/index.html'),oldShell,'Fresh HTML must replace offline fallback');
+ assert.notEqual(assets.get('/sc/index.html'),oldShell,'Fresh HTML must replace offline fallback');
  context.fetch=async()=>{throw Error('offline');};
  const direct=await new Promise((resolve,reject)=>handlers.fetch({request:{method:'GET',url:scope+'index.html',mode:'navigate'},respondWith:p=>p.then(resolve,reject)}));
  assert.ok(direct);

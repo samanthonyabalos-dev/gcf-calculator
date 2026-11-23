@@ -18,7 +18,7 @@ const binary=(()=>{for(const name of ['google-chrome','google-chrome-stable','ch
   }catch(e){res.writeHead(500);res.end('Server error');}
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const profile=fs.mkdtempSync(path.join(os.tmpdir(),'gcf-layout-'));
+ const profile=fs.mkdtempSync(path.join(os.tmpdir(),'sc-layout-'));
  const proc=spawn(binary,['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--remote-allow-origins=*','--remote-debugging-port=9231','--user-data-dir='+profile,'about:blank'],{stdio:'ignore'});
  let ws;
  try{

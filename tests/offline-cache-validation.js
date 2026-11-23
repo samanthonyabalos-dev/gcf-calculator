@@ -2,10 +2,10 @@
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const scope='https://example.test/gcf-calculator/';
-const essentials=['index.html','gcf-engine.js','calc-app.js','nav.js','offline-app.js'];
+const scope='https://example.test/sc/';
+const essentials=['index.html','sc-engine.js','calc-app.js','nav.js','offline-app.js'];
 const cacheEntries=new Map([
- ['gcf400-offline-v29-20261110',new Set()],
+ ['sc400-offline-v29-20261110',new Set()],
  ['septima-offline-v30-rebrand-20261123',new Set(essentials)]
 ]);
 const listeners=new Map();
@@ -30,7 +30,7 @@ const context={
   }
  },
  window:{
-  GCFEngine:{gcf400:(y,m,d)=>y===2026&&m===5&&d===4?1:0},
+  SCEngine:{sc400:(y,m,d)=>y===2026&&m===5&&d===4?1:0},
   addEventListener:(name,fn)=>listeners.set(name,fn)
  },
  console
@@ -39,7 +39,7 @@ context.window.caches=context.caches;
 vm.createContext(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../offline-app.js'),'utf8'),context);
 (async()=>{
- const checker=context.window.GCFOffline.verify;
+ const checker=context.window.SCOffline.verify;
  let result=await checker();
  assert.equal(result.ready,true,'Current installed offline cache should pass despite an old empty cache');
  assert.equal(result.missing.length,0,'No essential files are actually missing');
@@ -48,7 +48,7 @@ vm.runInContext(fs.readFileSync(path.join(__dirname,'../offline-app.js'),'utf8')
  assert.equal(result.ready,false,'Missing essential file must fail offline readiness');
  assert.deepEqual([...result.missing],['./nav.js'],'Only nav.js should be listed as missing');
  cacheEntries.get('septima-offline-v30-rebrand-20261123').add('nav.js');
- cacheEntries.delete('gcf400-offline-v29-20261110');
+ cacheEntries.delete('sc400-offline-v29-20261110');
  result=await checker();
  assert.equal(result.ready,true,'Offline cache discovery must work after old versions are deleted');
  assert.ok(!fs.readFileSync(path.join(__dirname,'../offline-app.js'),'utf8').includes("caches.open(cacheName)"),'Never open a guessed cache');
