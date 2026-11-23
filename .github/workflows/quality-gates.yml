@@ -1,4 +1,4 @@
-name: GCF-400 quality gates
+name: Septima Auditor quality gates
 on:
   push:
     branches: [main]
@@ -34,9 +34,9 @@ jobs:
         run: node tests/automatic-proof.js
       - name: Real Chromium upload, report ZIP and tamper verification
         run: node tests/browser-e2e-proof.js
-      - name: Live GCF-400 browser upload, signed ZIP and tamper verification
+      - name: Live Septima Auditor browser upload, signed ZIP and tamper verification
         env:
-          GCF_TARGET_URL: https://samanthonyabalos-dev.github.io/gcf-calculator/
+          SC_TARGET_URL: https://samanthonyabalos-dev.github.io/gcf-calculator/
         run: node tests/browser-e2e-proof.js
       - name: Security UI fingerprint wrapping and copy
         run: node tests/security-ui.js
