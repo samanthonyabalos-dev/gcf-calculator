@@ -17,4 +17,4 @@ const cases=[
 for(const [input,status,expected] of cases){const result=quick.check(input);assert.equal(result.status,status,input);if(expected!==undefined)assert.equal(result.expected,expected,input);}
 assert.equal(quick.check('<img src=x onerror=alert(1)>').status,'REVIEW');
 assert.equal(quick.check('').status,'EMPTY');
-console.log('GCF quick-verify PASS: '+(cases.length+2)+' cases.');
+console.log('SC quick-verify PASS: '+(cases.length+2)+' cases.');

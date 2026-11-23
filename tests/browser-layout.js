@@ -1,4 +1,4 @@
-/* No-dependency Chromium viewport smoke test for GCF-400. */
+/* No-dependency Chromium viewport smoke test for SC-400. */
 'use strict';
 const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),os=require('node:os');
 const {spawn,execFileSync}=require('node:child_process');

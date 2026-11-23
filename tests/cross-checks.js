@@ -10,7 +10,7 @@ for(let n=0;n<2000;n++){
  const y=1+Math.floor(rnd()*9999),m=1+Math.floor(rnd()*12),max=new Date(Date.UTC(2000,m,0)).getUTCDate(),d=1+Math.floor(rnd()*max);
  if(!G.validDate(y,m,d))continue;
  const utc=new Date(Date.UTC(2000,m-1,d));utc.setUTCFullYear(y);
- assert.equal(G.gcf400(y,m,d),utc.getUTCDay(),'GCF/UTC parity '+[y,m,d]);
+ assert.equal(G.gcf400(y,m,d),utc.getUTCDay(),'SC/UTC parity '+[y,m,d]);
 }
 const incorrect={...G,gcf400:()=>0},vm=require('node:vm');
 const context={module:{exports:{}},require:()=>incorrect};
@@ -22,4 +22,4 @@ function row(date,recorded,status='MATCH'){return {date,recorded,status};}
 assert.equal(P.evidenceDisagreements([row('2026-05-04','Monday')],[row('2026-05-04','Tuesday')]).length,1);
 assert.equal(P.evidenceDisagreements([row('2026-05-04','Monday')],[row('2026-05-04','Monday')]).length,0);
 assert.equal(P.evidenceDisagreements([row('2026-05-04','Monday')],[row('2025-05-04','Sunday')]).length,1);
-console.log('GCF-400 calendar parity & OCR discrepancy PASS: 2,000 generated attempts, intentional fault and 3 OCR comparisons.');
+console.log('SC-400 calendar parity & OCR discrepancy PASS: 2,000 generated attempts, intentional fault and 3 OCR comparisons.');

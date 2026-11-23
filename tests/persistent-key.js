@@ -1,4 +1,4 @@
-/* GCF-400 v25 — opt-in persistent CryptoKey continuity tests, IndexedDB shim. */
+/* SC-400 v25 — opt-in persistent CryptoKey continuity tests, IndexedDB shim. */
 'use strict';
 const assert=require('node:assert/strict'),crypto=require('node:crypto').webcrypto;
 Object.defineProperty(globalThis,'crypto',{value:crypto,configurable:true});
