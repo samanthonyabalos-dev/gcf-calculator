@@ -1,12 +1,12 @@
 {
-  "name": "Septima Auditor: Date–Weekday Checker",
-  "short_name": "SC Date–Weekday",
+  "name": "SC Auditor",
+  "short_name": "SC Auditor",
   "start_url": "./index.html#calculator",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F3F5EF",
   "theme_color": "#102E26",
-  "description": "Offline-capable Gregorian weekday calculator with browser-local document and spreadsheet auditing. Core calendar features work offline after setup.",
+  "description": "SC Auditor is an offline-capable Gregorian weekday calculator with browser-local document and spreadsheet auditing. Core calendar features work offline after setup.",
   "icons": [
     {
       "src": "./icon.svg",
