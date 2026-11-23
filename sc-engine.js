@@ -4,7 +4,7 @@
 (function(root,factory){
   const api=factory();
   if(typeof module==='object' && module.exports) module.exports=api;
-  root.SCEngine=api; root.SeptimaEngine=api; root.SCEngine=api;
+  root.SCEngine=api; root.SeptimaEngine=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -61,5 +61,5 @@ function validateMatrix(matrix){if(!matrix.length)throw Error('Dataset is empty'
  const valid=counts.MATCH+counts.MISMATCH;return {header,results,counts,shifts,sourceRecords:nonempty,expandedRecords:results.length,rangeRows,agreement:valid?counts.MATCH/valid*100:0,engine:'SC-400 cached'};
 }
 function parseDelimited(text){const src=String(text??'').replace(/^\uFEFF/,'');const delim=(src.split(/\r?\n/,1)[0]||'').includes('\t')?'\t':',';let row=[],cell='',quoted=false,rows=[];for(let i=0;i<src.length;i++){let ch=src[i];if(ch==='"'){if(quoted&&src[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}else if(ch===delim&&!quoted){row.push(cell);cell='';}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&src[i+1]==='\n')i++;row.push(cell);if(row.some(v=>String(v).trim()))rows.push(row);row=[];cell='';}else cell+=ch;}if(quoted)throw Error('Unclosed quoted field');row.push(cell);if(row.some(v=>String(v).trim()))rows.push(row);return rows;}
-return Object.freeze({DAYS,COMMON,LEAP,CACHE,isLeap,validDate,sc,sc400,sc:sc,sc400:sc400,zeller,gauss,sakamoto,ordinal,carroll,doomsday,iso,parseDate,parseWeekday,difference,expandDates,expandWeekdays,validateRecord,validateMatrix,parseDelimited});
+return Object.freeze({DAYS,COMMON,LEAP,CACHE,isLeap,validDate,sc,sc400,zeller,gauss,sakamoto,ordinal,carroll,doomsday,iso,parseDate,parseWeekday,difference,expandDates,expandWeekdays,validateRecord,validateMatrix,parseDelimited});
 });
