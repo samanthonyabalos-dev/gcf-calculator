@@ -217,7 +217,8 @@ footer{margin:12px auto 32px;padding:0 20px;font-size:11px}
 /* Floating offline menu: opening details must not change the header or navigation layout. */
 header{position:relative;z-index:5}
 .brand-bar .offline-strip{position:relative;z-index:20;min-width:min(380px,100%)}
-.brand-bar .offline-settings{position:static!important;flex:0 0 auto}
+.brand-bar .offline-settings{position:static!important;display:block!important;flex:0 0 118px;width:118px;min-width:118px;max-width:118px;height:30px;box-sizing:border-box;overflow:visible}
+.brand-bar .offline-settings>summary{white-space:nowrap}
 .brand-bar .offline-settings[open]{z-index:30}
 .brand-bar .offline-settings .offline-popover{position:absolute;top:calc(100% + 11px);right:0;width:min(380px,calc(100vw - 30px));box-sizing:border-box;padding:13px 14px;background:#1B4032;border:1px solid #679477;border-radius:12px;color:#EFF6EF;box-shadow:0 16px 36px #071E1440}
 .brand-bar .offline-popover .offline-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0!important}
