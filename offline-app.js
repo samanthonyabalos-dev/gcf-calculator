@@ -51,7 +51,7 @@ if(installButton)installButton.addEventListener('click',async()=>{
  const e=promptEvent;promptEvent=null;await e.prompt();if(installButton)installButton.hidden=true;
 });
 if(checkButton)checkButton.addEventListener('click',()=>checkOffline());
-const offlineSettings=document.querySelector('.offline-settings');
+const offlineSettings=checkButton?.closest?.('.offline-settings')||null;
 if(offlineSettings){
  document.addEventListener('pointerdown',event=>{
   if(offlineSettings.open&&!offlineSettings.contains(event.target))offlineSettings.open=false;
