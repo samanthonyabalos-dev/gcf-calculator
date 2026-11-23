@@ -52,6 +52,12 @@ const binary=(()=>{for(const name of ['google-chrome','google-chrome-stable','ch
    assert.ok(values&&values.primary>0,'Main action missing at '+width);
    assert.ok(values.overflow<=2,'Page horizontal overflow at '+width+'px: '+JSON.stringify(values));
    assert.ok(values.fingerprintOverflow<=2,'Fingerprint overflow at '+width+'px: '+JSON.stringify(values));
+   const dropdown=await evaluate("(()=>{const settings=document.querySelector('.offline-settings'),nav=document.querySelector('.nav'),main=document.querySelector('.primary-task');settings.open=false;const oldNav=nav.getBoundingClientRect().top,oldMain=main.getBoundingClientRect().top;settings.open=true;const pop=document.querySelector('.offline-popover').getBoundingClientRect();const result={navShift:nav.getBoundingClientRect().top-oldNav,mainShift:main.getBoundingClientRect().top-oldMain,left:pop.left,right:pop.right,width:innerWidth,height:pop.height,overflow:document.documentElement.scrollWidth-innerWidth};settings.open=false;return result;})()");
+   assert.ok(dropdown&&dropdown.height>0,'Offline menu must be visible when expanded at '+width+'px');
+   assert.ok(Math.abs(dropdown.navShift)<=1,'Offline options must not push navigation down at '+width+'px: '+JSON.stringify(dropdown));
+   assert.ok(Math.abs(dropdown.mainShift)<=1,'Offline options must not move the document panel at '+width+'px: '+JSON.stringify(dropdown));
+   assert.ok(dropdown.left>=-2&&dropdown.right<=dropdown.width+2,'Offline dropdown must stay in the viewport at '+width+'px: '+JSON.stringify(dropdown));
+   assert.ok(dropdown.overflow<=2,'Offline menu must not cause horizontal overflow at '+width+'px: '+JSON.stringify(dropdown));
    console.log('Chromium layout PASS at '+width+'px; horizontal overflow '+values.overflow+'px.');
   }
  }finally{
