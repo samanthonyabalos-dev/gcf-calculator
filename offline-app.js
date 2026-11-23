@@ -1,9 +1,9 @@
-/* GCF-400 v21 — genuine offline readiness, install guidance and calculator smoke. */
+/* SC-400 v21 — genuine offline readiness, install guidance and calculator smoke. */
 (function(){'use strict';
 const status=document.getElementById('offlineStatus'),details=document.getElementById('offlineDetails'),checkButton=document.getElementById('offlineCheck'),installButton=document.getElementById('offlineInstall');
 const essentials=['./index.html','./gcf-engine.js','./calc-app.js','./nav.js','./offline-app.js'];
 const updateButton=document.getElementById('offlineApplyUpdate');
-const cachePrefix='gcf400-offline-';
+const cachePrefix='septima-offline-';
 let ready=false,promptEvent=null,checking=false;
 function show(message,kind='info'){
  if(status){status.textContent=message;status.dataset.state=kind;}
@@ -57,7 +57,7 @@ if('serviceWorker' in navigator){
  let alreadyControlled=Boolean(navigator.serviceWorker.controller);
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
   if(!alreadyControlled){alreadyControlled=true;return;}
-  show('A newer GCF-400 version is ready. Choose “Load updated app” to use the latest page.','warning');
+  show('A newer SC-400 version is ready. Choose “Load updated app” to use the latest page.','warning');
   if(updateButton)updateButton.hidden=false;
  });
 }

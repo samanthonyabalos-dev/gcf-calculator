@@ -12,7 +12,7 @@ function calculate(){
  const item=G.gcf(y,m,d),fast=G.gcf400(y,m,d);
  if(item.W!==fast){
   latest='';$('calcResult').classList.add('hide');$('calcStatus').className='status error';
-  $('calcStatus').textContent='Independent GCF calculations disagreed; the result has been withheld. Try refreshing or report this issue.';
+  $('calcStatus').textContent='Independent SC calculations disagreed; the result has been withheld. Try refreshing or report this issue.';
   return;
  }
  const weekday=G.DAYS[item.W],date=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'long',day:'numeric',year:'numeric'}).format((()=>{const dt=new Date(Date.UTC(2000,m-1,d));dt.setUTCFullYear(y);return dt;})());
