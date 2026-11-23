@@ -1,8 +1,8 @@
 /* Quick-check regression tests: real parser, ambiguous input, safe one-line scope. */
 'use strict';
 const assert=require('node:assert/strict');
-globalThis.GCFEngine=require('../gcf-engine.js');
-globalThis.GCFScanner=require('../scan-core.js');
+globalThis.SCEngine=require('../sc-engine.js');
+globalThis.SCScanner=require('../scan-core.js');
 const quick=require('../quick-verify.js');
 const cases=[
  ['MONDAY, MAY 4, 2026','MATCH','Monday'],

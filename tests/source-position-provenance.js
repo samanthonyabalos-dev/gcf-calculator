@@ -2,7 +2,7 @@
    These are synthetic source-geometry fixtures; not a patent novelty test or real PDF benchmark. */
 'use strict';
 const assert=require('node:assert/strict');
-globalThis.GCFEngine=require('../gcf-engine.js');
+globalThis.SCEngine=require('../sc-engine.js');
 const Scanner=require('../scan-core.js');
 const U=require('../audit-utils.js');
 const rect=(text,x0,x1,y=100)=>({text,rect:{x0,x1,y0:y,y1:y+12}});

@@ -28,7 +28,7 @@ const db={
 };
 globalThis.indexedDB={open:()=>{const req={result:db,onupgradeneeded:null,onsuccess:null,onerror:null,onblocked:null};queueMicrotask(()=>req.onsuccess?.());return req;}};
 const S=require('../security-seal.js');
-const evidence={schema:'gcf400-audit-evidence-v1',files:[],findings:[],summary:{state:'PAIRS CHECKED'}};
+const evidence={schema:'sc400-audit-evidence-v1',files:[],findings:[],summary:{state:'PAIRS CHECKED'}};
 (async()=>{
  const first=await S.createDeviceKey();
  assert.match(first.fingerprint,/^[a-f0-9]{64}$/);

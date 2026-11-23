@@ -4,7 +4,7 @@
  */
 'use strict';
 const assert=require('node:assert/strict');
-globalThis.GCFEngine=require('../gcf-engine.js');
+globalThis.SCEngine=require('../sc-engine.js');
 const scanner=require('../scan-core.js');
 const examples=[
   {

@@ -5,7 +5,7 @@ const crypto=require('node:crypto');
 Object.defineProperty(globalThis,'crypto',{value:crypto.webcrypto,configurable:true});
 const S=require('../security-seal.js');
 const evidence={
- schema:'gcf400-audit-evidence-v1',
+ schema:'sc400-audit-evidence-v1',
  files:[{file:'exam.pdf',bytes:9,sha256:crypto.createHash('sha256').update(Buffer.from('exam-data')).digest('hex')}],
  settings:{reading:'auto',recognition:'off'},summary:{state:'PAIRS CHECKED',paired:1},findings:[{status:'MATCH',recordedWeekday:'Monday',expectedWeekday:'Monday',normalizedDate:'2026-05-04'}]
 };
@@ -14,7 +14,7 @@ const file={name:'exam.pdf',size:sourceBytes.length,arrayBuffer:async()=>sourceB
 (async()=>{
  assert.equal(S.canonical({z:2,a:1}),S.canonical({a:1,z:2}));
  const sealed=await S.seal(evidence);
- assert.equal(sealed.schema,'gcf400-evidence-seal-v1');
+ assert.equal(sealed.schema,'sc400-evidence-seal-v1');
  assert.equal(sealed.algorithm,'ECDSA-P256-SHA256');
  assert.equal((await S.verify(sealed)).valid,true,'Signature should verify with its embedded key');
  assert.equal((await S.verifySourceFile(sealed,file)).sourceMatch,true,'Source hash should match');

@@ -23,14 +23,14 @@ const record={file:file.name,page:1,sourceDate:'MAY 4, 2026',date:'2026-05-04',r
 const summary={records:[record],counts:{MATCH:1,MISMATCH:0,REVIEW:0,INVALID:0,DATE_ONLY:0}};
 const context={
  document:{getElementById:get,createElement:()=>node('created')},
- GCFPDF:{readPdf:async()=>({file:file.name,pageCount:1,complete:true,
+ SCPDF:{readPdf:async()=>({file:file.name,pageCount:1,complete:true,
   lines:[{file:file.name,page:1,text:'MONDAY, MAY 4, 2026',method:'PDF text'}],
   coverage:[{file:file.name,page:1,status:'READABLE',nativeLines:1,ocrAttempted:false,durationMs:5}],unchecked:[]}),
   previewPage:async()=>({width:600,convertToViewportRectangle:rect=>rect}),closeOCR:async()=>{},closePreview:async()=>{},load:async()=>{}},
- GCFScanner:{scanDocument:()=>summary,dateMatches:x=>x.includes('2026')?[1]:[],dayMatches:x=>x.includes('MONDAY')?[1]:[]},
- GCFAuditUtils:{inspectNames:()=>true,inspectFile:async()=>true,summarize:(_rows,cov)=>({state:cov.length?'PAIRS CHECKED':'INCOMPLETE'}),manifest:()=>({})},
- GCFPdfExport:{create:async()=>({blob:new Blob([]),fullyAnnotated:1,unresolved:[]})},
- GCFWord:{read:async()=>({})},JSZip:class{},
+ SCScanner:{scanDocument:()=>summary,dateMatches:x=>x.includes('2026')?[1]:[],dayMatches:x=>x.includes('MONDAY')?[1]:[]},
+ SCAuditUtils:{inspectNames:()=>true,inspectFile:async()=>true,summarize:(_rows,cov)=>({state:cov.length?'PAIRS CHECKED':'INCOMPLETE'}),manifest:()=>({})},
+ SCPdfExport:{create:async()=>({blob:new Blob([]),fullyAnnotated:1,unresolved:[]})},
+ SCWord:{read:async()=>({})},JSZip:class{},
  performance:{now:()=>100},Blob,Uint8Array,URL:{createObjectURL:()=>'',revokeObjectURL:()=>{}},
  console,Promise,setTimeout,clearTimeout
 };

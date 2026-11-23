@@ -1,14 +1,14 @@
 /* SC-400 v21 deterministic regression tests. Run: node tests/regression.js */
 'use strict';
 const assert=require('node:assert/strict');
-globalThis.GCFEngine=require('../gcf-engine.js');
-globalThis.GCFScanner=require('../scan-core.js');
-globalThis.GCFPDF=require('../pdf-bridge.js');
+globalThis.SCEngine=require('../sc-engine.js');
+globalThis.SCScanner=require('../scan-core.js');
+globalThis.SCPDF=require('../pdf-bridge.js');
 require('../quality-app.js');
-const result=globalThis.GCFQuality.runSelfChecks();
+const result=globalThis.SCQuality.runSelfChecks();
 assert.equal(result.total,298,'Expected 298 checks');
 assert.equal(result.failed,0,'Regression failures: '+result.failures.join(' | '));
-const scanner=globalThis.GCFScanner;
+const scanner=globalThis.SCScanner;
 function runLine(text){return scanner.scanPage([{file:'regression.pdf',page:1,lineNo:0,text,method:'Test',parts:[]}],{reading:'auto'});}
 const prc=['MONDAY, MAY 4, 2026','TUESDAY, MAY 5, 2026','WEDNESDAY, MAY 6, 2026'];
 for(const text of prc){const findings=runLine(text);assert.equal(findings.length,1);assert.equal(findings[0].status,'MATCH');}
