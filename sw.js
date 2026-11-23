@@ -1,6 +1,6 @@
 /* Septima Congruence Auditor v30 scoped offline shell: online navigation is network-first to prevent stale UI. */
 'use strict';
-const CACHE='sc-auditor-v30-fullname-20261123';
+const CACHE='sc-auditor-v30-offline-menu-20261123';
 const CORE=['./','./index.html','./calculator.html','./mathematics-reference.html','./sc-engine.js','./scan-core.js','./pdf-bridge.js','./document-bridge.js','./pdf-export.js','./audit-utils.js','./security-seal.js','./security-ui.js','./audit-app.js','./quality-app.js','./sheet-app.js','./calc-app.js','./learn-app.js','./nav.js','./offline-app.js','./quick-verify.js','./jszip.min.js','./open-source-licenses.html','./THIRD_PARTY_NOTICES.md','./licenses/JSZIP-MIT.txt','./licenses/APACHE-2.0.txt','./licenses/PDF-LIB-MIT.txt','./licenses/PAKO-MIT.txt','./licenses/LIE-MIT.txt','./licenses/IMMEDIATE-MIT.txt','./licenses/SETIMMEDIATE-MIT.txt','./licenses/READABLE-STREAM.txt','./manifest.webmanifest','./icon.svg'];
 const allowed=new Set(CORE.map(path=>new URL(path,self.registration.scope).pathname));
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
